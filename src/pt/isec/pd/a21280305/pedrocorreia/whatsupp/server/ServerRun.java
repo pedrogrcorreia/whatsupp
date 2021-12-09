@@ -3,6 +3,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +11,7 @@ import java.sql.SQLException;
 
 public class ServerRun {
 
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws UnknownHostException, SocketException {
 
         Server server = null;
 
@@ -25,9 +26,8 @@ public class ServerRun {
             System.out.println("Syntax: java ServerRun <listeningPort> <dbAddress> <ServerManagerAddress>* <ServerManagerPort>*");
             return;
         }
-        
-
-        server.registerServer();
+        server.startServer();
+        //server.registerServer();
     }
 
 //    static final String JDBC_DRIVER = "com.mysql.c.jdbc.Driver";
