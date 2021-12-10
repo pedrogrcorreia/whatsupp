@@ -1,26 +1,23 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic;
 
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
-
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.List;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ActiveServers;
 
 public class ServerManager {
 
     static final int MAX_SIZE = Strings.MaxSize();
 
-    List<DatagramPacket> activeServersPackets;
+    ActiveServers activeServers;
 
     int listeningPort;
 
     DatagramSocket mySocket = null;
     DatagramPacket myPacket;
-    String receivedRequest;
 
     ByteArrayInputStream bin;
     ObjectInputStream oin;
@@ -29,12 +26,11 @@ public class ServerManager {
     ObjectOutputStream oout;
 
     // To receive server requests
-
     Strings requestFromServer;
 
     public ServerManager(int listeningPort){
         this.listeningPort = listeningPort;
-        activeServersPackets = new ArrayList<>();
+        activeServers = new ActiveServers();
     }
 
     public void startServerManager(){
@@ -50,6 +46,7 @@ public class ServerManager {
     // Main thread running to receiver UDP requests
     private void runServerManager(){
         System.out.println("Ready to receive requests.");
+        activeServers.start();
         while(true){
             Strings request;
             request = receiveRequests();
@@ -66,29 +63,14 @@ public class ServerManager {
                 }
             }
             else if(request.equals(Strings.SERVER_PING)){
+                activeServers.pingedServer(myPacket);
                 answerToServer(Strings.SERVER_PING, myPacket);
             }
         }
     }
 
     private boolean registerServers(DatagramPacket serverPacket) throws IOException, ClassNotFoundException {
-
-        boolean isRegistered = false;
-
-        for (DatagramPacket activeServersPacket : activeServersPackets) {
-            if (activeServersPacket.getAddress().equals(serverPacket.getAddress()) && activeServersPacket.getPort() == serverPacket.getPort()){
-                isRegistered = true;
-                System.out.println("Server already registered.");
-                break;
-            }
-        }
-
-        if(!isRegistered){
-            System.out.println("Server registered successfully.");
-            activeServersPackets.add(serverPacket);
-        }
-
-        return isRegistered;
+        return activeServers.registerServer(serverPacket);
     }
 
     private Strings receiveRequests(){
@@ -136,10 +118,10 @@ public class ServerManager {
 
     private void echoToAllServers(String msgToSend) throws IOException {
 
-        for(DatagramPacket activeServersPacket : activeServersPackets){
-            activeServersPacket.setData(msgToSend.getBytes());
-            activeServersPacket.setLength(msgToSend.length());
-            mySocket.send(activeServersPacket);
-        }
+//        for(DatagramPacket activeServersPacket : activeServersPackets){
+//            activeServersPacket.setData(msgToSend.getBytes());
+//            activeServersPacket.setLength(msgToSend.length());
+//            mySocket.send(activeServersPacket);
+//        }
     }
 }

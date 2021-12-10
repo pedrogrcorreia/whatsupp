@@ -1,6 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.PingServerManager;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 import java.io.*;
@@ -39,6 +40,9 @@ public class Server {
     // Data management
     DBManager dbManager;
 
+    // Clients communication
+    ServerSocket tcpSocket;
+
     // Constructor to use when GRDS address is provided
     public Server(int serverPort, String dbAddress, InetAddress serverManagerAddress, int serverManagerPort) throws UnknownHostException, SocketException {
         this.serverPort = serverPort;
@@ -58,8 +62,8 @@ public class Server {
     }
 
     // Constructor to create thread
-    public Server(DatagramSocket serverSocket){
-        this.mySocket = serverSocket;
+    public Server(DatagramPacket serverPacket){
+        this.myPacket = serverPacket;
     }
 
     public void startServer(){
@@ -75,12 +79,15 @@ public class Server {
                 System.out.println("Can't connect to ServerManager.");
             } else {
                 System.out.println("Connected successfuly to ServerManager");
+                tcpSocket = new ServerSocket();
                 pingServerManager = new Thread(new PingServerManager(this));
                 pingServerManager.start();
                 runServer();
             }
         }catch(SocketException e){
             System.out.println("Error connecting the socket:\r\n\t" + e);
+        } catch (IOException e) {
+            System.out.println("Error creating tcp socket: \r\n\t" + e);
         }
     }
 
@@ -129,6 +136,14 @@ public class Server {
 
     public String getDB(){
         return dbAddress;
+    }
+
+    public DatagramPacket getServerPacket(){
+        return myPacket;
+    }
+
+    public int getTcpPort(){
+        return tcpSocket.getLocalPort();
     }
 
     @Override
