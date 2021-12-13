@@ -15,55 +15,53 @@ public class ServerRun {
 
         Server server = null;
 
-        if(args.length == 2){
+        if (args.length == 2) {
             // TODO MULTICAST SEARCH
             System.out.println("Not implemented yet.");
-        }
-        else if(args.length == 4){
-            server = new Server(Integer.parseInt(args[0]), args[1], InetAddress.getByName(args[2]), Integer.parseInt(args[3]));
-        }
-        else{
-            System.out.println("Syntax: java ServerRun <listeningPort> <dbAddress> <ServerManagerAddress>* <ServerManagerPort>*");
+        } else if (args.length == 3) {
+            server = new Server(args[0], InetAddress.getByName(args[1]), Integer.parseInt(args[2]));
+        } else {
+            System.out.println("Syntax: java ServerRun <dbAddress> <ServerManagerAddress>* <ServerManagerPort>*");
             return;
         }
         server.startServer();
-        //server.registerServer();
+        // server.registerServer();
     }
 
-//    static final String JDBC_DRIVER = "com.mysql.c.jdbc.Driver";
-//    private static int x;
-//    String dbAddress;
-//
-//    private String dbName;
-//    private String username;
-//    private String password;
-//
-//    int x;
-//
-//    private Connection con;
-//
-//    private static void connectDB(){
-//        String db = "jdbc:mysql://" + ip + "/" + dbName;
-//
-//        try{
-//            Class.forName(JDBC_DRIVER);
-//        }catch(ClassNotFoundException e){
-//            System.out.println("Exception with JDBC: \r\n\t" + e);
-//        }
-//        try {
-//            con = DriverManager.getConnection(db, username, password);
-//        }catch(SQLException e){
-//            System.out.println("Error getting connection: \r\n\t" + e);
-//        }
-//    }
-//
-//    public static void main(String[] args){
-//
-//        if(args.length != 4){
-//            System.out.println("Syntax: <dbAddress> <dbName> <dbUsername> <dbPassword>");
-//            return;
-//        }
-//
-//        connectDB()
-//    }
+    // static final String JDBC_DRIVER = "com.mysql.c.jdbc.Driver";
+    // private static int x;
+    // String dbAddress;
+    //
+    // private String dbName;
+    // private String username;
+    // private String password;
+    //
+    // int x;
+    //
+    // private Connection con;
+    //
+    // private static void connectDB(){
+    // String db = "jdbc:mysql://" + ip + "/" + dbName;
+    //
+    // try{
+    // Class.forName(JDBC_DRIVER);
+    // }catch(ClassNotFoundException e){
+    // System.out.println("Exception with JDBC: \r\n\t" + e);
+    // }
+    // try {
+    // con = DriverManager.getConnection(db, username, password);
+    // }catch(SQLException e){
+    // System.out.println("Error getting connection: \r\n\t" + e);
+    // }
+    // }
+    //
+    // public static void main(String[] args){
+    //
+    // if(args.length != 4){
+    // System.out.println("Syntax: <dbAddress> <dbName> <dbUsername> <dbPassword>");
+    // return;
+    // }
+    //
+    // connectDB()
+    // }
 }

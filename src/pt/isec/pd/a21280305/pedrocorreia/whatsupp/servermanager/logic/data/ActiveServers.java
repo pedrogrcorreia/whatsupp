@@ -4,65 +4,83 @@ import java.net.DatagramPacket;
 
 import java.util.*;
 
-public class ActiveServers extends Thread{
+public class ActiveServers extends Thread {
 
-    private static final int pingTime = 20 * 1000; // 20 seconds between pings
+    private static final int pingTime = 3 * 1000;// 20 * 1000; // 20 seconds between pings
 
     List<ConnectedServer> servers;
+    int lastServer = 0;
 
-    public ActiveServers(){
+    public ActiveServers() {
         servers = new ArrayList<>();
     }
 
-    public boolean registerServer(DatagramPacket serverPacket){
+    public boolean registerServer(DatagramPacket serverPacket) {
         boolean isRegistered = false;
 
-        for(ConnectedServer server : servers){
-            if(server.getServerPacket().getAddress().equals(serverPacket.getAddress()) && server.getServerPacket().getPort() == serverPacket.getPort()){
+        for (ConnectedServer server : servers) {
+            if (server.getServerPacket().getAddress().equals(serverPacket.getAddress())
+                    && server.getServerPacket().getPort() == serverPacket.getPort()) {
                 isRegistered = true;
                 System.out.println("Server already registered.");
                 break;
             }
         }
-        if(!isRegistered){
+        if (!isRegistered) {
             servers.add(new ConnectedServer(serverPacket));
         }
         return isRegistered;
     }
 
-    public void pingedServer(DatagramPacket serverPacket){
-        for(ConnectedServer server : servers){
-            if(server.getServerPacket().getAddress().equals(serverPacket.getAddress()) && server.getServerPacket().getPort() == serverPacket.getPort()){
+    public void pingedServer(DatagramPacket serverPacket, int tcpPort) {
+        for (ConnectedServer server : servers) {
+            if (server.getServerPacket().getAddress().equals(serverPacket.getAddress())
+                    && server.getServerPacket().getPort() == serverPacket.getPort()) {
                 Calendar curTime = GregorianCalendar.getInstance();
                 server.setPingedTime(curTime);
+                server.setListeningTcpPort(tcpPort);
+                // System.out.println(server);
             }
         }
     }
 
+    public int registerClient() {
+        if (lastServer == servers.size()) {
+            lastServer = 0;
+        }
+        for (int i = lastServer; i < servers.size(); i++) {
+            if (!servers.get(i).getSuspended()) {
+                lastServer++;
+                return servers.get(i).getListeningTcpPort();
+            }
+        }
+        return -1;
+    }
+
     @Override
     public void run() {
-        while(true) {
-            //TODO Verify server TCP port
+        while (true) {
+            // TODO Verify server TCP port
             // contains(Strings.SERVER_PINGING) ...
             List<ConnectedServer> serversToRemove = new ArrayList<>();
-            for(ConnectedServer server : servers){
+            for (ConnectedServer server : servers) {
                 Calendar curTime = GregorianCalendar.getInstance();
                 long delay = (curTime.getTimeInMillis() - server.getPingedTime().getTimeInMillis()) / 1000;
                 System.out.println("Delay: " + delay);
-                if(delay > pingTime){
+                // System.out.println("TcpPort: " + server.getListeningTcpPort());
+                if ((delay * 1000) > pingTime) {
                     server.setSuspended(true);
                     server.setTimeoutPenalty();
-                    if(server.getTimeoutPenalties() >= 3){
+                    if (server.getTimeoutPenalties() >= 3) {
                         System.out.println("A server is offline.");
                         serversToRemove.add(server);
                     }
-                }
-                else{
+                } else {
                     server.setSuspended(false);
                     server.resetTimeoutPenalty();
                 }
             }
-            if(serversToRemove.size() > 0) {
+            if (serversToRemove.size() > 0) {
                 System.out.println("Removing " + serversToRemove.size() + " servers.");
                 servers.removeAll(serversToRemove);
             }

@@ -1,7 +1,10 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionClient;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionServerManager;
+// import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.PingServerManager;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 import java.io.*;
@@ -12,15 +15,15 @@ public class Server {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    static final int MAX_SIZE = Strings.MaxSize();
+    static final int MAX_SIZE = 4096;
     static final int TIMEOUT = 10 * 1000; // 10 seconds timeout
 
     // Server variables
     InetAddress serverManagerAddress;
     int serverManagerPort;
-    int serverPort;
     String serverAddress;
     String dbAddress;
+    // int serverPort;
 
     // UDP communication
     DatagramSocket mySocket;
@@ -32,20 +35,29 @@ public class Server {
     ByteArrayOutputStream bout;
     ObjectOutputStream oout;
 
-    Strings responseFromServerManager;
+    // Strings responseFromServerManager;
+    SharedMessage responseFromServerManager;
+    SharedMessage receivedFromServerManager;
 
-    // Threads
+    // Thread to ping server manager
     Thread pingServerManager;
+
+    // Thread to receive requests from ServerManager
+    Thread connectionServerManager;
 
     // Data management
     DBManager dbManager;
 
     // Clients communication
     ServerSocket tcpSocket;
+    Socket nextClient;
+
+    // Thread for each client
+    ConnectionClient newClient;
 
     // Constructor to use when GRDS address is provided
-    public Server(int serverPort, String dbAddress, InetAddress serverManagerAddress, int serverManagerPort) throws UnknownHostException, SocketException {
-        this.serverPort = serverPort;
+    public Server(String dbAddress, InetAddress serverManagerAddress, int serverManagerPort)
+            throws UnknownHostException, SocketException {
         this.dbAddress = dbAddress;
         this.serverManagerAddress = serverManagerAddress;
         this.serverManagerPort = serverManagerPort;
@@ -55,52 +67,73 @@ public class Server {
 
     // Constructor to use when no GRDS address is provided
     public Server(int serverPort, String dbAddress) throws UnknownHostException, SocketException {
-        this.serverPort = serverPort;
         this.dbAddress = dbAddress;
         this.serverAddress = InetAddress.getLocalHost().getHostAddress();
         registerServer();
     }
 
     // Constructor to create thread
-    public Server(DatagramPacket serverPacket){
+    public Server(DatagramPacket serverPacket) {
         this.myPacket = serverPacket;
     }
 
-    public void startServer(){
+    public void startServer() {
         registerServer();
     }
 
-    private void registerServer(){
+    private void registerServer() {
         try {
-            mySocket = new DatagramSocket(serverPort);
-            //TODO set socket timeout?
-            sendToServerManager(Strings.SERVER_REGISTER_REQUEST);
-            if (!receiveFromServerManager().equals(Strings.SERVER_REGISTER_SUCCESS)) {
-                System.out.println("Can't connect to ServerManager.");
+            mySocket = new DatagramSocket();
+            // serverPort = mySocket.getPort();
+            // TODO set socket timeout?
+            sendToServerManager(new SharedMessage(Strings.SERVER_REGISTER_REQUEST,
+                    "Server wants to register to this Server Manager."));
+            receivedFromServerManager = receiveFromServerManager();
+            System.out.println(receivedFromServerManager.getMsg());
+            if (!receivedFromServerManager.getMsgType().equals(Strings.SERVER_REGISTER_SUCCESS)) {
+                return;
             } else {
-                System.out.println("Connected successfuly to ServerManager");
-                tcpSocket = new ServerSocket();
-                pingServerManager = new Thread(new PingServerManager(this));
-                pingServerManager.start();
+                // tcpSocket = new ServerSocket();
+                // pingServerManager = new Thread(new PingServerManager(this));
+                // pingServerManager.start();
                 runServer();
             }
-        }catch(SocketException e){
+        } catch (SocketException e) {
             System.out.println("Error connecting the socket:\r\n\t" + e);
         } catch (IOException e) {
             System.out.println("Error creating tcp socket: \r\n\t" + e);
         }
     }
 
-    private void runServer(){
+    private void runServer() {
         // This main thread keeps running to accept request from ServerManager
-        while(true){
-            String response = receiveFromServerManager().toString();
-            System.out.println("Server Manager said: " + response);
+        // while (true) {
+        // String response = receiveFromServerManager().toString();
+        // System.out.println("Server Manager said: " + response);
+        // }
+        try {
+            tcpSocket = new ServerSocket(0);
+            System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
+            pingServerManager = new Thread(new PingServerManager(this));
+            connectionServerManager = new Thread(new ConnectionServerManager(this));
+            pingServerManager.start();
+            connectionServerManager.start();
+
+            // dbManager = new DBManager(this);
+            while (true) {
+                nextClient = tcpSocket.accept();
+                newClient = new ConnectionClient(nextClient);
+                newClient.start();
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error creating TCP Socket: \r\n\t" + e);
         }
     }
 
-    public void sendToServerManager(Strings msgToSend){
-        try{
+    // public void sendToServerManager(Strings msgToSend){
+    public void sendToServerManager(SharedMessage msgToSend) {
+        try {
             // Serialize object to send
             bout = new ByteArrayOutputStream();
             oout = new ObjectOutputStream(bout);
@@ -108,12 +141,13 @@ public class Server {
 
             myPacket = new DatagramPacket(bout.toByteArray(), bout.size(), serverManagerAddress, serverManagerPort);
             mySocket.send(myPacket);
-        }catch(IOException e){
+        } catch (IOException e) {
             System.out.println("Socket or IO exception: \r\n\t" + e);
         }
     }
 
-    public Strings receiveFromServerManager(){
+    // public Strings receiveFromServerManager(){
+    public SharedMessage receiveFromServerManager() {
         try {
             // Clear packet
             myPacket = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
@@ -122,32 +156,32 @@ public class Server {
             // Desserialize object
             bin = new ByteArrayInputStream(myPacket.getData());
             oin = new ObjectInputStream(bin);
-            responseFromServerManager = (Strings)oin.readObject();
+            responseFromServerManager = (SharedMessage) oin.readObject();
 
             return responseFromServerManager;
 
-        }catch(IOException e){
+        } catch (IOException e) {
             System.out.println("Socket or IO exception: \r\n\t" + e);
-        } catch(ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             System.out.println("Invalid object sent: \r\n\t" + e);
         }
         return null;
     }
 
-    public String getDB(){
+    public String getDB() {
         return dbAddress;
     }
 
-    public DatagramPacket getServerPacket(){
+    public DatagramPacket getServerPacket() {
         return myPacket;
     }
 
-    public int getTcpPort(){
+    public int getTcpPort() {
         return tcpSocket.getLocalPort();
     }
 
-    @Override
-    public String toString() {
-        return "\nServer at " + serverAddress + ":" + serverPort + " is connected.";
-    }
+    // @Override
+    // public String toString() {
+    // return "\nServer at " + serverAddress + ":" + serverPort + " is connected.";
+    // }
 }

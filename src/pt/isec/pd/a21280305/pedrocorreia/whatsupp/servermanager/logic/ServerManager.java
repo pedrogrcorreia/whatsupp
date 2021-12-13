@@ -4,13 +4,14 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
+
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ActiveServers;
 
 public class ServerManager {
 
-    static final int MAX_SIZE = Strings.MaxSize();
+    static final int MAX_SIZE = 4096;
 
     ActiveServers activeServers;
 
@@ -25,46 +26,54 @@ public class ServerManager {
     ByteArrayOutputStream bout;
     ObjectOutputStream oout;
 
-    // To receive server requests
-    Strings requestFromServer;
+    // To communicate with requests
+    SharedMessage request;
+    SharedMessage answer;
 
-    public ServerManager(int listeningPort){
+    public ServerManager(int listeningPort) {
         this.listeningPort = listeningPort;
         activeServers = new ActiveServers();
     }
 
-    public void startServerManager(){
-        try{
+    public void startServerManager() {
+        try {
             mySocket = new DatagramSocket(listeningPort);
             System.out.println("Server Manager initialized at port " + mySocket.getLocalPort());
             runServerManager();
-        } catch(SocketException e){
+        } catch (SocketException e) {
             System.out.println("Error at UDP socket: \r\n\t" + e);
         }
     }
 
     // Main thread running to receiver UDP requests
-    private void runServerManager(){
+    private void runServerManager() {
         System.out.println("Ready to receive requests.");
         activeServers.start();
-        while(true){
-            Strings request;
+        while (true) {
             request = receiveRequests();
-            if(request.equals(Strings.SERVER_REGISTER_REQUEST)){
+            if (request.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
                 try {
-                    if(!registerServers(myPacket)){
-                        answerToServer(Strings.SERVER_REGISTER_SUCCESS, myPacket);
+                    if (!registerServers(myPacket)) {
+                        answer = new SharedMessage(Strings.SERVER_REGISTER_SUCCESS,
+                                new String("Registered successfully."));
+                        answerToRequest(answer, myPacket);
+                    } else {
+                        answer = new SharedMessage(Strings.SERVER_REGISTER_FAIL,
+                                new String("Couldn't register the server."));
+                        answerToRequest(answer, myPacket);
                     }
-                    else{
-                        answerToServer(Strings.SERVER_REGISTER_FAIL, myPacket);
-                    }
-                }catch(IOException | ClassNotFoundException e){
+                } catch (IOException | ClassNotFoundException e) {
                     System.out.println("Error registering the server.");
                 }
-            }
-            else if(request.equals(Strings.SERVER_PING)){
-                activeServers.pingedServer(myPacket);
-                answerToServer(Strings.SERVER_PING, myPacket);
+            } else if (request.getMsgType().equals(Strings.SERVER_PING)) {
+                int tcpPort = Integer.parseInt(request.getMsg());
+                activeServers.pingedServer(myPacket, tcpPort);
+                answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
+                answerToRequest(answer, myPacket);
+            } else if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
+                answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
+                        String.valueOf(activeServers.registerClient()));
+                answerToRequest(answer, myPacket);
             }
         }
     }
@@ -73,28 +82,28 @@ public class ServerManager {
         return activeServers.registerServer(serverPacket);
     }
 
-    private Strings receiveRequests(){
+    private SharedMessage receiveRequests() {
         try {
+            SharedMessage newRequest;
             myPacket = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
             mySocket.receive(myPacket);
 
             bin = new ByteArrayInputStream(myPacket.getData(), 0, myPacket.getLength());
             oin = new ObjectInputStream(bin);
 
-            requestFromServer = (Strings) oin.readObject();
+            newRequest = (SharedMessage) oin.readObject();
+            System.out.println("Request: " + newRequest.getMsgType() + " from " + myPacket.getPort());
 
-            System.out.println("Request from server: " + requestFromServer.toString());
-
-            return requestFromServer;
-        } catch(IOException e){
+            return newRequest;
+        } catch (IOException e) {
             System.out.println("Error receiving request: \r\n\t" + e);
-        } catch(ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             System.out.println("Object sent is invalid: \r\n\t" + e);
         }
         return null;
     }
 
-    private void answerToServer(Strings msgToSend, DatagramPacket serverPacket){
+    private void answerToRequest(SharedMessage msgToSend, DatagramPacket serverPacket) {
         try {
             bout = new ByteArrayOutputStream();
             oout = new ObjectOutputStream(bout);
@@ -103,25 +112,24 @@ public class ServerManager {
             serverPacket.setData(bout.toByteArray());
             serverPacket.setLength(bout.size());
             mySocket.send(serverPacket);
-        } catch(IOException e){
+        } catch (IOException e) {
             System.out.println("Error writing object: \r\n\t" + e);
         }
     }
 
+    // private void echoToServer(String msgToSend, DatagramPacket serverPacket)
+    // throws IOException{
+    // serverPacket.setData(msgToSend.getBytes());
+    // serverPacket.setLength(msgToSend.length());
+    // mySocket.send(serverPacket);
+    // }
 
+    // private void echoToAllServers(String msgToSend) throws IOException {
 
-    private void echoToServer(String msgToSend, DatagramPacket serverPacket) throws IOException{
-        serverPacket.setData(msgToSend.getBytes());
-        serverPacket.setLength(msgToSend.length());
-        mySocket.send(serverPacket);
-    }
-
-    private void echoToAllServers(String msgToSend) throws IOException {
-
-//        for(DatagramPacket activeServersPacket : activeServersPackets){
-//            activeServersPacket.setData(msgToSend.getBytes());
-//            activeServersPacket.setLength(msgToSend.length());
-//            mySocket.send(activeServersPacket);
-//        }
-    }
+    // // for(DatagramPacket activeServersPacket : activeServersPackets){
+    // // activeServersPacket.setData(msgToSend.getBytes());
+    // // activeServersPacket.setLength(msgToSend.length());
+    // // mySocket.send(activeServersPacket);
+    // // }
+    // }
 }

@@ -7,38 +7,59 @@ import java.util.Calendar;
 
 public class ConnectedServer extends Server {
 
-    private DatagramPacket serverPacket;
+    // private DatagramPacket serverPacket;
+    private int listeningUdpPort;
+    private String serverAddress;
+    private int listeningTcpPort;
     private Calendar pingedTime;
     private boolean isSuspended = false;
     private int timeoutPenalties = 0;
 
-
-    public ConnectedServer(DatagramPacket serverPacket){
+    public ConnectedServer(DatagramPacket serverPacket) {
         super(serverPacket);
         isSuspended = false;
+        listeningUdpPort = serverPacket.getPort();
+        serverAddress = serverPacket.getAddress().getHostAddress();
     }
 
-    public Calendar getPingedTime(){
+    public Calendar getPingedTime() {
         return pingedTime;
     }
 
-    public void setPingedTime(Calendar pingedTime){
+    public void setPingedTime(Calendar pingedTime) {
         this.pingedTime = pingedTime;
     }
 
-    public void setSuspended(boolean state){
+    public void setSuspended(boolean state) {
         isSuspended = state;
     }
 
-    public void setTimeoutPenalty(){
+    public boolean getSuspended() {
+        return isSuspended;
+    }
+
+    public void setTimeoutPenalty() {
         timeoutPenalties++;
     }
 
-    public int getTimeoutPenalties(){
+    public int getTimeoutPenalties() {
         return timeoutPenalties;
     }
 
-    public void resetTimeoutPenalty(){
+    public void resetTimeoutPenalty() {
         timeoutPenalties = 0;
+    }
+
+    public int getListeningTcpPort() {
+        return listeningTcpPort;
+    }
+
+    public void setListeningTcpPort(int tcpPort) {
+        listeningTcpPort = tcpPort;
+    }
+
+    @Override
+    public String toString() {
+        return "\nServer at " + serverAddress + ":" + listeningUdpPort + " is connected.";
     }
 }
