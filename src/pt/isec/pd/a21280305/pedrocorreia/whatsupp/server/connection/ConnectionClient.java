@@ -3,6 +3,8 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection;
 import java.io.*;
 import java.net.*;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
 public class ConnectionClient extends Thread {
@@ -23,11 +25,11 @@ public class ConnectionClient extends Thread {
             oout = new ObjectOutputStream(clientSocket.getOutputStream());
             oin = new ObjectInputStream(clientSocket.getInputStream());
 
-            String request = (String) oin.readObject();
+            SharedMessage request = (SharedMessage) oin.readObject();
 
             System.out.println(request);
 
-            oout.writeObject(new String("cliente recebido"));
+            oout.writeObject(new SharedMessage(Strings.CLIENT_SENT_MESSAGE, request.getMsg()));
             oout.flush();
         } catch (IOException e) {
             System.out.println("Problem communicating with client: \r\n\t" + e);

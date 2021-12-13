@@ -11,7 +11,8 @@ public enum Strings {
     SERVER_REGISTER_FAIL("Failed to register the server"),
     JDBC_DRIVE("com.mysql.cj.jdbc.Driver"),
     SERVER_PING("Server pinging"),
-    CLIENT_REQUEST_SERVER("Client is requesting a server");
+    CLIENT_REQUEST_SERVER("Client is requesting a server"),
+    CLIENT_SENT_MESSAGE("Client sent a message");
 
     private final String description;
 

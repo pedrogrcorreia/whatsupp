@@ -92,14 +92,12 @@ public class ClientRun /* extends Application */ {
             oin = new ObjectInputStream(tcpSocket.getInputStream());
             oout = new ObjectOutputStream(tcpSocket.getOutputStream());
 
-            oout.writeObject(new String(myPacket.getAddress().getHostName() + myPacket.getPort()));
+            oout.writeObject(new SharedMessage(Strings.CLIENT_SENT_MESSAGE, "Mensagem que o user enviou."));
             oout.flush();
 
-            String response = (String) oin.readObject();
+            SharedMessage response = (SharedMessage) oin.readObject();
 
             System.out.println(response);
-
-            System.out.println(tcpSocket.isConnected());
         } catch (IOException e) {
         } catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
