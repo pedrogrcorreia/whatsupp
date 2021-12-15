@@ -9,6 +9,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.PingServerMa
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Server {
 
@@ -55,6 +57,9 @@ public class Server {
     // Thread for each client
     ConnectionClient newClient;
 
+    // List of connected clients
+    List<Socket> clients;
+
     // Constructor to use when GRDS address is provided
     public Server(String dbAddress, InetAddress serverManagerAddress, int serverManagerPort)
             throws UnknownHostException, SocketException {
@@ -93,9 +98,6 @@ public class Server {
             if (!receivedFromServerManager.getMsgType().equals(Strings.SERVER_REGISTER_SUCCESS)) {
                 return;
             } else {
-                // tcpSocket = new ServerSocket();
-                // pingServerManager = new Thread(new PingServerManager(this));
-                // pingServerManager.start();
                 runServer();
             }
         } catch (SocketException e) {
@@ -106,22 +108,18 @@ public class Server {
     }
 
     private void runServer() {
-        // This main thread keeps running to accept request from ServerManager
-        // while (true) {
-        // String response = receiveFromServerManager().toString();
-        // System.out.println("Server Manager said: " + response);
-        // }
         try {
             tcpSocket = new ServerSocket(0);
             System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
-            pingServerManager = new Thread(new PingServerManager(this));
-            connectionServerManager = new Thread(new ConnectionServerManager(this));
+            pingServerManager = new Thread(new PingServerManager(this), "Thread to ping Server Manager");
+            connectionServerManager = new Thread(new ConnectionServerManager(this), "Thread to receive communication from ServerManager");
             pingServerManager.start();
             connectionServerManager.start();
-
+            clients = new ArrayList<>();
             // dbManager = new DBManager(this);
             while (true) {
                 nextClient = tcpSocket.accept();
+                clients.add(nextClient);
                 newClient = new ConnectionClient(nextClient);
                 newClient.start();
             }

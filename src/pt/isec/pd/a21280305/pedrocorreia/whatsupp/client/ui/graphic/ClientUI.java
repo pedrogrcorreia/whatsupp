@@ -18,7 +18,7 @@ public class ClientUI extends BorderPane {
     private MenuItem menu;
     private PrincipalPane principalPane;
 
-    public ClientUI(ClientObservable clientObservable){
+    public ClientUI(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
         createView();
         createMenus();
@@ -26,37 +26,41 @@ public class ClientUI extends BorderPane {
         update();
     }
 
-    private void registerObserver(){
+    private void registerObserver() {
         clientObservable.addPropertyChangeListener("DEBUG", event -> update());
     }
 
-    private void createView(){
-//        principalPane = new PrincipalPane(clientObservable);
-//        setCenter(principalPane);
+    private void createView() {
+        // principalPane = new PrincipalPane(clientObservable);
+        // setCenter(principalPane);
     }
 
-    private void createMenus(){
+    private void createMenus() {
         MenuBar menuBar = new MenuBar();
         setTop(menuBar);
 
         Menu file = new Menu("_File");
         menu = new MenuItem("Exit");
-//        MenuItem exit = new MenuItem("Exit");
+        // MenuItem exit = new MenuItem("Exit");
 
         file.getItems().addAll(menu);
 
-//        menu.setOnAction(e -> clientObservable.close());
-        menu.setOnAction((ActionEvent e)-> {
+        // menu.setOnAction(e -> clientObservable.close());
+        menu.setOnAction((ActionEvent e) -> {
             Stage janela2 = (Stage) this.getScene().getWindow();
-            fireEvent( new WindowEvent(janela2, WindowEvent.WINDOW_CLOSE_REQUEST));
+            fireEvent(new WindowEvent(janela2, WindowEvent.WINDOW_CLOSE_REQUEST));
         });
 
         menuBar.getMenus().addAll(file);
     }
 
-    private void update(){
+    private void update() {
         System.out.println(clientObservable.getAtualState());
-        switch(clientObservable.getAtualState()){
+        switch (clientObservable.getAtualState()) {
+            case CONTACT_SERVER_MANAGER -> {
+                ContactServerManagerPane contactServerManagerPane = new ContactServerManagerPane(clientObservable);
+                setCenter(contactServerManagerPane);
+            }
             case INITIAL_OPTION -> {
                 InitialStatePane initialStatePane = new InitialStatePane(clientObservable);
                 setCenter(initialStatePane);
@@ -73,6 +77,7 @@ public class ClientUI extends BorderPane {
                 UserStatePane userStatePane = new UserStatePane(clientObservable);
                 setCenter(userStatePane);
             }
+            default -> throw new IllegalArgumentException("Unexpected value: " + clientObservable.getAtualState());
         }
     }
 }

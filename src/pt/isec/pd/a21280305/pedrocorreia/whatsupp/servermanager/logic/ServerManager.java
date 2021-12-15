@@ -30,9 +30,13 @@ public class ServerManager {
     SharedMessage request;
     SharedMessage answer;
 
+    // Thread activeServers;
+
     public ServerManager(int listeningPort) {
         this.listeningPort = listeningPort;
         activeServers = new ActiveServers();
+        // activeServers = new Thread(new ActiveServers(), "Thread to verify active
+        // servers");
     }
 
     public void startServerManager() {
@@ -48,7 +52,7 @@ public class ServerManager {
     // Main thread running to receiver UDP requests
     private void runServerManager() {
         System.out.println("Ready to receive requests.");
-        activeServers.start();
+        // activeServers.start();
         while (true) {
             request = receiveRequests();
             if (request.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
@@ -71,8 +75,10 @@ public class ServerManager {
                 answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
                 answerToRequest(answer, myPacket);
             } else if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
+                // answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
+                // String.valueOf(activeServers.registerClient()));
                 answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
-                        String.valueOf(activeServers.registerClient()));
+                        activeServers.registerClient());
                 answerToRequest(answer, myPacket);
             }
         }

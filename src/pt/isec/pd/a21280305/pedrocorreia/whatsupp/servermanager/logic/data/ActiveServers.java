@@ -13,6 +13,7 @@ public class ActiveServers extends Thread {
 
     public ActiveServers() {
         servers = new ArrayList<>();
+        start();
     }
 
     public boolean registerServer(DatagramPacket serverPacket) {
@@ -44,17 +45,32 @@ public class ActiveServers extends Thread {
         }
     }
 
-    public int registerClient() {
+    // public int registerClient() {
+    // if (lastServer == servers.size()) {
+    // lastServer = 0;
+    // }
+    // for (int i = lastServer; i < servers.size(); i++) {
+    // if (!servers.get(i).getSuspended()) {
+    // lastServer++;
+    // return servers.get(i).getListeningTcpPort();
+    // }
+    // }
+    // return -1;
+    // }
+
+    public String registerClient() {
         if (lastServer == servers.size()) {
             lastServer = 0;
         }
         for (int i = lastServer; i < servers.size(); i++) {
             if (!servers.get(i).getSuspended()) {
                 lastServer++;
-                return servers.get(i).getListeningTcpPort();
+                return new String(
+                        servers.get(i).getServerPacket().getAddress() + ":" + servers.get(i).getListeningTcpPort());
             }
         }
-        return -1;
+
+        return new String("0.0.0.0:0000");
     }
 
     @Override

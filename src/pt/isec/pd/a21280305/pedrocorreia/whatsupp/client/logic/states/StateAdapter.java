@@ -6,9 +6,18 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 public abstract class StateAdapter implements IState {
     private final Data model;
 
-    public StateAdapter(Data model){ this.model = model; }
+    public StateAdapter(Data model) {
+        this.model = model;
+    }
 
-    public final Data getModel() { return model; }
+    public final Data getModel() {
+        return model;
+    }
+
+    @Override
+    public IState contactServerManager() {
+        return this;
+    }
 
     @Override
     public IState initialOption(String opt) {
