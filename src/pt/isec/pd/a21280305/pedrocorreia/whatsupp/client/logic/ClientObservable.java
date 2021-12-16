@@ -29,15 +29,11 @@ public class ClientObservable {
 
     public void initialStatus(String opt) {
         client.initialStatus(opt);
-        // propertyChangeSupport.firePropertyChange(Properties.INITIAL_STATE.toString(),
-        // null, null);
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);
     }
 
     public void login(String username, String password) {
         client.login(username, password);
-        // propertyChangeSupport.firePropertyChange(Properties.LOGIN_STATE.toString(),
-        // null, null);
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);
     }
 

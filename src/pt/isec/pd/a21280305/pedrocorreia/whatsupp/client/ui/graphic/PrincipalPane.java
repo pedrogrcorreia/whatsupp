@@ -11,31 +11,32 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states.UserS
 public class PrincipalPane extends StackPane {
     private ClientObservable clientObservable;
 
-
-    public PrincipalPane(ClientObservable clientObservable){
+    public PrincipalPane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
         createView();
         registerObserver();
         update();
     }
 
-    private void registerObserver(){
+    private void registerObserver() {
         clientObservable.addPropertyChangeListener("DEBUG", e -> update());
     }
 
-    private void createView(){
+    private void createView() {
         InitialStatePane initialStatePane = new InitialStatePane(clientObservable);
         LoginStatePane loginStatePane = new LoginStatePane(clientObservable);
         RegisterStatePane registerStatePane = new RegisterStatePane(clientObservable);
         UserStatePane userStatePane = new UserStatePane(clientObservable);
         getChildren().addAll(initialStatePane, loginStatePane, registerStatePane, userStatePane);
-        //StackPane fill = new StackPane(initialStatePane, loginStatePane, registerStatePane, userStatePane);
-        //setCenter(fill);
-        //fill.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+        // StackPane fill = new StackPane(initialStatePane, loginStatePane,
+        // registerStatePane, userStatePane);
+        // setCenter(fill);
+        // fill.setBorder(new Border(new BorderStroke(Color.BLACK,
+        // BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
         setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
     }
 
-    private void update(){
+    private void update() {
 
     }
 }

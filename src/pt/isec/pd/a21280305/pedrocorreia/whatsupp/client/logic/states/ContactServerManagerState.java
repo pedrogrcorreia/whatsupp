@@ -16,35 +16,9 @@ public class ContactServerManagerState extends StateAdapter {
         if (getModel().contactServerManager()) {
             return new InitialState(getModel());
         }
-        // return new ContactServerManagerState(getModel());
 
-        // return new ContactServerManagerState(getModel());
-        return new InitialState(getModel());
-
-        // if (!connected && tries < 3) {
-        // return new ContactServerManagerState(getModel());
-        // } else if (!connected && tries == 3) {
-        // return new EnterState(getModel());
-        // }
-        // return new InitialState(getModel());
+        return new ContactServerManagerState(getModel());
     }
-
-    // @Override
-    // public void run() {
-    // while (!connected) {
-    // connected = getModel().getConnected();
-    // System.out.println(getModel().getConnected());
-    // tries++;
-    // try {
-    // Thread.sleep(3000);
-    // } catch (InterruptedException e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-
-    // }
-    // contactServerManager();
-    // }
 
     @Override
     public Situation getAtualState() {

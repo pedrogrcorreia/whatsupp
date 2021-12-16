@@ -112,11 +112,13 @@ public class Server {
             tcpSocket = new ServerSocket(0);
             System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
             pingServerManager = new Thread(new PingServerManager(this), "Thread to ping Server Manager");
-            connectionServerManager = new Thread(new ConnectionServerManager(this), "Thread to receive communication from ServerManager");
+            connectionServerManager = new Thread(new ConnectionServerManager(this),
+                    "Thread to receive communication from ServerManager");
             pingServerManager.start();
             connectionServerManager.start();
             clients = new ArrayList<>();
             // dbManager = new DBManager(this);
+            // Main thread just accepts connections from clients
             while (true) {
                 nextClient = tcpSocket.accept();
                 clients.add(nextClient);

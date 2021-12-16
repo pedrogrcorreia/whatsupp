@@ -1,7 +1,5 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection;
 
-import java.io.Serializable;
-
 public class ClientRequestLogin extends ClientServerConnection {
     private String username;
     private String password;

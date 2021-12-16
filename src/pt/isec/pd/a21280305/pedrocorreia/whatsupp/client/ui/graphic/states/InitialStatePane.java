@@ -6,9 +6,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Properties;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
-
 
 public class InitialStatePane extends BorderPane {
     private ClientObservable clientObservable;
@@ -17,21 +15,19 @@ public class InitialStatePane extends BorderPane {
     private Button register;
     private HBox layout;
 
-    public InitialStatePane(ClientObservable clientObservable){
+    public InitialStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
         createWindow();
         registerObserver();
         update();
     }
 
-    private void createWindow(){
+    private void createWindow() {
         login = new Button("Login");
         register = new Button("Register");
 
         login.setOnAction(e -> {
             clientObservable.initialStatus("login");
-            //System.out.println(clientObservable.getAtualState());
-            //setVisible(false);
         });
 
         register.setOnAction(e -> clientObservable.initialStatus("register"));
@@ -42,12 +38,11 @@ public class InitialStatePane extends BorderPane {
         setCenter(layout);
     }
 
-    private void registerObserver(){
-//        clientObservable.addPropertyChangeListener(Properties.INITIAL_STATE.toString(), e -> update());
+    private void registerObserver() {
         clientObservable.addPropertyChangeListener("DEBUG", e -> update());
     }
 
-    private void update(){
+    private void update() {
         setVisible(clientObservable.getAtualState() == Situation.INITIAL_OPTION);
     }
 }

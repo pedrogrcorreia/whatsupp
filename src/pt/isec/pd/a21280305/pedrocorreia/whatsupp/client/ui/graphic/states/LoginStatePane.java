@@ -10,7 +10,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Properties;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 
 public class LoginStatePane extends GridPane {
@@ -22,14 +21,14 @@ public class LoginStatePane extends GridPane {
     private TextField txtPassword;
     private Button submit;
 
-    public LoginStatePane(ClientObservable clientObservable){
+    public LoginStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
         createWindow();
         registerObserver();
         update();
     }
 
-    private void createWindow(){
+    private void createWindow() {
 
         setAlignment(Pos.CENTER);
         setHgap(10);
@@ -56,12 +55,11 @@ public class LoginStatePane extends GridPane {
 
     }
 
-    private void registerObserver(){
-//        clientObservable.addPropertyChangeListener(Properties.LOGIN_STATE.toString(), e -> update());
+    private void registerObserver() {
         clientObservable.addPropertyChangeListener("DEBUG", e -> update());
     }
 
-    private void update(){
+    private void update() {
         setVisible(clientObservable.getAtualState() == Situation.LOGIN_USER);
     }
 }
