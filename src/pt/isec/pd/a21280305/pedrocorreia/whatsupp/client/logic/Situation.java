@@ -5,7 +5,8 @@ public enum Situation {
     REGISTER_USER("Register a new user."),
     LOGIN_USER("Login user."),
     LOGGED_IN("User logged in."),
-    CONTACT_SERVER_MANAGER("Contacting Server Manager");
+    ENTER_STATE("Client opened app."),
+    CONTACT_SERVER_MANAGER("Contacting Server Manager.");
 
     private final String description;
 

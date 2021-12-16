@@ -2,6 +2,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.EnterState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.InitialState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.LoginState;
@@ -12,13 +13,18 @@ public class Client {
 
     public Client(String serverManagerAddress, int serverManagerPort) {
         model = new Data(serverManagerAddress, serverManagerPort);
-        state = new ContactServerManagerState(model);
+        state = new EnterState(model);
+        // state = new ContactServerManagerState(model);
         // state.contactServerManager();
         // state = new LoginState(model);
     }
 
     private void setState(IState state) {
         this.state = state;
+    }
+
+    public void createConnection() {
+        setState(state.createConnection());
     }
 
     public void contactServerManager() {

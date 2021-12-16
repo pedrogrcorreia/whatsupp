@@ -4,6 +4,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 
 public interface IState {
 
+    IState createConnection();
+
     IState contactServerManager();
 
     IState initialOption(String opt);

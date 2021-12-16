@@ -1,5 +1,6 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -57,9 +58,14 @@ public class ClientUI extends BorderPane {
     private void update() {
         System.out.println(clientObservable.getAtualState());
         switch (clientObservable.getAtualState()) {
+            case ENTER_STATE -> {
+                EnterStatePane enterStatePane = new EnterStatePane(clientObservable);
+                setCenter(enterStatePane);
+            }
             case CONTACT_SERVER_MANAGER -> {
                 ContactServerManagerPane contactServerManagerPane = new ContactServerManagerPane(clientObservable);
                 setCenter(contactServerManagerPane);
+                // clientObservable.contactServerManager();
             }
             case INITIAL_OPTION -> {
                 InitialStatePane initialStatePane = new InitialStatePane(clientObservable);

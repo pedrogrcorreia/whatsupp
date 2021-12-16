@@ -17,6 +17,11 @@ public class ClientObservable {
         propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
+    public void createConnection() {
+        client.createConnection();
+        propertyChangeSupport.firePropertyChange("DEBUG", null, null);
+    }
+
     public void contactServerManager() {
         client.contactServerManager();
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);

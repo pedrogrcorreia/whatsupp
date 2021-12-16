@@ -15,6 +15,11 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState createConnection() {
+        return this;
+    }
+
+    @Override
     public IState contactServerManager() {
         return this;
     }
