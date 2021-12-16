@@ -41,8 +41,12 @@ public class ClientObservable {
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);
     }
 
-    public void register(String username, String password, String fname, String lname) {
-        client.register(username, password, fname, lname);
+    public void register(String username, String password, String confPassword, String fname, String lname) {
+        client.register(username, password, confPassword, fname, lname);
+    }
+
+    public void update() {
+        propertyChangeSupport.firePropertyChange("DEBUG", null, null);
     }
 
     public Situation getAtualState() {

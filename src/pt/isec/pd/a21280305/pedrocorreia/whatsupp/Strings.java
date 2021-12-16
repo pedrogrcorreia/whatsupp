@@ -12,6 +12,9 @@ public enum Strings {
     JDBC_DRIVE("com.mysql.cj.jdbc.Driver"),
     SERVER_PING("Server pinging"),
     CLIENT_REQUEST_SERVER("Client is requesting a server"),
+    CLIENT_REQUEST_LOGIN("Client wants to login"),
+    CLIENT_SUCCESS_LOGIN("Client logged in successful"),
+    CLIENT_FAILED_LOGIN("Client failed to login"),
     CLIENT_SENT_MESSAGE("Client sent a message");
 
     private final String description;

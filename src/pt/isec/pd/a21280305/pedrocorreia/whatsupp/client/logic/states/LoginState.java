@@ -4,14 +4,17 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 
 public class LoginState extends StateAdapter {
-    public LoginState(Data model) { super(model); }
+    public LoginState(Data model) {
+        super(model);
+    }
 
     @Override
     public IState login(String username, String password) {
-        if(getModel().login(username, password)){
+        boolean aux;
+        if (aux = getModel().login(username, password)) {
+            System.out.println(aux);
             return new UserState(getModel());
-        }
-        else{
+        } else {
             return this;
         }
     }
@@ -20,6 +23,5 @@ public class LoginState extends StateAdapter {
     public Situation getAtualState() {
         return Situation.LOGIN_USER;
     }
-
 
 }

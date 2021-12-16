@@ -12,7 +12,7 @@ public interface IState {
 
     IState login(String username, String password);
 
-    IState register(String username, String password, String fname, String lname);
+    IState register(String username, String password, String confPassword, String fname, String lname);
 
     Situation getAtualState();
 }

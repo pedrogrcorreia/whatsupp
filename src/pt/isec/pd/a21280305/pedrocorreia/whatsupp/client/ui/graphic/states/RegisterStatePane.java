@@ -12,18 +12,18 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 public class RegisterStatePane extends GridPane {
     private ClientObservable clientObservable;
 
-    private Label lblUsername, lblPassword, lblFName, lblLName;
-    private TextField txtUsername, txtPassword, txtFName, txtLName;
+    private Label lblUsername, lblPassword, lblConfPassword, lblFName, lblLName;
+    private TextField txtUsername, txtPassword, txtConfPassword, txtFName, txtLName;
     private Button submit;
 
-    public RegisterStatePane(ClientObservable clientObservable){
+    public RegisterStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
         createWindow();
         registerObserver();
-        //update();
+        // update();
     }
 
-    private void createWindow(){
+    private void createWindow() {
         setAlignment(Pos.CENTER);
         setHgap(10);
         setVgap(10);
@@ -39,29 +39,35 @@ public class RegisterStatePane extends GridPane {
         txtPassword = new PasswordField();
         add(txtPassword, 1, 2);
 
+        lblConfPassword = new Label("Password: ");
+        add(lblConfPassword, 0, 3);
+        txtConfPassword = new PasswordField();
+        add(txtConfPassword, 1, 3);
+
         lblFName = new Label("First name: ");
-        add(lblFName, 0, 3);
+        add(lblFName, 0, 4);
         txtFName = new TextField();
-        add(txtFName, 1, 3);
+        add(txtFName, 1, 4);
 
         lblLName = new Label("Last name: ");
-        add(lblLName, 0, 4);
+        add(lblLName, 0, 5);
         txtLName = new TextField();
-        add(txtLName, 1, 4);
+        add(txtLName, 1, 5);
 
         submit = new Button("Submit");
         add(submit, 1, 6);
 
         submit.setOnAction(e -> {
-            clientObservable.register(txtUsername.getText(), txtPassword.getText(), txtFName.getText(), txtLName.getText());
+            clientObservable.register(txtUsername.getText(), txtPassword.getText(), txtConfPassword.getText(),
+                    txtFName.getText(), txtLName.getText());
         });
     }
 
-    private void registerObserver(){
+    private void registerObserver() {
         clientObservable.addPropertyChangeListener("DEBUG", e -> update());
     }
 
-    private void update(){
+    private void update() {
 
     }
 

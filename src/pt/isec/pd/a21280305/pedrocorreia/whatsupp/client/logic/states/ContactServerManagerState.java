@@ -16,7 +16,11 @@ public class ContactServerManagerState extends StateAdapter {
         if (getModel().contactServerManager()) {
             return new InitialState(getModel());
         }
-        return new ContactServerManagerState(getModel());
+        // return new ContactServerManagerState(getModel());
+
+        // return new ContactServerManagerState(getModel());
+        return new InitialState(getModel());
+
         // if (!connected && tries < 3) {
         // return new ContactServerManagerState(getModel());
         // } else if (!connected && tries == 3) {

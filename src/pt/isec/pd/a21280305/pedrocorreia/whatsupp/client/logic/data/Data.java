@@ -15,6 +15,8 @@ import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.GetRequestFromServer;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.RequestServer;
 
 public class Data {
     private static final int MAX_SIZE = 4096;
@@ -37,7 +39,10 @@ public class Data {
 
     protected boolean connected = false;
 
+    // To communicate with Server
     protected Socket socketToServer;
+    protected RequestServer request;
+    protected GetRequestFromServer requestFromServer;
 
     public Data(String serverManagerAddress, int serverManagerPort) {
         this.serverManagerAddress = serverManagerAddress;
@@ -71,6 +76,32 @@ public class Data {
     }
 
     public boolean contactServerManager() {
+
+        try {
+            System.out.println("create connection");
+
+            serverManager = InetAddress.getByName(serverManagerAddress);
+
+            socket = new DatagramSocket();
+            socket.setSoTimeout(3000);
+            bout = new ByteArrayOutputStream();
+            oout = new ObjectOutputStream(bout);
+
+            oout.writeUnshared(
+                    new SharedMessage(Strings.CLIENT_REQUEST_SERVER, "Client wants a connection"
+                            +
+                            "to a server."));
+
+            packet = new DatagramPacket(bout.toByteArray(), bout.size(), serverManager,
+                    serverManagerPort);
+            System.out.println("Packet: " + packet.getAddress().getHostAddress() + ":" +
+                    packet.getPort());
+            // return true;
+        } catch (IOException e) {
+            System.out.println("Error creating socket and packet:\r\n\t" + e);
+            // return false;
+        }
+
         try {
             serverManager = InetAddress.getByName(serverManagerAddress);
         } catch (UnknownHostException e) {
@@ -80,10 +111,12 @@ public class Data {
             System.out.println(packet.getAddress().getHostAddress());
             socket.send(packet);
         } catch (SocketTimeoutException e) {
-            System.out.println("Timeout on sending message to Server Manager:\r\n\t" + e);
+            System.out.println("Timeout on sending message to Server Manager:\r\n\t" +
+                    e);
             return false;
         } catch (IOException e) {
-            System.out.println("Error at sending the message to Server Manager:\r\n\t" + e);
+            System.out.println("Error at sending the message to Server Manager:\r\n\t" +
+                    e);
             return false;
         }
 
@@ -91,16 +124,16 @@ public class Data {
             packet = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
             socket.receive(packet);
         } catch (SocketTimeoutException e) {
-            System.out.println("Timeout on receiving message from Server Manager:\r\n\t" + e);
+            System.out.println("Timeout on receiving message from Server Manager:\r\n\t"
+                    + e);
             return false;
         } catch (IOException e) {
-            System.out.println("Error at receiving the message to Server Manager:\r\n\t" + e);
-            return false;
-        } finally {
             packet = new DatagramPacket(bout.toByteArray(), bout.size(), serverManager,
                     serverManagerPort);
+            System.out.println("Error at receiving the message to Server Manager:\r\n\t"
+                    + e);
+            return false;
         }
-
         try {
             bin = new ByteArrayInputStream(packet.getData());
             oin = new ObjectInputStream(bin);
@@ -115,6 +148,9 @@ public class Data {
             System.out.println("SMA " + serverAddress);
             System.out.println("SP " + serverPort);
             socketToServer = new Socket(serverAddress, serverPort);
+            request = new RequestServer(socketToServer);
+            requestFromServer = new GetRequestFromServer(this, socketToServer);
+            // requestFromServer.start();
             return true;
         } catch (ClassNotFoundException e) {
             System.out.println("Message error:\r\n\t" + e);
@@ -125,6 +161,7 @@ public class Data {
             System.out.println("Error on socket:\r\n\t" + e);
         }
         return false;
+
     }
 
     // TODO("registo e login funcoes booleanas que retornam para a maquina de
@@ -135,8 +172,9 @@ public class Data {
     }
 
     public boolean login(String username, String password) {
-        // TODO(QUERY SQL)
-        return true;
+        RequestServer request = new RequestServer(socketToServer);
+        return request.sendLogin(username, password);
+        // return requestFromServer.requestedLogin();
     }
 
     public boolean register(String username, String password, String fname, String lname) {

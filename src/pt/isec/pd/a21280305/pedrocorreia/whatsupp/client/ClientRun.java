@@ -20,45 +20,55 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.console.ConsoleUI;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.ClientUI;
 
-public class ClientRun extends Application {
+public class ClientRun /* extends Application */ {
 
-    @Override
-    public void start(Stage stage) throws Exception {
-        Parameters parameters = this.getParameters();
-        List<String> args = parameters.getUnnamed();
+    // @Override
+    // public void start(Stage stage) throws Exception {
+    // Parameters parameters = this.getParameters();
+    // List<String> args = parameters.getUnnamed();
 
-        if (args.size() < 2) {
-            System.out.println("Syntax error.\nYou must input the Server Manager IP Address and Port.\n"
-                    + "<ServerManagerIpAddress> <ServerManagerPort>");
-            System.exit(0);
-        } else {
-            Client client = new Client(args.get(0), Integer.parseInt(args.get(1)));
-            ClientObservable clientObservable = new ClientObservable(client);
-            ClientUI clientUI = new ClientUI(clientObservable);
+    // if (args.size() < 2) {
+    // System.out.println("Syntax error.\nYou must input the Server Manager IP
+    // Address and Port.\n"
+    // + "<ServerManagerIpAddress> <ServerManagerPort>");
+    // System.exit(0);
+    // } else {
+    // Client client = new Client(args.get(0), Integer.parseInt(args.get(1)));
+    // ClientObservable clientObservable = new ClientObservable(client);
+    // ClientUI clientUI = new ClientUI(clientObservable);
 
-            Scene scene = new Scene(clientUI, 600, 400);
-            stage.setScene(scene);
-            stage.setResizable(false);
-            stage.setTitle("Whatsupp");
-            stage.setOnCloseRequest(windowEvent -> Platform.exit());
-            stage.show();
-            // System.out.println(clientObservable.getAtualState());
-        }
+    // Scene scene = new Scene(clientUI, 600, 400);
+    // stage.setScene(scene);
+    // stage.setResizable(false);
+    // stage.setTitle("Whatsupp");
+    // stage.setOnCloseRequest(windowEvent -> Platform.exit());
+    // stage.show();
+    // // System.out.println(clientObservable.getAtualState());
+    // }
 
-        // VBox root = new VBox();
-        // Button b1 = new Button("teste");
-        // root.getChildren().addAll(b1);
-        // Scene scene = new Scene(root, 400, 400);
-        // stage.setScene(scene);
-        // stage.show();
+    // VBox root = new VBox();
+    // Button b1 = new Button("teste");
+    // root.getChildren().addAll(b1);
+    // Scene scene = new Scene(root, 400, 400);
+    // stage.setScene(scene);
+    // stage.show();
 
-    }
+    // }
 
     public static void main(String[] args) {
+        Client client = new Client(args[0], Integer.parseInt(args[1]));
+        ConsoleUI console = new ConsoleUI(client);
+        console.prints();
 
-        launch(args);
+        // ClientServerConnection csc = new ClientRequestLogin("pedro", "correia");
+        // System.out.println(csc.getClass().getSimpleName());
+
+        // launch(args);
         // Connect to GRDS
         // ByteArrayOutputStream bout;
         // ObjectOutputStream oout;

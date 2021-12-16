@@ -5,6 +5,7 @@ import java.net.*;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
 public class ConnectionClient extends Thread {
@@ -25,11 +26,18 @@ public class ConnectionClient extends Thread {
             oout = new ObjectOutputStream(clientSocket.getOutputStream());
             oin = new ObjectInputStream(clientSocket.getInputStream());
 
-            SharedMessage request = (SharedMessage) oin.readObject();
+            // SharedMessage request = (SharedMessage) oin.readObject();
+            ClientServerConnection request = (ClientServerConnection) oin.readObject();
 
-            System.out.println(request);
+            System.out.println(request.getUsername() + " " + request.getPassword());
 
-            oout.writeObject(new SharedMessage(Strings.CLIENT_SENT_MESSAGE, request.getMsg()));
+            if (request.getClass().getSimpleName().equals("ClientRequestLogin")) {
+                // TODO Make the query to DB...
+                // If success
+                oout.writeObject(new SharedMessage(Strings.CLIENT_SUCCESS_LOGIN, "Client logged in."));
+            }
+            // oout.writeObject(new SharedMessage(Strings.CLIENT_SUCCESS_LOGIN,
+            // request.getMsg()));
             oout.flush();
         } catch (IOException e) {
             System.out.println("Problem communicating with client: \r\n\t" + e);

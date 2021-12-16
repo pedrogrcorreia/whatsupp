@@ -13,8 +13,9 @@ public class Client {
 
     public Client(String serverManagerAddress, int serverManagerPort) {
         model = new Data(serverManagerAddress, serverManagerPort);
-        state = new EnterState(model);
-        // state = new ContactServerManagerState(model);
+        // state = new EnterState(model);
+        state = new ContactServerManagerState(model);
+        // state = new InitialState(model);
         // state.contactServerManager();
         // state = new LoginState(model);
     }
@@ -39,8 +40,8 @@ public class Client {
         setState(state.login(username, password));
     }
 
-    public void register(String username, String password, String fname, String lname) {
-        setState(state.register(username, password, fname, lname));
+    public void register(String username, String password, String confPassword, String fname, String lname) {
+        setState(state.register(username, password, confPassword, fname, lname));
     }
 
     public Situation getAtualState() {
