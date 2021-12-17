@@ -6,4 +6,10 @@ public interface IClientServerConnection {
 
     public String getPassword();
 
+    public String getConfPassword();
+
+    public String getFName();
+
+    public String getLName();
+
 }

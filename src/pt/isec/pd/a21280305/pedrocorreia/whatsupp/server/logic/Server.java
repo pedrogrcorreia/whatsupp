@@ -122,7 +122,7 @@ public class Server {
             while (true) {
                 nextClient = tcpSocket.accept();
                 clients.add(nextClient);
-                newClient = new ConnectionClient(nextClient);
+                newClient = new ConnectionClient(nextClient, this);
                 newClient.start();
             }
 
@@ -178,6 +178,10 @@ public class Server {
 
     public int getTcpPort() {
         return tcpSocket.getLocalPort();
+    }
+
+    public ServerSocket getTcpSocket() {
+        return tcpSocket;
     }
 
     // @Override

@@ -15,4 +15,19 @@ public abstract class ClientServerConnection implements IClientServerConnection,
     public String getPassword() {
         return null;
     }
+
+    @Override
+    public String getConfPassword() {
+        return null;
+    }
+
+    @Override
+    public String getFName() {
+        return null;
+    }
+
+    @Override
+    public String getLName() {
+        return null;
+    }
 }

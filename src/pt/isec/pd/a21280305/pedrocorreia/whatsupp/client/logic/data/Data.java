@@ -17,6 +17,9 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.GetRequestFromServer;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.RequestServer;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestRegister;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
 
 public class Data {
     private static final int MAX_SIZE = 4096;
@@ -148,7 +151,8 @@ public class Data {
             System.out.println("SMA " + serverAddress);
             System.out.println("SP " + serverPort);
             socketToServer = new Socket(serverAddress, serverPort);
-            request = new RequestServer(socketToServer);
+            oin = new ObjectInputStream(socketToServer.getInputStream());
+            oout = new ObjectOutputStream(socketToServer.getOutputStream());
             requestFromServer = new GetRequestFromServer(this, socketToServer);
             // requestFromServer.start();
             return true;
@@ -164,21 +168,18 @@ public class Data {
 
     }
 
-    // TODO("registo e login funcoes booleanas que retornam para a maquina de
-    // estados")
-
     public boolean getConnected() {
         return connected;
     }
 
     public boolean login(String username, String password) {
-        RequestServer request = new RequestServer(socketToServer);
+        RequestServer request = new RequestServer(socketToServer, oin, oout);
         return request.sendLogin(username, password);
-        // return requestFromServer.requestedLogin();
     }
 
-    public boolean register(String username, String password, String fname, String lname) {
-        // TODO(QUERY SQL)
-        return true;
+    public boolean register(String username, String password, String confPassword, String fname, String lname) {
+        RequestServer requestRegister = new RequestServer(socketToServer, oin, oout);
+        return requestRegister.sendRegister(username, password, confPassword, fname,
+                lname);
     }
 }

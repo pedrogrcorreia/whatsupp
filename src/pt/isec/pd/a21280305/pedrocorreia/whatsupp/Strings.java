@@ -3,7 +3,6 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.nio.charset.StandardCharsets;
 
 public enum Strings {
     SERVER_REGISTER_REQUEST("Request to register a server"),
@@ -15,7 +14,11 @@ public enum Strings {
     CLIENT_REQUEST_LOGIN("Client wants to login"),
     CLIENT_SUCCESS_LOGIN("Client logged in successful"),
     CLIENT_FAILED_LOGIN("Client failed to login"),
-    CLIENT_SENT_MESSAGE("Client sent a message");
+    USER_REGISTER_FAIL("Register failed"),
+    USER_REGISTER_SUCCESS("Register success"),
+    CLIENT_SENT_MESSAGE("Client sent a message"),
+    MESSAGE_SENT_SUCCESS("Message was sent successfully"),
+    MESSAGE_SENT_FAIL("Message couldn't be sent");
 
     private final String description;
 

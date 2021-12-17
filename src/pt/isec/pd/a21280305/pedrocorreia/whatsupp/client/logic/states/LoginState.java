@@ -11,12 +11,15 @@ public class LoginState extends StateAdapter {
     @Override
     public IState login(String username, String password) {
         boolean aux;
-        if (aux = getModel().login(username, password)) {
-            System.out.println(aux);
-            return new UserState(getModel());
-        } else {
-            return this;
-        }
+        // Debug
+        getModel().login(username, password);
+        return new LoginState(getModel());
+        // if (aux = getModel().login(username, password)) {
+        // System.out.println(aux);
+        // return new UserState(getModel());
+        // } else {
+        // return this;
+        // }
     }
 
     @Override
