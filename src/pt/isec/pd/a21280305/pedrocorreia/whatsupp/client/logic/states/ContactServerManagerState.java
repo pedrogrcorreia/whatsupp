@@ -12,6 +12,7 @@ public class ContactServerManagerState extends StateAdapter {
         super(model);
     }
 
+    @Override
     public IState contactServerManager() {
         if (getModel().contactServerManager()) {
             return new InitialState(getModel());

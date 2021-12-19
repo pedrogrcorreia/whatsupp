@@ -20,6 +20,14 @@ public class InitialState extends StateAdapter {
         }
     }
 
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            return new InitialState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
     @Override
     public Situation getAtualState() {
         return Situation.INITIAL_OPTION;

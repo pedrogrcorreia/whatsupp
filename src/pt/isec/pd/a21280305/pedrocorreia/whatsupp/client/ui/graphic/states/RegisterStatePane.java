@@ -8,6 +8,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 
 public class RegisterStatePane extends GridPane {
     private ClientObservable clientObservable;
@@ -68,7 +69,7 @@ public class RegisterStatePane extends GridPane {
     }
 
     private void update() {
-
+        setVisible(clientObservable.getAtualState() == Situation.REGISTER_USER);
     }
 
 }

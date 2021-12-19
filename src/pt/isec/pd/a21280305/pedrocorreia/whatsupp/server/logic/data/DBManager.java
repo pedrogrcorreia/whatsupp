@@ -19,8 +19,10 @@ public class DBManager {
         this.server = server;
         this.dbAddress = server.getDB();
         // DEBUG
-        String db = "jdbc:mysql://localhost:3306/whatsupp_db";
-        // String db = "jdbc:mysql://" + this.dbAddress;
+        // String db = "jdbc:mysql://localhost:3306/whatsupp_db";
+
+        String db = "jdbc:mysql://" + this.dbAddress;
+
         final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
         try {
             // Class.forName(Strings.JDBC_DRIVE.toString());
@@ -40,6 +42,7 @@ public class DBManager {
         }
     }
 
+    // Register user
     public SharedMessage registerUser(String username, String password, String confPassword, String fName,
             String lName) {
 
@@ -62,6 +65,9 @@ public class DBManager {
             } else {
                 return new SharedMessage(Strings.USER_REGISTER_SUCCESS, new String("User registered successfully."));
             }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Username already exists:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REGISTER_FAIL, new String("Username already exists."));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_REGISTER_FAIL, new String("Problem with SQL query."));
@@ -69,6 +75,7 @@ public class DBManager {
 
     }
 
+    // login user
     public SharedMessage loginUser(String username, String password) {
         String dbUsername;
         String dbPassword;

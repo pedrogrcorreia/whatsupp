@@ -29,7 +29,7 @@ public class ContactServerManagerPane extends BorderPane {
     private Button tryAgain;
     private VBox layout;
 
-    boolean debug = false;
+    boolean firstRun = true;
 
     public ContactServerManagerPane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -56,51 +56,57 @@ public class ContactServerManagerPane extends BorderPane {
         // }
         // }).start();
 
-        Task<Void> task = new Task<Void>() {
-            @Override
-            public Void call() {
-                // clientObservable.createConnection();
-                clientObservable.contactServerManager();
-                return null;
-            }
-        };
-        task.setOnRunning(taskRunning -> {
-            System.out.println(debug);
-            text.setText("Connecting to Server Manager...");
-            text.setVisible(true);
-        });
-        task.setOnFailed(taskFailed -> {
-            debug = true;
-            System.out.println(debug);
-            text.setText("Couldn't establish a connection...");
-            start.setText("Try Again");
-            Alert msgBox = new Alert(Alert.AlertType.ERROR);
-            msgBox.setHeaderText("ERROR");
-            msgBox.showAndWait();
-            update();
-            // clientObservable.initialStatus("update");
-        });
-        task.setOnSucceeded(taskSuccess -> {
-            clientObservable.update();
-        });
+        // Task<Void> task = new Task<Void>() {
+        // @Override
+        // public Void call() {
+        // // clientObservable.createConnection();
+        // clientObservable.contactServerManager();
+        // return null;
+        // }
+        // };
+        // task.setOnRunning(taskRunning -> {
+        // System.out.println(debug);
+        // text.setText("Connecting to Server Manager...");
+        // text.setVisible(true);
+        // });
+        // task.setOnFailed(taskFailed -> {
+        // debug = true;
+        // System.out.println(debug);
+        // text.setText("Couldn't establish a connection...");
+        // start.setText("Try Again");
+        // Alert msgBox = new Alert(Alert.AlertType.ERROR);
+        // msgBox.setHeaderText("ERROR");
+        // msgBox.showAndWait();
+        // update();
+        // // clientObservable.initialStatus("update");
+        // });
+        // task.setOnSucceeded(taskSuccess -> {
+        // clientObservable.update();
+        // });
+
+        // start.setOnAction(e -> {
+        // setCursor(Cursor.WAIT);
+        // start.setDisable(true);
+        // Thread th;
+        // th = new Thread(task);
+        // th.setDaemon(true);
+        // th.start();
+        // });
 
         start.setOnAction(e -> {
             setCursor(Cursor.WAIT);
-            start.setDisable(true);
-            Thread th;
-            th = new Thread(task);
-            th.setDaemon(true);
-            th.start();
+            clientObservable.contactServerManager();
         });
 
         layout = new VBox(10);
         layout.setAlignment(Pos.CENTER);
         layout.setSpacing(10);
         layout.getChildren().addAll(welcomeText, text, start);
+        // getChildren().addAll(layout);
         setCenter(layout);
-        if (debug) {
-            clientObservable.update();
-        }
+        // if (debug) {
+        // clientObservable.update();
+        // }
     }
 
     private void registerObserver() {
@@ -108,6 +114,14 @@ public class ContactServerManagerPane extends BorderPane {
     }
 
     private void update() {
+        if (!firstRun) {
+            start.setText("Try again");
+        }
+
+        if (firstRun) {
+            firstRun = false;
+        }
+
         setVisible(clientObservable.getAtualState() == Situation.CONTACT_SERVER_MANAGER);
         // Task task = new Task<Void>() {
         // @Override
@@ -119,5 +133,6 @@ public class ContactServerManagerPane extends BorderPane {
         // // task.setOnSucceeded(taskFinishEvent -> text.setText("Done!"));
         // new Thread(task).start();
         // clientObservable.contactServerManager();
+        // setVisible(false);
     }
 }

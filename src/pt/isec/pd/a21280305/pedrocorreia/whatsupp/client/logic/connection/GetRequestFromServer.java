@@ -32,13 +32,13 @@ public class GetRequestFromServer extends Thread {
         return messageSent;
     }
 
-    @Override
-    public void run() {
+    public String debug() {
         try {
             oin = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
-            System.out.println("Couldn't start thread to receive requests from Server:\r\n\t" + e);
-            return;
+            System.out.println("Couldn't start thread to receive requests from" +
+                    "Server:\r\n\t" + e);
+            return "ERRO";
         }
 
         try {
@@ -60,14 +60,52 @@ public class GetRequestFromServer extends Thread {
                     break;
                 default:
                     break;
-
             }
-            if (receivedMessage.getMsgType() == Strings.CLIENT_SUCCESS_LOGIN) {
-                isLogged = true;
-            }
-
         } catch (ClassNotFoundException | IOException e) {
             System.out.println("Error receiving the message:\r\n\t" + e);
+            return "ERROR";
         }
+        return "COCO";
+    }
+
+    @Override
+    public void run() {
+
+        // try {
+        // oin = new ObjectInputStream(socket.getInputStream());
+        // } catch (IOException e) {
+        // System.out.println("Couldn't start thread to receive requests from
+        // Server:\r\n\t" + e);
+        // return;
+        // }
+
+        // try {
+        // SharedMessage receivedMessage = (SharedMessage) oin.readObject();
+        // System.out.println(receivedMessage.getMsgType());
+        // switch (receivedMessage.getMsgType()) {
+        // case CLIENT_FAILED_LOGIN:
+        // isLogged = false;
+        // break;
+        // case CLIENT_REQUEST_LOGIN:
+        // break;
+        // case CLIENT_REQUEST_SERVER:
+        // break;
+        // case CLIENT_SENT_MESSAGE:
+        // messageSent = true;
+        // break;
+        // case CLIENT_SUCCESS_LOGIN:
+        // isLogged = true;
+        // break;
+        // default:
+        // break;
+
+        // }
+        // if (receivedMessage.getMsgType() == Strings.CLIENT_SUCCESS_LOGIN) {
+        // isLogged = true;
+        // }
+
+        // } catch (ClassNotFoundException | IOException e) {
+        // System.out.println("Error receiving the message:\r\n\t" + e);
+        // }
     }
 }

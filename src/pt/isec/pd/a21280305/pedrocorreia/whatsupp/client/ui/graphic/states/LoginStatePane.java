@@ -61,5 +61,6 @@ public class LoginStatePane extends GridPane {
 
     private void update() {
         setVisible(clientObservable.getAtualState() == Situation.LOGIN_USER);
+        // setVisible(false);
     }
 }

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -52,32 +53,6 @@ public class Data {
         this.serverManagerPort = serverManagerPort;
     }
 
-    public boolean createConnection() {
-
-        try {
-            System.out.println("create connection");
-
-            serverManager = InetAddress.getByName(serverManagerAddress);
-
-            socket = new DatagramSocket();
-            socket.setSoTimeout(3000);
-            bout = new ByteArrayOutputStream();
-            oout = new ObjectOutputStream(bout);
-
-            oout.writeUnshared(
-                    new SharedMessage(Strings.CLIENT_REQUEST_SERVER, "Client wants a connection" +
-                            "to a server."));
-
-            packet = new DatagramPacket(bout.toByteArray(), bout.size(), serverManager,
-                    serverManagerPort);
-            System.out.println("Packet: " + packet.getAddress().getHostAddress() + ":" + packet.getPort());
-            return true;
-        } catch (IOException e) {
-            System.out.println("Error creating socket and packet:\r\n\t" + e);
-            return false;
-        }
-    }
-
     public boolean contactServerManager() {
 
         try {
@@ -102,7 +77,7 @@ public class Data {
             // return true;
         } catch (IOException e) {
             System.out.println("Error creating socket and packet:\r\n\t" + e);
-            // return false;
+            return false;
         }
 
         try {
@@ -160,12 +135,15 @@ public class Data {
             System.out.println("Message error:\r\n\t" + e);
             return false;
         } catch (UnknownHostException e) {
-            System.out.println("Error on socket:\r\n\t" + e);
+            System.out.println("Couldn't connect to that host:\r\n\t" + e);
+            return false;
+        } catch (BindException e) {
+            System.out.println("No servers available:\r\n\t" + e);
+            return false;
         } catch (IOException e) {
             System.out.println("Error on socket:\r\n\t" + e);
+            return false;
         }
-        return false;
-
     }
 
     public boolean getConnected() {
@@ -181,5 +159,15 @@ public class Data {
         RequestServer requestRegister = new RequestServer(socketToServer, oin, oout);
         return requestRegister.sendRegister(username, password, confPassword, fname,
                 lname);
+    }
+
+    public String getNotification() {
+        SharedMessage debug;
+        try {
+            debug = (SharedMessage) oin.readObject();
+        } catch (ClassNotFoundException | IOException e) {
+            return "erro";
+        }
+        return debug.getMsg();
     }
 }

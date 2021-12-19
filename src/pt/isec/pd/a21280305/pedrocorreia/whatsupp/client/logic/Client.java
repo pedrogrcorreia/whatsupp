@@ -39,6 +39,10 @@ public class Client {
         setState(state.register(username, password, confPassword, fname, lname));
     }
 
+    public String getNotification() {
+        return model.getNotification();
+    }
+
     public Situation getAtualState() {
         return state.getAtualState();
     }

@@ -9,6 +9,29 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.UserState;
 
+class Notification extends Thread {
+    Client client;
+    ConsoleUI console;
+
+    public Notification(Client client, ConsoleUI console) {
+        this.client = client;
+        this.console = console;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            String aux = client.getNotification();
+            System.out.println(aux);
+            if (aux.equals("erro")) {
+                System.out.println("Trying another server");
+                client.contactServerManager();
+                console.prints();
+            }
+        }
+    }
+}
+
 public class ConsoleUI {
     Client client;
     static boolean firstRun = true;
@@ -56,6 +79,8 @@ public class ConsoleUI {
     }
 
     private void initialOptions() {
+        Notification n = new Notification(client, this);
+        n.start();
         int option = 0;
         System.out.println("\nConnected successfully!!!");
         System.out.println("1. Login\n2. Register\n3. Quit");
@@ -105,10 +130,17 @@ public class ConsoleUI {
     }
 
     private void userState() {
-        System.out.println("You successfull logged in.");
+        System.out.println("You successfully logged in.");
+        System.out.println("\nChoose the option you want: ");
+        System.out.println("1. Send a message.");
+        System.out.println("2. See friends list.");
+        System.out.println("3. Create a group.");
+        System.out.println("4. Ask user for friendship.");
+        System.out.println("5. Join a group.");
+        System.out.println("6. Change account settings.");
     }
 
-    public void prints() {
+    public synchronized void prints() {
         while (running) {
             Situation sit = client.getAtualState();
             switch (sit) {
