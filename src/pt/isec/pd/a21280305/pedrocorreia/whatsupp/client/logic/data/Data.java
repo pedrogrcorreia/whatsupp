@@ -12,6 +12,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
@@ -34,6 +36,8 @@ public class Data {
     protected int serverPort;
     protected InetAddress serverManager;
 
+    protected List<SharedMessage> notLog;
+
     DatagramSocket socket;
     DatagramPacket packet;
     ByteArrayOutputStream bout;
@@ -51,13 +55,12 @@ public class Data {
     public Data(String serverManagerAddress, int serverManagerPort) {
         this.serverManagerAddress = serverManagerAddress;
         this.serverManagerPort = serverManagerPort;
+        notLog = new ArrayList<>();
     }
 
     public boolean contactServerManager() {
 
         try {
-            System.out.println("create connection");
-
             serverManager = InetAddress.getByName(serverManagerAddress);
 
             socket = new DatagramSocket();
@@ -123,12 +126,16 @@ public class Data {
             String serverAddressReceived = sc.next();
             serverAddress = serverAddressReceived.replace("/", "");
             serverPort = Integer.parseInt(sc.next());
-            System.out.println("SMA " + serverAddress);
-            System.out.println("SP " + serverPort);
+            // System.out.println("SMA " + serverAddress);
+            // System.out.println("SP " + serverPort);
             socketToServer = new Socket(serverAddress, serverPort);
             oin = new ObjectInputStream(socketToServer.getInputStream());
             oout = new ObjectOutputStream(socketToServer.getOutputStream());
-            requestFromServer = new GetRequestFromServer(this, socketToServer);
+            synchronized (notLog) {
+                notLog.add(new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
+                        new String("Connected successfully to a server.")));
+                notLog.notifyAll();
+            }
             // requestFromServer.start();
             return true;
         } catch (ClassNotFoundException e) {
@@ -152,24 +159,24 @@ public class Data {
 
     public boolean login(String username, String password) {
         ClientRequestLogin crl = new ClientRequestLogin(username, password);
-        return crl.login(oin, oout);
-        // return request.sendLogin(username, password);
+        return crl.login(oin, oout, notLog);
     }
 
     public boolean register(String username, String password, String confPassword, String fname, String lname) {
         ClientRequestRegister crr = new ClientRequestRegister(username, password, confPassword, fname, lname);
-        return crr.register(oin, oout);
-        // return requestRegister.sendRegister(username, password, confPassword, fname,
-        // lname);
+        return crr.register(oin, oout, notLog);
     }
 
-    public String getNotification() {
-        SharedMessage debug;
-        try {
-            debug = (SharedMessage) oin.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            return "erro";
+    public SharedMessage getNotification() {
+        synchronized (notLog) {
+            while (notLog.isEmpty()) {
+                try {
+                    notLog.wait();
+                } catch (InterruptedException e) {
+                    System.out.println("Couldn't wait on this method:\r\n\t" + e);
+                }
+            }
+            return notLog.remove(0);
         }
-        return debug.getMsg();
     }
 }

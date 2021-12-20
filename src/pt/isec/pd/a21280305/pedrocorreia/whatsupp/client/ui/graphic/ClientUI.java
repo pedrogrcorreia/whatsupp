@@ -66,6 +66,7 @@ public class ClientUI extends BorderPane {
 
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("DEBUG", event -> update());
+        clientObservable.addPropertyChangeListener("notification", event -> updateNotification());
     }
 
     private void createView() {
@@ -86,6 +87,8 @@ public class ClientUI extends BorderPane {
         userStatePane = new UserStatePane(clientObservable);
 
         setRight(notificationPanel);
+        Thread t = new Thread(clientObservable);
+        t.start();
     }
 
     private void createMenus() {
@@ -125,21 +128,31 @@ public class ClientUI extends BorderPane {
     }
 
     private void addNotifications(String notification) {
-        notificationBox.add(new HBox(10));
-        notifications.add(new Label(notification));
+        // System.out.println("Notification: " + notification);
+        if (!notification.equals("")) {
+            notificationBox.add(new HBox(10));
+            notifications.add(new Label(notification));
 
-        notificationBox.get(notificationBox.size() - 1).getChildren().add(notifications.get(notifications.size() - 1));
-        notificationBox.get(notificationBox.size() - 1).setBorder(new Border(new BorderStroke(Color.BLUE,
-                BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
-        notificationBox.get(notificationBox.size() - 1)
-                .setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
-        notifications.get(notifications.size() - 1).setWrapText(true);
-        // notificationBox.get(notificationBox.size() - 1).setHgrow(txtN,
-        // Priority.NEVER);
-        notificationPanel.getChildren().add(notificationBox.get(notifications.size() - 1));
-        notificationPanelScroll.setPrefWidth(115);
-        notificationPanelScroll.setContent(notificationPanel);
-        setRight(notificationPanelScroll);
+            notificationBox.get(notificationBox.size() - 1).getChildren()
+                    .add(notifications.get(notifications.size() - 1));
+            notificationBox.get(notificationBox.size() - 1).setBorder(new Border(new BorderStroke(Color.BLUE,
+                    BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+            notificationBox.get(notificationBox.size() - 1)
+                    .setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
+            notifications.get(notifications.size() - 1).setWrapText(true);
+            // notificationBox.get(notificationBox.size() - 1).setHgrow(txtN,
+            // Priority.NEVER);
+            notificationPanel.getChildren().add(notificationBox.get(notifications.size() - 1));
+            notificationPanelScroll.setPrefWidth(115);
+            notificationPanelScroll.setContent(notificationPanel);
+            setRight(notificationPanelScroll);
+        } else {
+            System.out.println("Notificacao vazia");
+        }
+    }
+
+    private void updateNotification() {
+        addNotifications(clientObservable.getNotification());
     }
 
     private void switchLightMode() {
@@ -148,11 +161,11 @@ public class ClientUI extends BorderPane {
 
     private void update() {
         // addNotifications(clientObservable.getNotification());
-        addNotifications("Message received from Pedro.");
-        addNotifications("Pedro asked for friendship.");
-        addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
-        addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
-        addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
+        // addNotifications("Message received from Pedro.");
+        // addNotifications("Pedro asked for friendship.");
+        // addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
+        // addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
+        // addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
 
         System.out.println(clientObservable.getAtualState());
         switch (clientObservable.getAtualState()) {
@@ -171,8 +184,6 @@ public class ClientUI extends BorderPane {
             case INITIAL_OPTION -> {
                 // Start this thread just after creating the connection with the server
                 // manager...
-                Thread t = new Thread(clientObservable);
-                t.start();
                 setCenter(initialStatePane);
             }
             case REGISTER_USER -> {

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.UserState;
@@ -12,6 +14,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.UserState;
 class Notification extends Thread {
     Client client;
     ConsoleUI console;
+    SharedMessage notification;
+    String notificationMessage;
 
     public Notification(Client client, ConsoleUI console) {
         this.client = client;
@@ -21,13 +25,22 @@ class Notification extends Thread {
     @Override
     public void run() {
         while (true) {
-            String aux = client.getNotification();
-            System.out.println(aux);
-            if (aux.equals("erro")) {
-                System.out.println("Trying another server");
-                client.contactServerManager();
-                console.prints();
+            notification = client.getNotification();
+            // System.out.println(notification);
+            // if (notification.equals("erro")) {
+            // System.out.println("Trying another server");
+            // client.contactServerManager();
+            // Platform.runLater(() -> update());
+            // }
+            notificationMessage = notification.getMsg();
+            if (notification.getMsgType() == Strings.CLIENT_FAILED_LOGIN) {
+                notificationMessage += " (" + notification.getMsgType().name() + ")";
+                // Platform.runLater(() -> update());
             }
+
+            // Platform.runLater(() -> update());
+            notification = null;
+            notificationMessage = "";
         }
     }
 }

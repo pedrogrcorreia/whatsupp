@@ -3,6 +3,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.serve
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
@@ -27,18 +28,20 @@ public class ClientRequestLogin extends ClientServerConnection {
         return password;
     }
 
-    public boolean login(ObjectInputStream oin, ObjectOutputStream oout) {
+    public boolean login(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
         try {
             oout.writeObject(this);
             oout.flush();
 
             SharedMessage response = (SharedMessage) oin.readObject();
-
+            synchronized (list) {
+                list.add(response);
+                list.notifyAll();
+            }
             if (response.getMsgType() == Strings.CLIENT_SUCCESS_LOGIN) {
-                System.out.println(response.getMsg());
+                // System.out.println(response.getMsg());
                 return true;
             } else {
-                System.out.println(response.getMsg());
                 return false;
             }
 

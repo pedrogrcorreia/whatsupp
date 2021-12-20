@@ -1,5 +1,6 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
@@ -39,7 +40,7 @@ public class Client {
         setState(state.register(username, password, confPassword, fname, lname));
     }
 
-    public String getNotification() {
+    public SharedMessage getNotification() {
         return model.getNotification();
     }
 

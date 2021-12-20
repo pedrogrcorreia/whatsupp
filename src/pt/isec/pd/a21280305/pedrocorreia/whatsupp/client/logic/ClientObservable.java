@@ -7,12 +7,16 @@ import java.util.List;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 
 public class ClientObservable implements Runnable {
     private Client client;
     private final PropertyChangeSupport propertyChangeSupport;
 
-    private String notification = "";
+    private SharedMessage notification = null;
+    private String notificationMessage = "";
+    private Strings notificationCode;
     // private List<S notifications;
 
     public ClientObservable(Client client) {
@@ -50,7 +54,7 @@ public class ClientObservable implements Runnable {
     }
 
     public String getNotification() {
-        return notification;
+        return notificationMessage;
         // return client.getNotification();
     }
 
@@ -58,21 +62,44 @@ public class ClientObservable implements Runnable {
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);
     }
 
+    public void updateNotification() {
+        propertyChangeSupport.firePropertyChange("notification", null, null);
+    }
+
     public Situation getAtualState() {
         return client.getAtualState();
     }
 
     // Thread to update the notifications status bar
+    /**
+     * Thread to check for notifications
+     * Only call update when a notification is received.
+     * When something that change states is received, don't.
+     */
     @Override
     public void run() {
         while (true) {
+            // notification = null;
+            // notificationMessage = "";
             notification = client.getNotification();
-            System.out.println(notification);
-            if (notification.equals("erro")) {
-                System.out.println("Trying another server");
-                client.contactServerManager();
-                Platform.runLater(() -> update());
+            // System.out.println(notification);
+            // if (notification.equals("erro")) {
+            // System.out.println("Trying another server");
+            // client.contactServerManager();
+            // Platform.runLater(() -> update());
+            // }
+            StringBuilder notificationBuilder = new StringBuilder();
+            notificationBuilder.append(notification.getMsg());
+            if (notification.getMsgType() == Strings.CLIENT_FAILED_LOGIN) {
+                notificationBuilder.append(" (" + notification.getMsgType().name() + ")");
+                notificationMessage = notificationBuilder.toString();
+                // Platform.runLater(() -> update());
             }
+            notificationMessage = notificationBuilder.toString();
+            System.out.println(notificationMessage);
+            Platform.runLater(() -> updateNotification());
+            // notification = null;
+            // notificationMessage = "";
         }
     }
 
