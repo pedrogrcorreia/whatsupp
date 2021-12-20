@@ -151,14 +151,16 @@ public class Data {
     }
 
     public boolean login(String username, String password) {
-        RequestServer request = new RequestServer(socketToServer, oin, oout);
-        return request.sendLogin(username, password);
+        ClientRequestLogin crl = new ClientRequestLogin(username, password);
+        return crl.login(oin, oout);
+        // return request.sendLogin(username, password);
     }
 
     public boolean register(String username, String password, String confPassword, String fname, String lname) {
-        RequestServer requestRegister = new RequestServer(socketToServer, oin, oout);
-        return requestRegister.sendRegister(username, password, confPassword, fname,
-                lname);
+        ClientRequestRegister crr = new ClientRequestRegister(username, password, confPassword, fname, lname);
+        return crr.register(oin, oout);
+        // return requestRegister.sendRegister(username, password, confPassword, fname,
+        // lname);
     }
 
     public String getNotification() {
