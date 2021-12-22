@@ -45,17 +45,17 @@ public class GetRequestFromServer extends Thread {
             SharedMessage receivedMessage = (SharedMessage) oin.readObject();
             System.out.println(receivedMessage.getMsgType());
             switch (receivedMessage.getMsgType()) {
-                case CLIENT_FAILED_LOGIN:
+                case USER_FAILED_LOGIN:
                     isLogged = false;
                     break;
-                case CLIENT_REQUEST_LOGIN:
+                case USER_REQUEST_LOGIN:
                     break;
                 case CLIENT_REQUEST_SERVER:
                     break;
-                case CLIENT_SENT_MESSAGE:
+                case USER_SENT_MESSAGE:
                     messageSent = true;
                     break;
-                case CLIENT_SUCCESS_LOGIN:
+                case USER_SUCCESS_LOGIN:
                     isLogged = true;
                     break;
                 default:
@@ -83,24 +83,24 @@ public class GetRequestFromServer extends Thread {
         // SharedMessage receivedMessage = (SharedMessage) oin.readObject();
         // System.out.println(receivedMessage.getMsgType());
         // switch (receivedMessage.getMsgType()) {
-        // case CLIENT_FAILED_LOGIN:
+        // case USER_FAILED_LOGIN:
         // isLogged = false;
         // break;
-        // case CLIENT_REQUEST_LOGIN:
+        // case USER_REQUEST_LOGIN:
         // break;
-        // case CLIENT_REQUEST_SERVER:
+        // case USER_REQUEST_SERVER:
         // break;
-        // case CLIENT_SENT_MESSAGE:
+        // case USER_SENT_MESSAGE:
         // messageSent = true;
         // break;
-        // case CLIENT_SUCCESS_LOGIN:
+        // case USER_SUCCESS_LOGIN:
         // isLogged = true;
         // break;
         // default:
         // break;
 
         // }
-        // if (receivedMessage.getMsgType() == Strings.CLIENT_SUCCESS_LOGIN) {
+        // if (receivedMessage.getMsgType() == Strings USER_SUCCESS_LOGIN) {
         // isLogged = true;
         // }
 

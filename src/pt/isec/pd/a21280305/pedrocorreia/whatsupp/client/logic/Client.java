@@ -40,6 +40,10 @@ public class Client {
         setState(state.register(username, password, confPassword, fname, lname));
     }
 
+    public void userLoggedIn() {
+        setState(state.userState());
+    }
+
     public SharedMessage getNotification() {
         return model.getNotification();
     }

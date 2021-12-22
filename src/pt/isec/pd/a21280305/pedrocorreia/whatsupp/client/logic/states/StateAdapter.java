@@ -38,4 +38,9 @@ public abstract class StateAdapter implements IState {
     public IState register(String username, String password, String confPassword, String fname, String lname) {
         return this;
     }
+
+    @Override
+    public IState userState() {
+        return this;
+    }
 }

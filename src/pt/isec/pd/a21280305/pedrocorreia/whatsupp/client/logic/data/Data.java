@@ -9,6 +9,7 @@ import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -20,6 +21,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.GetRequestFromServer;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.RequestServer;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientListenServer;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestInfo;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestRegister;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
@@ -27,7 +30,7 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server
 public class Data {
     private static final int MAX_SIZE = 4096;
 
-    private User user;
+    private String username = "pedro";
 
     // To communicate with Server Manager
     protected String serverManagerAddress;
@@ -36,7 +39,7 @@ public class Data {
     protected int serverPort;
     protected InetAddress serverManager;
 
-    protected List<SharedMessage> notLog;
+    public List<SharedMessage> notLog;
 
     DatagramSocket socket;
     DatagramPacket packet;
@@ -52,11 +55,28 @@ public class Data {
     protected RequestServer request;
     protected GetRequestFromServer requestFromServer;
 
+    protected List<String> messages;
+    protected static List<String> friends;
+    protected List<String> groups;
+
+    Thread t;
+    Notifications not;
+
     public Data(String serverManagerAddress, int serverManagerPort) {
         this.serverManagerAddress = serverManagerAddress;
         this.serverManagerPort = serverManagerPort;
         notLog = new ArrayList<>();
+        friends = new ArrayList<>();
+        messages = new ArrayList<>();
+        groups = new ArrayList<>();
     }
+
+    public Data() {
+        notLog = new ArrayList<>();
+        friends = new ArrayList<>();
+        messages = new ArrayList<>();
+        groups = new ArrayList<>();
+    };
 
     public boolean contactServerManager() {
 
@@ -131,12 +151,16 @@ public class Data {
             socketToServer = new Socket(serverAddress, serverPort);
             oin = new ObjectInputStream(socketToServer.getInputStream());
             oout = new ObjectOutputStream(socketToServer.getOutputStream());
+
+            // notIn = new ObjectInputStream(socketToServer.getInputStream());
+            // notOut = new ObjectOutputStream(socketToServer.getOutputStream());
+            not = new Notifications(oin, oout, notLog);
             synchronized (notLog) {
                 notLog.add(new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
                         new String("Connected successfully to a server.")));
                 notLog.notifyAll();
             }
-            // requestFromServer.start();
+
             return true;
         } catch (ClassNotFoundException e) {
             System.out.println("Message error:\r\n\t" + e);
@@ -153,18 +177,26 @@ public class Data {
         }
     }
 
-    public boolean getConnected() {
-        return connected;
-    }
-
     public boolean login(String username, String password) {
         ClientRequestLogin crl = new ClientRequestLogin(username, password);
+        this.username = username;
         return crl.login(oin, oout, notLog);
     }
 
     public boolean register(String username, String password, String confPassword, String fname, String lname) {
         ClientRequestRegister crr = new ClientRequestRegister(username, password, confPassword, fname, lname);
         return crr.register(oin, oout, notLog);
+    }
+
+    public boolean retrieveInfo() {
+        t = new Thread(not);
+        t.start();
+        ClientRequestInfo cri = new ClientRequestInfo(username, friends, messages, groups);
+        return cri.retrieveInfoFromServer(oin, oout, notLog);
+    }
+
+    public List<String> getFriends() {
+        return friends;
     }
 
     public SharedMessage getNotification() {

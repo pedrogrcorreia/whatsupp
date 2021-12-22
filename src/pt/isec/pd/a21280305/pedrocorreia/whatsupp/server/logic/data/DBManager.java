@@ -2,11 +2,15 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestInfo;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBManager {
     private final Server server;
@@ -42,9 +46,12 @@ public class DBManager {
         }
     }
 
-    // Register user
-    public SharedMessage registerUser(String username, String password, String confPassword, String fName,
-            String lName) {
+    public SharedMessage registerUser(SharedMessage request) {
+        String username = request.getClientServerConnection().getUsername();
+        String password = request.getClientServerConnection().getPassword();
+        String confPassword = request.getClientServerConnection().getConfPassword();
+        String fName = request.getClientServerConnection().getFName();
+        String lName = request.getClientServerConnection().getLName();
 
         if (!password.equals(confPassword)) {
             return new SharedMessage(Strings.USER_REGISTER_FAIL, new String("Passwords don't match."));
@@ -72,11 +79,12 @@ public class DBManager {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_REGISTER_FAIL, new String("Problem with SQL query."));
         }
-
     }
 
     // login user
-    public SharedMessage loginUser(String username, String password) {
+    public SharedMessage loginUser(SharedMessage request) {
+        String username = request.getClientServerConnection().getUsername();
+        String password = request.getClientServerConnection().getPassword();
         String dbUsername;
         String dbPassword;
         String query = new String("SELECT COUNT(*) AS nusers, username, password FROM users where username = '" +
@@ -86,19 +94,41 @@ public class DBManager {
             rs.next();
             int nUsers = rs.getInt("nusers");
             if (nUsers > 1) {
-                return new SharedMessage(Strings.CLIENT_FAILED_LOGIN,
+                return new SharedMessage(Strings.USER_FAILED_LOGIN,
                         new String("Failed registering users. Multiple username."));
             } else if (nUsers == 1) {
                 if (rs.getString("username").equals(username) && rs.getString("password").equals(password)) {
-                    return new SharedMessage(Strings.CLIENT_SUCCESS_LOGIN, new String("Logged in successfully."));
+                    return new SharedMessage(Strings.USER_SUCCESS_LOGIN, new String("Logged in successfully."));
                 }
-                return new SharedMessage(Strings.CLIENT_FAILED_LOGIN, new String("Password doesn't match."));
+                return new SharedMessage(Strings.USER_FAILED_LOGIN, new String("Password doesn't match."));
             } else {
-                return new SharedMessage(Strings.CLIENT_FAILED_LOGIN, new String("Username doesn't exist."));
+                return new SharedMessage(Strings.USER_FAILED_LOGIN, new String("Username doesn't exist."));
             }
         } catch (SQLException e) {
             System.out.println("Error querying the database:\r\n\t" + e);
-            return new SharedMessage(Strings.CLIENT_FAILED_LOGIN, new String("Error at database."));
+            return new SharedMessage(Strings.USER_FAILED_LOGIN, new String("Error at database."));
+        }
+    }
+
+    public SharedMessage getFriends(SharedMessage request) {
+        String username = request.getClientServerConnection().getUsername();
+        List<String> friends = new ArrayList<>();
+        // StringBuilder friends = new StringBuilder();
+        String query = new String("select username from users where user_id in (" +
+                "select friend_user_id from users join friends_requests on (users.user_id = requester_user_id)" +
+                "and request_status = 1 where users.username = '" + username + "')");
+        try {
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                // friends.add(rs.getString("username"));
+                System.out.println(rs.getString("username"));
+                ((ClientRequestInfo) request.getClientServerConnection()).addFriend(rs.getString("username"));
+            }
+            return new SharedMessage(Strings.USER_REQUEST_INFO_SUCCESS, new String(friends.toString()),
+                    request.getClientServerConnection());
+        } catch (SQLException e) {
+            System.out.println("Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_INFO_FAIL, new String("Error on database."));
         }
     }
 

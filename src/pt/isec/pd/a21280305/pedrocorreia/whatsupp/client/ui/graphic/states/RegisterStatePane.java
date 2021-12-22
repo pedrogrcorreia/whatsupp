@@ -21,7 +21,7 @@ public class RegisterStatePane extends GridPane {
         this.clientObservable = clientObservable;
         createWindow();
         registerObserver();
-        // update();
+        update();
     }
 
     private void createWindow() {

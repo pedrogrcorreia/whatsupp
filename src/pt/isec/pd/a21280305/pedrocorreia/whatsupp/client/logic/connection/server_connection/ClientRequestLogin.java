@@ -8,6 +8,11 @@ import java.util.List;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 
+/**
+ * Class used to request the login
+ * from the user (client) that asks.
+ */
+
 public class ClientRequestLogin extends ClientServerConnection {
     private String username;
     private String password;
@@ -30,7 +35,9 @@ public class ClientRequestLogin extends ClientServerConnection {
 
     public boolean login(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
         try {
-            oout.writeObject(this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_LOGIN,
+                    Strings.USER_REQUEST_LOGIN.toString(), this);
+            oout.writeObject(msgToSend);
             oout.flush();
 
             SharedMessage response = (SharedMessage) oin.readObject();
@@ -38,7 +45,7 @@ public class ClientRequestLogin extends ClientServerConnection {
                 list.add(response);
                 list.notifyAll();
             }
-            if (response.getMsgType() == Strings.CLIENT_SUCCESS_LOGIN) {
+            if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
                 // System.out.println(response.getMsg());
                 return true;
             } else {
@@ -46,8 +53,18 @@ public class ClientRequestLogin extends ClientServerConnection {
             }
 
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Couldn't establish connection with this socket:\r\n\t" + e);
+            System.out.println("Couldn't establish connection with this socket:\r\n\t" +
+                    e);
             return false;
         }
+        // DEBUG
+        // try {
+        // oout.writeObject(this);
+        // oout.flush();
+        // return true;
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // return false;
+        // }
     }
 }

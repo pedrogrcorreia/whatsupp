@@ -36,7 +36,7 @@ public class RequestServer {
 
             SharedMessage response = (SharedMessage) oin.readObject();
 
-            if (response.getMsgType() == Strings.CLIENT_SUCCESS_LOGIN) {
+            if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
                 System.out.println(response.getMsg());
                 return true;
             } else {

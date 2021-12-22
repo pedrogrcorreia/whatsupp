@@ -14,5 +14,7 @@ public interface IState {
 
     IState register(String username, String password, String confPassword, String fname, String lname);
 
+    IState userState();
+
     Situation getAtualState();
 }

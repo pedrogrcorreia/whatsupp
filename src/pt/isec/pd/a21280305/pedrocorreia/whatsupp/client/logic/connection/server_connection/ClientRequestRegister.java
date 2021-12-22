@@ -8,6 +8,11 @@ import java.util.List;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 
+/**
+ * Class used to request the register
+ * from the user (client) that asks.
+ */
+
 public class ClientRequestRegister extends ClientServerConnection {
     private String username;
     private String password;
@@ -51,7 +56,9 @@ public class ClientRequestRegister extends ClientServerConnection {
 
     public boolean register(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
         try {
-            oout.writeObject(this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_REGISTER,
+                    Strings.USER_REQUEST_REGISTER.toString(), this);
+            oout.writeObject(msgToSend);
             oout.flush();
 
             SharedMessage response = (SharedMessage) oin.readObject();

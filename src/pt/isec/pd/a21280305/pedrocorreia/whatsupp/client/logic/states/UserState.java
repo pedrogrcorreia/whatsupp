@@ -9,6 +9,14 @@ public class UserState extends StateAdapter {
     }
 
     @Override
+    public IState userState() {
+        if (getModel().retrieveInfo()) {
+            return new UserState(getModel());
+        }
+        return new UserState(getModel());
+    }
+
+    @Override
     public Situation getAtualState() {
         return Situation.LOGGED_IN;
     }

@@ -33,7 +33,7 @@ class Notification extends Thread {
             // Platform.runLater(() -> update());
             // }
             notificationMessage = notification.getMsg();
-            if (notification.getMsgType() == Strings.CLIENT_FAILED_LOGIN) {
+            if (notification.getMsgType() == Strings.USER_FAILED_LOGIN) {
                 notificationMessage += " (" + notification.getMsgType().name() + ")";
                 // Platform.runLater(() -> update());
             }

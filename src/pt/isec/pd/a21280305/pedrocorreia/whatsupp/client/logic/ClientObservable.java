@@ -51,6 +51,11 @@ public class ClientObservable implements Runnable {
 
     public void register(String username, String password, String confPassword, String fname, String lname) {
         client.register(username, password, confPassword, fname, lname);
+        propertyChangeSupport.firePropertyChange("DEBUG", null, null);
+    }
+
+    public void userLoggedIn() {
+        client.userLoggedIn();
     }
 
     public String getNotification() {
@@ -90,7 +95,7 @@ public class ClientObservable implements Runnable {
             // }
             StringBuilder notificationBuilder = new StringBuilder();
             notificationBuilder.append(notification.getMsg());
-            if (notification.getMsgType() == Strings.CLIENT_FAILED_LOGIN) {
+            if (notification.getMsgType() == Strings.USER_FAILED_LOGIN) {
                 notificationBuilder.append(" (" + notification.getMsgType().name() + ")");
                 notificationMessage = notificationBuilder.toString();
                 // Platform.runLater(() -> update());

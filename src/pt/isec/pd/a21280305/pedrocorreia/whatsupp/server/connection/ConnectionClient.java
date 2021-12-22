@@ -39,18 +39,27 @@ public class ConnectionClient extends Thread {
                     System.out.println("Client still connected.");
                 }
 
-                ClientServerConnection request = (ClientServerConnection) oin.readObject();
+                // ClientServerConnection request = (ClientServerConnection) oin.readObject();
+                SharedMessage request = (SharedMessage) oin.readObject();
 
-                System.out.println(request.getUsername() + " " + request.getPassword());
+                // System.out.println(request.getUsername() + " " + request.getPassword());
 
-                switch (request.getClass().getSimpleName()) {
+                // switch (request.getClass().getSimpleName()) {
+                switch (request.getClientServerConnection().getClass().getSimpleName()) {
                     case "ClientRequestRegister":
-                        oout.writeObject(dbManager.registerUser(request.getUsername(),
-                                request.getPassword(),
-                                request.getConfPassword(), request.getFName(), request.getLName()));
+                        // oout.writeObject(dbManager.registerUser(request.getClientServerConnection().getUsername(),
+                        // request.getClientServerConnection().getPassword(),
+                        // request.getClientServerConnection().getConfPassword(),
+                        // request.getClientServerConnection().getFName(),
+                        // request.getClientServerConnection().getLName()));
+                        oout.writeObject(dbManager.registerUser(request));
                         break;
                     case "ClientRequestLogin":
-                        oout.writeObject(dbManager.loginUser(request.getUsername(), request.getPassword()));
+                        oout.writeObject(dbManager.loginUser(request));
+                        break;
+                    case "ClientRequestInfo":
+                        System.out.println("User requesting info");
+                        oout.writeObject(dbManager.getFriends(request));
                         break;
                 }
                 System.out.println("Wrote the response...");

@@ -29,8 +29,12 @@
 - [X] Notification until login
 - [ ] How to get a notification after login
     - [ ] A thread that receives the responses from server?
+    - [x] A class derived from Data that implements a runnable?
 - [ ] After login request for all info
-
+    - [X] Get friends
+    - [ ] Get messages
+    - [ ] Get groups
+    - [ ] Get files
 #### Shared
 - [X] Server Manager <-> Server Communication
 - [X] Server Manager <-> Client Communication

@@ -8,5 +8,15 @@ public class UserStatePane extends BorderPane {
 
     public UserStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
+        createView();
+        update();
+    }
+
+    public void createView() {
+        // clientObservable.userLoggedIn();
+    }
+
+    public void update() {
+        // clientObservable.userLoggedIn();
     }
 }
