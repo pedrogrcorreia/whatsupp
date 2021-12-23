@@ -7,6 +7,7 @@ import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
  * Class used to request the login
@@ -14,23 +15,9 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
  */
 
 public class ClientRequestLogin extends ClientServerConnection {
-    private String username;
-    private String password;
 
-    public ClientRequestLogin(String username, String password) {
-        super();
-        this.username = username;
-        this.password = password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
+    public ClientRequestLogin(User user) {
+        super(user);
     }
 
     public boolean login(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
@@ -46,7 +33,7 @@ public class ClientRequestLogin extends ClientServerConnection {
                 list.notifyAll();
             }
             if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
-                // System.out.println(response.getMsg());
+                user = response.getClientServerConnection().getUser();
                 return true;
             } else {
                 return false;
@@ -57,14 +44,5 @@ public class ClientRequestLogin extends ClientServerConnection {
                     e);
             return false;
         }
-        // DEBUG
-        // try {
-        // oout.writeObject(this);
-        // oout.flush();
-        // return true;
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // return false;
-        // }
     }
 }

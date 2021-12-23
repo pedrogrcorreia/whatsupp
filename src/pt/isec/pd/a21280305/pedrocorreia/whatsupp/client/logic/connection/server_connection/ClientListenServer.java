@@ -1,7 +1,6 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
@@ -9,13 +8,14 @@ import java.util.List;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 
 /**
- * Class that implements Runnable so it is able to keep
- * waiting for notifications from the server.
- * This thread is suspended every time an action that needs
- * to receive a response quickly is called.
+ * Class that represents a {@code Thread} running to
+ * listening to requests from the Server.
+ * This {@code Thread} only starts after an user is
+ * logged in, because all events before are listened
+ * from the methods called.
  */
 
-public class ClientListenServer extends Thread /* extends ClientServerConnection implements Runnable */ {
+public class ClientListenServer extends Thread {
 
     ObjectInputStream oin;
     ObjectOutputStream oout;

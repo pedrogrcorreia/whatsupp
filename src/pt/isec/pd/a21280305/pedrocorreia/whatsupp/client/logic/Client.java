@@ -2,6 +2,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.InitialState;
@@ -50,5 +51,9 @@ public class Client {
 
     public Situation getAtualState() {
         return state.getAtualState();
+    }
+
+    public User getUser() {
+        return model.getUser();
     }
 }

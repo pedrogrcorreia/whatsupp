@@ -3,6 +3,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
+/** Class to receive requests from the Server Manager */
 public class ConnectionServerManager extends Thread {
 
     private Server server = null;

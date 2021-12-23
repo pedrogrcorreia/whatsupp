@@ -39,6 +39,11 @@ public class ServerManager {
         // servers");
     }
 
+    /**
+     * Starts the Server Manager by creating a socket
+     * on the given listening port.
+     */
+
     public void startServerManager() {
         try {
             mySocket = new DatagramSocket(listeningPort);
@@ -49,7 +54,10 @@ public class ServerManager {
         }
     }
 
-    // Main thread running to receiver UDP requests
+    /**
+     * Main thread receiving UDP requests.
+     */
+
     private void runServerManager() {
         System.out.println("Ready to receive requests.");
         // activeServers.start();
@@ -84,9 +92,25 @@ public class ServerManager {
         }
     }
 
+    /**
+     * Register servers on the active servers list.
+     * 
+     * @param serverPacket - {@code DatagramPacket} of the Server to be registered.
+     * @return {@code true} if the Server is added. {@code false} if some error
+     *         ocurred.
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+
     private boolean registerServers(DatagramPacket serverPacket) throws IOException, ClassNotFoundException {
         return activeServers.registerServer(serverPacket);
     }
+
+    /**
+     * Receives requests through UDP.
+     * 
+     * @return {@code SharedMessage} that was received.
+     */
 
     private SharedMessage receiveRequests() {
         try {
@@ -109,6 +133,13 @@ public class ServerManager {
         return null;
     }
 
+    /**
+     * Sends a message to a server.
+     * 
+     * @param msgToSend    - {@code SharedMessage} to be sent.
+     * @param serverPacket {@code DatagramPacket} of the server
+     *                     that the message is addressed.
+     */
     private void answerToRequest(SharedMessage msgToSend, DatagramPacket serverPacket) {
         try {
             bout = new ByteArrayOutputStream();
@@ -122,6 +153,12 @@ public class ServerManager {
             System.out.println("Error writing object: \r\n\t" + e);
         }
     }
+
+    //
+    // TO-DO
+    // 1. Create method to send message to all servers
+    // 2. Create method to send message to all servers except one.
+    //
 
     // private void echoToServer(String msgToSend, DatagramPacket serverPacket)
     // throws IOException{

@@ -7,6 +7,7 @@ import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
  * Class used to request the register
@@ -14,44 +15,9 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
  */
 
 public class ClientRequestRegister extends ClientServerConnection {
-    private String username;
-    private String password;
-    private String confPassword;
-    private String fname;
-    private String lname;
 
-    public ClientRequestRegister(String username, String password, String confPassword, String fname, String lname) {
-        super();
-        this.username = username;
-        this.password = password;
-        this.confPassword = confPassword;
-        this.fname = fname;
-        this.lname = lname;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getConfPassword() {
-        return confPassword;
-    }
-
-    @Override
-    public String getFName() {
-        return fname;
-    }
-
-    @Override
-    public String getLName() {
-        return lname;
+    public ClientRequestRegister(User user) {
+        super(user);
     }
 
     public boolean register(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {

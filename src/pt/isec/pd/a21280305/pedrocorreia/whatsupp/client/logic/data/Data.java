@@ -9,7 +9,6 @@ import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -21,16 +20,15 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.GetRequestFromServer;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.RequestServer;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientListenServer;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestInfo;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestFriends;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestRegister;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
 
 public class Data {
     private static final int MAX_SIZE = 4096;
 
-    private String username = "pedro";
+    protected static User user = new User();
+    static boolean loggedIn = false;
 
     // To communicate with Server Manager
     protected String serverManagerAddress;
@@ -55,12 +53,14 @@ public class Data {
     protected RequestServer request;
     protected GetRequestFromServer requestFromServer;
 
-    protected List<String> messages;
-    protected static List<String> friends;
+    protected static List<String> messages;
+    protected static List<User> friends;
     protected List<String> groups;
 
     Thread t;
     Notifications not;
+
+    ClientRequestLogin crl;
 
     public Data(String serverManagerAddress, int serverManagerPort) {
         this.serverManagerAddress = serverManagerAddress;
@@ -155,6 +155,7 @@ public class Data {
             // notIn = new ObjectInputStream(socketToServer.getInputStream());
             // notOut = new ObjectOutputStream(socketToServer.getOutputStream());
             not = new Notifications(oin, oout, notLog);
+
             synchronized (notLog) {
                 notLog.add(new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
                         new String("Connected successfully to a server.")));
@@ -178,25 +179,43 @@ public class Data {
     }
 
     public boolean login(String username, String password) {
-        ClientRequestLogin crl = new ClientRequestLogin(username, password);
-        this.username = username;
+        crl = new ClientRequestLogin(new User(username, password));
+        user = crl.getUser();
         return crl.login(oin, oout, notLog);
     }
 
-    public boolean register(String username, String password, String confPassword, String fname, String lname) {
-        ClientRequestRegister crr = new ClientRequestRegister(username, password, confPassword, fname, lname);
+    public boolean register(String username, String password, String confPassword, String fName, String lName) {
+        ClientRequestRegister crr = new ClientRequestRegister(new User(username, password, confPassword, fName, lName));
         return crr.register(oin, oout, notLog);
     }
 
     public boolean retrieveInfo() {
         t = new Thread(not);
         t.start();
-        ClientRequestInfo cri = new ClientRequestInfo(username, friends, messages, groups);
-        return cri.retrieveInfoFromServer(oin, oout, notLog);
+        ClientRequestFriends crf = new ClientRequestFriends(user, friends);
+        crf.getFriends(oout);
+        user = crl.getUser();
+        for (User friend : friends) {
+            System.out.println("Friend :");
+            System.out.println(friend);
+        }
+        return true;
     }
 
-    public List<String> getFriends() {
+    public List<User> getFriends() {
         return friends;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public List<String> getMessages() {
+        return messages;
+    }
+
+    public List<String> groups() {
+        return groups;
     }
 
     public SharedMessage getNotification() {

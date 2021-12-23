@@ -4,7 +4,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionClient;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionServerManager;
-// import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.PingServerManager;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 import java.io.*;
@@ -12,6 +11,11 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Encapsulates an instance of a Server.
+ * 
+ * @author Pedro Correia
+ */
 public class Server {
 
     @Serial
@@ -27,40 +31,52 @@ public class Server {
     String dbAddress;
     // int serverPort;
 
-    // UDP communication
+    /** UDP communication */
     DatagramSocket mySocket;
     DatagramPacket myPacket;
 
-    // Object serialization
+    /** Object serialization. */
     ByteArrayInputStream bin;
     ObjectInputStream oin;
     ByteArrayOutputStream bout;
     ObjectOutputStream oout;
 
-    // Strings responseFromServerManager;
+    /** Messages sent and received */
     SharedMessage responseFromServerManager;
     SharedMessage receivedFromServerManager;
 
-    // Thread to ping server manager
+    /** Thread to keep server alive on Server Manager */
     Thread pingServerManager;
 
-    // Thread to receive requests from ServerManager
+    /** Thread to receive requests from ServerManager */
     Thread connectionServerManager;
 
-    // Data management
+    /** Object that makes the connection to the database */
     DBManager dbManager;
 
-    // Clients communication
+    /** TCP communication */
     ServerSocket tcpSocket;
     Socket nextClient;
 
-    // Thread for each client
+    /** Thread to communicate with each new client */
     ConnectionClient newClient;
 
-    // List of connected clients
+    /** ArrayList of all connected clients */
     List<Socket> clients;
 
-    // Constructor to use when GRDS address is provided
+    /**
+     * Constructor of Server to create an initial instance when the Server
+     * Manager address and port is provided.
+     * 
+     * @param dbAddress            - provided database address
+     * @param serverManagerAddress - provided Server Manager address
+     * @param serverManagerPort    - provided Server Manager UDP listening port
+     * @throws UnknownHostException on requesting the local host address
+     * @throws SocketException
+     * @see UnknownHostException
+     * @see SocketException
+     */
+
     public Server(String dbAddress, InetAddress serverManagerAddress, int serverManagerPort)
             throws UnknownHostException, SocketException {
         this.dbAddress = dbAddress;
@@ -70,14 +86,28 @@ public class Server {
         registerServer();
     }
 
-    // Constructor to use when no GRDS address is provided
-    public Server(int serverPort, String dbAddress) throws UnknownHostException, SocketException {
+    /**
+     * Constructor of Server to create an initial instance when the Server
+     * Manager address and port is NOT provided.
+     * 
+     * @param dbAddress - provided database address
+     * @throws UnknownHostException
+     * @throws SocketException
+     */
+
+    public Server(String dbAddress) throws UnknownHostException, SocketException {
         this.dbAddress = dbAddress;
         this.serverAddress = InetAddress.getLocalHost().getHostAddress();
         registerServer();
     }
 
-    // Constructor to create thread
+    /**
+     * Constructor of Server to create an instance of this object to
+     * run on a separate {@code Thread}.
+     * 
+     * @param serverPacket
+     */
+
     public Server(DatagramPacket serverPacket) {
         this.myPacket = serverPacket;
     }
@@ -85,6 +115,11 @@ public class Server {
     public void startServer() {
         registerServer();
     }
+
+    /**
+     * Sends a request to the Server Manager to register
+     * this as an active {@code Server} through UDP.
+     */
 
     private void registerServer() {
         try {
@@ -106,6 +141,13 @@ public class Server {
             System.out.println("Error creating tcp socket: \r\n\t" + e);
         }
     }
+
+    /**
+     * Starts the {@code Thread} to ping the Server Manager.
+     * Starts the {@code Thread} to receive requests from Server Manager.
+     * This method is running to accept clients on the main {@code Thread}
+     * of the Server that are redirected from the Server Manager.
+     */
 
     private void runServer() {
         try {
@@ -131,7 +173,12 @@ public class Server {
         }
     }
 
-    // public void sendToServerManager(Strings msgToSend){
+    /**
+     * Sends a message to ServerManager.
+     * 
+     * @param msgToSend a {@code SharedMessage} to be sent
+     */
+
     public void sendToServerManager(SharedMessage msgToSend) {
         try {
             // Serialize object to send
@@ -146,7 +193,12 @@ public class Server {
         }
     }
 
-    // public Strings receiveFromServerManager(){
+    /**
+     * Receives requests from Server Manager through UDP.
+     * 
+     * @return the {@code SharedMessage} that was received.
+     */
+
     public SharedMessage receiveFromServerManager() {
         try {
             // Clear packet
@@ -183,9 +235,4 @@ public class Server {
     public ServerSocket getTcpSocket() {
         return tcpSocket;
     }
-
-    // @Override
-    // public String toString() {
-    // return "\nServer at " + serverAddress + ":" + serverPort + " is connected.";
-    // }
 }

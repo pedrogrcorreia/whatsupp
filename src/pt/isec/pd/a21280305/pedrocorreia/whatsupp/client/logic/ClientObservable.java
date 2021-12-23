@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 public class ClientObservable implements Runnable {
     private Client client;
@@ -47,6 +48,7 @@ public class ClientObservable implements Runnable {
     public void login(String username, String password) {
         client.login(username, password);
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);
+        propertyChangeSupport.firePropertyChange("test", null, null);
     }
 
     public void register(String username, String password, String confPassword, String fname, String lname) {
@@ -58,6 +60,10 @@ public class ClientObservable implements Runnable {
         client.userLoggedIn();
     }
 
+    public User getUser() {
+        return client.getUser();
+    }
+
     public String getNotification() {
         return notificationMessage;
         // return client.getNotification();
@@ -65,6 +71,7 @@ public class ClientObservable implements Runnable {
 
     public void update() {
         propertyChangeSupport.firePropertyChange("DEBUG", null, null);
+        propertyChangeSupport.firePropertyChange("test", null, null);
     }
 
     public void updateNotification() {
@@ -95,6 +102,9 @@ public class ClientObservable implements Runnable {
             // }
             StringBuilder notificationBuilder = new StringBuilder();
             notificationBuilder.append(notification.getMsg());
+            // if (notification.getMsgType() != Strings.CLIENT_REQUEST_SERVER) {
+            // notificationBuilder.append(notification.getClientServerConnection().getUser());
+            // }
             if (notification.getMsgType() == Strings.USER_FAILED_LOGIN) {
                 notificationBuilder.append(" (" + notification.getMsgType().name() + ")");
                 notificationMessage = notificationBuilder.toString();

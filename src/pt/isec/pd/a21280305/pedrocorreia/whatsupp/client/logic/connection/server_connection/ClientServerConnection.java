@@ -1,6 +1,9 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection;
 
+import java.io.Serial;
 import java.io.Serializable;
+
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
  * Abstract class that is the adapter of an
@@ -10,31 +13,45 @@ import java.io.Serializable;
  */
 
 public abstract class ClientServerConnection implements IClientServerConnection, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    protected User user;
+
     public ClientServerConnection() {
+    }
+
+    public ClientServerConnection(User user) {
+        this.user = user;
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return user.getUsername();
     }
 
     @Override
     public String getPassword() {
-        return null;
+        return user.getPassword();
     }
 
     @Override
     public String getConfPassword() {
-        return null;
+        return user.getConfPassword();
     }
 
     @Override
     public String getFName() {
-        return null;
+        return user.getFName();
     }
 
     @Override
     public String getLName() {
-        return null;
+        return user.getLName();
+    }
+
+    @Override
+    public User getUser() {
+        return user;
     }
 }

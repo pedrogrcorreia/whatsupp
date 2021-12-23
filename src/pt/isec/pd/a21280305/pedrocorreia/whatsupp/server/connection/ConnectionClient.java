@@ -4,10 +4,10 @@ import java.io.*;
 import java.net.*;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
+
+/** This class represents each client connected. */
 
 public class ConnectionClient extends Thread {
     private Socket clientSocket;
@@ -57,8 +57,16 @@ public class ConnectionClient extends Thread {
                     case "ClientRequestLogin":
                         oout.writeObject(dbManager.loginUser(request));
                         break;
-                    case "ClientRequestInfo":
-                        System.out.println("User requesting info");
+                    // case "ClientRequestInfo":
+                    // System.out.println("User requesting info");
+                    // oout.writeObject(dbManager.getFriends(request));
+                    // break;
+                    case "ClientRequestUser":
+                        System.out.println("User info");
+                        oout.writeObject(dbManager.getUser(request));
+                        break;
+                    case "ClientRequestFriends":
+                        System.out.println("User friends");
                         oout.writeObject(dbManager.getFriends(request));
                         break;
                 }

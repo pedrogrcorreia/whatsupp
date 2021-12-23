@@ -15,11 +15,11 @@ public class LoginState extends StateAdapter {
         // getModel().login(username, password);
         // return new LoginState(getModel());
         if (getModel().login(username, password)) {
-            getModel().retrieveInfo();
             return new UserState(getModel());
         } else {
-            return this;
+            return new LoginState(getModel());
         }
+
     }
 
     @Override

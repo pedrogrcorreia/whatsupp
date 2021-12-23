@@ -12,6 +12,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
  * Class used to request all info
  * from the user (client) such as friends,
  * messages and groups.
+ * 
+ * @deprecated
  */
 
 public class ClientRequestInfo extends ClientServerConnection {
