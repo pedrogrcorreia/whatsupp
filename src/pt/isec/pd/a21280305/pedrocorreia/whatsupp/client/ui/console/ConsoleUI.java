@@ -1,15 +1,12 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.console;
 
 import java.io.Console;
-import java.io.IOException;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.UserState;
 
 class Notification extends Thread {
     Client client;

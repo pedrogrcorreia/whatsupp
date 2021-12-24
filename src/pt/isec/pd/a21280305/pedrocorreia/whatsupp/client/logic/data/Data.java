@@ -18,8 +18,6 @@ import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.GetRequestFromServer;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.RequestServer;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestFriends;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestRegister;
@@ -50,8 +48,6 @@ public class Data {
 
     // To communicate with Server
     protected Socket socketToServer;
-    protected RequestServer request;
-    protected GetRequestFromServer requestFromServer;
 
     protected static List<String> messages;
     protected static List<User> friends;

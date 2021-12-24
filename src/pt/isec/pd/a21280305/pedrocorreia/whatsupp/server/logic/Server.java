@@ -137,8 +137,6 @@ public class Server {
             }
         } catch (SocketException e) {
             System.out.println("Error connecting the socket:\r\n\t" + e);
-        } catch (IOException e) {
-            System.out.println("Error creating tcp socket: \r\n\t" + e);
         }
     }
 

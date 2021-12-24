@@ -10,9 +10,7 @@ public class RegisterState extends StateAdapter {
 
     @Override
     public IState register(String username, String password, String confPassword, String fname, String lname) {
-        boolean aux;
         if (getModel().register(username, password, confPassword, fname, lname)) {
-            // System.out.println(aux);
             return new InitialState(getModel());
         } else {
             return new RegisterState(getModel());

@@ -5,9 +5,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class ServerRun {
 

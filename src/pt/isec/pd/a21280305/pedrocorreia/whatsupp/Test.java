@@ -1,9 +1,6 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
 
 public class Test {
 

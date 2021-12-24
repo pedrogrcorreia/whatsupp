@@ -1,20 +1,11 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import javafx.application.Platform;
-import javafx.concurrent.ScheduledService;
-import javafx.concurrent.Task;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 

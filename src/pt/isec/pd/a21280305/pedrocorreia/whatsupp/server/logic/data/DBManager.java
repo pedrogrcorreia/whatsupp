@@ -12,8 +12,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mysql.cj.protocol.Message;
-
 public class DBManager {
     private String dbAddress;
     Connection con;

@@ -1,28 +1,13 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.List;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.console.ConsoleUI;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.ClientUI;
 
 public class ClientRun extends Application {

@@ -2,11 +2,8 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.List;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
@@ -17,8 +14,6 @@ public class ClientObservable implements Runnable {
 
     private SharedMessage notification = null;
     private String notificationMessage = "";
-    private Strings notificationCode;
-    // private List<S notifications;
 
     public ClientObservable(Client client) {
         this.client = client;

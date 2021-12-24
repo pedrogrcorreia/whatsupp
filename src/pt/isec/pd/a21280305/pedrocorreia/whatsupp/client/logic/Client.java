@@ -5,8 +5,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.InitialState;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.LoginState;
 
 public class Client {
     private Data model;

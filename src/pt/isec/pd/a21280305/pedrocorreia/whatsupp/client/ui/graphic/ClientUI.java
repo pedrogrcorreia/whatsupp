@@ -3,11 +3,8 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -17,7 +14,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states.*;
 
