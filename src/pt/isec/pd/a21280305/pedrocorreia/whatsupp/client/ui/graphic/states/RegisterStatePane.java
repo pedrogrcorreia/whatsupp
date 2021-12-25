@@ -65,7 +65,7 @@ public class RegisterStatePane extends GridPane {
     }
 
     private void registerObserver() {
-        clientObservable.addPropertyChangeListener("DEBUG", e -> update());
+        clientObservable.addPropertyChangeListener("updateView", e -> update());
     }
 
     private void update() {

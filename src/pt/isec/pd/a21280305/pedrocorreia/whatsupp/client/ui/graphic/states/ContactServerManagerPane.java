@@ -30,59 +30,12 @@ public class ContactServerManagerPane extends BorderPane {
     }
 
     private void createWindow() {
-        // System.out.println(debug++);
         welcomeText = new Label("Welcome to Whatsupp... bla bla bla");
         start = new Button("Connect");
         text = new Label("Connecting to Server Manager...");
         tryAgain = new Button("Try again.");
         tryAgain.setVisible(false);
         text.setVisible(false);
-
-        // new Thread(new Runnable() {
-        // @Override
-        // public void run() {
-        // Platform.runLater(() -> {
-        // start.setOnAction(e -> clientObservable.contactServerManager());
-        // });
-        // }
-        // }).start();
-
-        // Task<Void> task = new Task<Void>() {
-        // @Override
-        // public Void call() {
-        // // clientObservable.createConnection();
-        // clientObservable.contactServerManager();
-        // return null;
-        // }
-        // };
-        // task.setOnRunning(taskRunning -> {
-        // System.out.println(debug);
-        // text.setText("Connecting to Server Manager...");
-        // text.setVisible(true);
-        // });
-        // task.setOnFailed(taskFailed -> {
-        // debug = true;
-        // System.out.println(debug);
-        // text.setText("Couldn't establish a connection...");
-        // start.setText("Try Again");
-        // Alert msgBox = new Alert(Alert.AlertType.ERROR);
-        // msgBox.setHeaderText("ERROR");
-        // msgBox.showAndWait();
-        // update();
-        // // clientObservable.initialStatus("update");
-        // });
-        // task.setOnSucceeded(taskSuccess -> {
-        // clientObservable.update();
-        // });
-
-        // start.setOnAction(e -> {
-        // setCursor(Cursor.WAIT);
-        // start.setDisable(true);
-        // Thread th;
-        // th = new Thread(task);
-        // th.setDaemon(true);
-        // th.start();
-        // });
 
         start.setOnAction(e -> {
             setCursor(Cursor.WAIT);
@@ -93,15 +46,11 @@ public class ContactServerManagerPane extends BorderPane {
         layout.setAlignment(Pos.CENTER);
         layout.setSpacing(10);
         layout.getChildren().addAll(welcomeText, text, start);
-        // getChildren().addAll(layout);
         setCenter(layout);
-        // if (debug) {
-        // clientObservable.update();
-        // }
     }
 
     private void registerObserver() {
-        clientObservable.addPropertyChangeListener("DEBUG", e -> update());
+        clientObservable.addPropertyChangeListener("updateView", e -> update());
     }
 
     private void update() {
@@ -114,16 +63,5 @@ public class ContactServerManagerPane extends BorderPane {
         }
 
         setVisible(clientObservable.getAtualState() == Situation.CONTACT_SERVER_MANAGER);
-        // Task task = new Task<Void>() {
-        // @Override
-        // public Void call() {
-        // clientObservable.contactServerManager();
-        // return null;
-        // }
-        // };
-        // // task.setOnSucceeded(taskFinishEvent -> text.setText("Done!"));
-        // new Thread(task).start();
-        // clientObservable.contactServerManager();
-        // setVisible(false);
     }
 }

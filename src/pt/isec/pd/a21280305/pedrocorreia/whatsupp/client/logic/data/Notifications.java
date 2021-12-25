@@ -7,6 +7,7 @@ import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestFriends;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestMessages;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestUser;
 
 public class Notifications extends Data implements Runnable {
@@ -42,6 +43,27 @@ public class Notifications extends Data implements Runnable {
                     }
                     case USER_REQUEST_FRIENDS_SUCCESS -> {
                         Data.friends = ((ClientRequestFriends) response.getClientServerConnection()).getFriends();
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_FRIENDS_FAIL -> {
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_USER_SUCCESS -> {
+                        Data.searched = ((ClientRequestUser) response.getClientServerConnection()).getUser();
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_USER_FAIL -> {
+                        notifyList(response);
+                    }
+                    case USER_SEND_FRIEND_REQUEST_SUCCESS -> {
+                        notifyList(response);
+                    }
+                    case USER_SEND_FRIEND_REQUEST_FAIL -> {
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_MESSAGES_SUCCESS -> {
+                        Data.messages = ((ClientRequestMessages) response.getClientServerConnection()).getMessages();
+                        notifyList(response);
                     }
                     default -> {
                     }

@@ -69,6 +69,14 @@ public class ConnectionClient extends Thread {
                         System.out.println("User friends");
                         oout.writeObject(dbManager.getFriends(request));
                         break;
+                    case "UserRequestFriend":
+                        System.out.println("User requesting a friend");
+                        oout.writeObject(dbManager.addFriend(request));
+                        break;
+                    case "ClientRequestMessages":
+                        System.out.println("User requesting messages");
+                        oout.writeObject(dbManager.getMessages(request));
+                        break;
                 }
                 System.out.println("Wrote the response...");
                 oout.flush();

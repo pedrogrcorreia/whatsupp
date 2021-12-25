@@ -38,7 +38,7 @@ public class InitialStatePane extends BorderPane {
     }
 
     private void registerObserver() {
-        clientObservable.addPropertyChangeListener("DEBUG", e -> update());
+        clientObservable.addPropertyChangeListener("updateView", e -> update());
     }
 
     private void update() {

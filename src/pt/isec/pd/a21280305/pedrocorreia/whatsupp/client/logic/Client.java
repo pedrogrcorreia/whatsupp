@@ -39,8 +39,36 @@ public class Client {
         setState(state.register(username, password, confPassword, fname, lname));
     }
 
+    public void searchUsers() {
+        setState(state.searchUsers());
+    }
+
+    public void seeFriends() {
+        setState(state.seeFriends());
+    }
+
+    public void seeGroups() {
+        setState(state.seeGroups());
+    }
+
+    public void searchUser(String username) {
+        setState(state.searchUser(username));
+    }
+
+    public void seeMessages(User user) {
+        setState(state.seeMessages(user));
+    }
+
+    public void addFriend(int userID) {
+        model.addFriend(userID);
+    }
+
     public void userLoggedIn() {
         setState(state.userState());
+    }
+
+    public void back() {
+        setState(state.back());
     }
 
     public SharedMessage getNotification() {

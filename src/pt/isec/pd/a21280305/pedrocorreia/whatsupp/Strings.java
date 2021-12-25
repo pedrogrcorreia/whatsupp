@@ -44,6 +44,12 @@ public enum Strings {
     USER_REQUEST_OWN_INFO_SUCCESS("Retrieved an User object"),
     USER_REQUEST_OWN_INFO_FAIL("Couldn't retrive the User"),
 
+    /** Other users info */
+
+    USER_REQUEST_USER("Get another user info"),
+    USER_REQUEST_USER_SUCCESS("Retrieved an User object"),
+    USER_REQUEST_USER_FAIL("Couldn't retreive the User"),
+
     /**
      * All info
      * 
@@ -57,6 +63,9 @@ public enum Strings {
     USER_REQUEST_FRIENDS("Get friends"),
     USER_REQUEST_FRIENDS_SUCCESS("User got the friends list"),
     USER_REQUEST_FRIENDS_FAIL("Couldn't retrieve the friends list"),
+    USER_SEND_FRIEND_REQUEST("Friend request"),
+    USER_SEND_FRIEND_REQUEST_SUCCESS("Success"),
+    USER_SEND_FRIEND_REQUEST_FAIL("Failed"),
 
     /** Messages */
     USER_REQUEST_MESSAGES("Get messages"),

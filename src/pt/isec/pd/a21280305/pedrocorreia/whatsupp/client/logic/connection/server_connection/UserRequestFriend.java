@@ -7,21 +7,22 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
-/**
- * Class used to request the user info
- * from the user (client) that asks.
- */
+public class UserRequestFriend extends ClientServerConnection {
 
-public class ClientRequestUser extends ClientServerConnection {
+    User userToAdd;
 
-    public ClientRequestUser(User user) {
+    public UserRequestFriend(User user, User userToAdd) {
         super(user);
-        // this.user = user;
+        this.userToAdd = userToAdd;
     }
 
-    public boolean getUser(ObjectOutputStream oout) {
+    public User getUserToAdd() {
+        return userToAdd;
+    }
+
+    public boolean addFriend(ObjectOutputStream oout) {
         try {
-            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_OWN_INFO, this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST, this);
 
             oout.writeObject(msgToSend);
             oout.flush();

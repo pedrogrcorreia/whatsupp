@@ -4,26 +4,17 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
-public class UserState extends StateAdapter {
-    public UserState(Data model) {
-        super(model);
-        // model.retrieveInfo();
-    }
+public class SeeFriendsState extends StateAdapter {
 
-    @Override
-    public IState searchUsers() {
-        return new SearchUsersState(getModel());
+    public SeeFriendsState(Data model) {
+        super(model);
     }
 
     @Override
     public IState seeFriends() {
+        System.out.println("here");
         getModel().getFriends();
         return new SeeFriendsState(getModel());
-    }
-
-    @Override
-    public IState seeGroups() {
-        return new SeeGroupsState(getModel());
     }
 
     @Override
@@ -33,15 +24,8 @@ public class UserState extends StateAdapter {
     }
 
     @Override
-    public IState userState() {
-        if (getModel().retrieveInfo()) {
-            return new UserState(getModel());
-        }
-        return new UserState(getModel());
+    public Situation getAtualState() {
+        return Situation.SEE_FRIENDS;
     }
 
-    @Override
-    public Situation getAtualState() {
-        return Situation.LOGGED_IN;
-    }
 }

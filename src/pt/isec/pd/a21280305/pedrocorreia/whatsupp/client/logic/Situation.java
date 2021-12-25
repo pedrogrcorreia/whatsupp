@@ -6,7 +6,11 @@ public enum Situation {
     LOGIN_USER("Login user."),
     LOGGED_IN("User logged in."),
     ENTER_STATE("Client opened app."),
-    CONTACT_SERVER_MANAGER("Contacting Server Manager.");
+    CONTACT_SERVER_MANAGER("Contacting Server Manager."),
+    SEARCH_USERS("Search user by username."),
+    SEE_FRIENDS("See users friends."),
+    SEE_GROUPS("See users groups."),
+    MESSAGE("Messages state");
 
     private final String description;
 

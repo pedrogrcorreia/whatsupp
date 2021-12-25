@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import com.mysql.cj.protocol.Message;
-
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
@@ -17,7 +16,9 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 public class ClientRequestMessages extends ClientServerConnection {
     private List<Message> messages;
-    private int userID;
+    private User friend;
+    private int userID = 0;
+    private int groupID = 0;
 
     public ClientRequestMessages(User user, List<Message> messages) {
         super(user);
@@ -37,9 +38,23 @@ public class ClientRequestMessages extends ClientServerConnection {
         }
     }
 
-    public boolean getMessagesFromUser(ObjectOutputStream oout, int userID) {
-        this.userID = userID;
+    public boolean getMessagesFromUser(ObjectOutputStream oout, User userf) {
+        this.friend = userf;
 
+        try {
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_MESSAGES, this);
+
+            oout.writeObject(msgToSend);
+            oout.flush();
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error receiving the message:\r\n\t" + e);
+            return false;
+        }
+    }
+
+    public boolean getMessagesFromGroup(ObjectOutputStream oout, int groupID) {
+        this.groupID = groupID;
         try {
             SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_MESSAGES, this);
 
@@ -58,5 +73,13 @@ public class ClientRequestMessages extends ClientServerConnection {
 
     public int getUserID() {
         return userID;
+    }
+
+    public int getGroupID() {
+        return groupID;
+    }
+
+    public User friend() {
+        return friend;
     }
 }

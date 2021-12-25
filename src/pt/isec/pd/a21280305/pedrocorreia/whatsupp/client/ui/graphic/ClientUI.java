@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states.*;
 
 public class ClientUI extends BorderPane {
@@ -34,7 +35,7 @@ public class ClientUI extends BorderPane {
 
     // Menu
     private MenuItem exit;
-    private MenuItem darkMode;
+    private MenuItem back;
     private MenuItem update;
 
     // Layout
@@ -45,6 +46,9 @@ public class ClientUI extends BorderPane {
     LoginStatePane loginStatePane;
     RegisterStatePane registerStatePane;
     UserStatePane userStatePane;
+    SearchUsersPane searchUsersPane;
+    SeeFriendsStatePane seeFriendsStatePane;
+    MessagesStatePane messagesStatePane;
 
     private Label txtN;
     private List<Label> notifications;
@@ -61,7 +65,7 @@ public class ClientUI extends BorderPane {
     }
 
     private void registerObserver() {
-        clientObservable.addPropertyChangeListener("DEBUG", event -> update());
+        clientObservable.addPropertyChangeListener("updateView", event -> update());
         clientObservable.addPropertyChangeListener("notification", event -> updateNotification());
     }
 
@@ -81,6 +85,9 @@ public class ClientUI extends BorderPane {
         loginStatePane = new LoginStatePane(clientObservable);
         registerStatePane = new RegisterStatePane(clientObservable);
         userStatePane = new UserStatePane(clientObservable);
+        searchUsersPane = new SearchUsersPane(clientObservable);
+        seeFriendsStatePane = new SeeFriendsStatePane(clientObservable);
+        messagesStatePane = new MessagesStatePane(clientObservable);
 
         setRight(notificationPanel);
         Thread t = new Thread(clientObservable);
@@ -94,11 +101,11 @@ public class ClientUI extends BorderPane {
         Menu file = new Menu("_File");
 
         exit = new MenuItem("Exit");
-        darkMode = new MenuItem("Dark Mode");
+        back = new MenuItem("Start");
         update = new MenuItem("Update");
         // MenuItem exit = new MenuItem("Exit");
 
-        file.getItems().addAll(darkMode, exit, update);
+        file.getItems().addAll(back, exit, update);
 
         // menu.setOnAction(e -> clientObservable.close());
         exit.setOnAction((ActionEvent e) -> {
@@ -106,14 +113,8 @@ public class ClientUI extends BorderPane {
             fireEvent(new WindowEvent(janela2, WindowEvent.WINDOW_CLOSE_REQUEST));
         });
 
-        darkMode.setOnAction(e -> {
-            switchLightMode();
-            // Change menu item
-            if (darkMode.getText().equals("Dark Mode")) {
-                darkMode.setText("Light Mode");
-            } else {
-                darkMode.setText("Dark Mode");
-            }
+        back.setOnAction(e -> {
+            clientObservable.back();
         });
 
         // DEBUG
@@ -124,7 +125,6 @@ public class ClientUI extends BorderPane {
     }
 
     private void addNotifications(String notification) {
-        // System.out.println("Notification: " + notification);
         if (!notification.equals("")) {
             notificationBox.add(new HBox(10));
             notifications.add(new Label(notification));
@@ -136,8 +136,6 @@ public class ClientUI extends BorderPane {
             notificationBox.get(notificationBox.size() - 1)
                     .setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
             notifications.get(notifications.size() - 1).setWrapText(true);
-            // notificationBox.get(notificationBox.size() - 1).setHgrow(txtN,
-            // Priority.NEVER);
             notificationPanel.getChildren().add(notificationBox.get(notifications.size() - 1));
             notificationPanelScroll.setPrefWidth(115);
             notificationPanelScroll.setContent(notificationPanel);
@@ -151,50 +149,20 @@ public class ClientUI extends BorderPane {
         addNotifications(clientObservable.getNotification());
     }
 
-    private void switchLightMode() {
-
-    }
-
     private void update() {
-        // addNotifications(clientObservable.getNotification());
-        // addNotifications("Message received from Pedro.");
-        // addNotifications("Pedro asked for friendship.");
-        // addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
-        // addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
-        // addNotifications("DEJOIOKFEFEKOFKEOAFDOSKDASODKSAODKSAÇDLADKSLAÇDKLSAÇDKLSAKDLSADSAKD");
-
         System.out.println(clientObservable.getAtualState());
+        back.setDisable((clientObservable.getAtualState() == Situation.INITIAL_OPTION)
+                || (clientObservable.getAtualState() == Situation.LOGIN_USER)
+                || (clientObservable.getAtualState() == Situation.REGISTER_USER));
         switch (clientObservable.getAtualState()) {
-            case CONTACT_SERVER_MANAGER -> {
-                // ContactServerManagerPane contactServerManagerPane = new
-                // ContactServerManagerPane(clientObservable);
-
-                /* DEBUG */
-                // Thread t = new Thread(clientObservable);
-                // t.start();
-                /* END DEBUG */
-
-                setCenter(contactServerManagerPane);
-                // clientObservable.contactServerManager();
-            }
-            case INITIAL_OPTION -> {
-                // Start this thread just after creating the connection with the server
-                // manager...
-                setCenter(initialStatePane);
-            }
-            case REGISTER_USER -> {
-                // RegisterStatePane registerStatePane = new
-                // RegisterStatePane(clientObservable);
-                setCenter(registerStatePane);
-            }
-            case LOGIN_USER -> {
-                // LoginStatePane loginStatePane = new LoginStatePane(clientObservable);
-                setCenter(loginStatePane);
-            }
-            case LOGGED_IN -> {
-                // UserStatePane userStatePane = new UserStatePane(clientObservable);
-                setCenter(userStatePane);
-            }
+            case CONTACT_SERVER_MANAGER -> setCenter(contactServerManagerPane);
+            case INITIAL_OPTION -> setCenter(initialStatePane);
+            case REGISTER_USER -> setCenter(registerStatePane);
+            case LOGIN_USER -> setCenter(loginStatePane);
+            case LOGGED_IN -> setCenter(userStatePane);
+            case SEARCH_USERS -> setCenter(searchUsersPane);
+            case SEE_FRIENDS -> setCenter(seeFriendsStatePane);
+            case MESSAGE -> setCenter(messagesStatePane);
             default -> throw new IllegalArgumentException("Unexpected value: " +
                     clientObservable.getAtualState());
         }
