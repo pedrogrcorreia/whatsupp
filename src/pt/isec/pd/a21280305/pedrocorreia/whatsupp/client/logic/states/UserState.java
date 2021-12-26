@@ -33,6 +33,12 @@ public class UserState extends StateAdapter {
     }
 
     @Override
+    public IState seeFriendsRequests() {
+        getModel().getFriendsRequests();
+        return new SeeFriendsState(getModel());
+    }
+
+    @Override
     public IState userState() {
         if (getModel().retrieveInfo()) {
             return new UserState(getModel());

@@ -106,6 +106,21 @@ public class ClientObservable implements Runnable {
         propertyChangeSupport.firePropertyChange("updateView", null, null);
     }
 
+    public void seeFriendsRequests() {
+        client.seeFriendsRequests();
+        propertyChangeSupport.firePropertyChange("updateView", null, null);
+    }
+
+    public void createGroup() {
+        client.createGroup();
+        propertyChangeSupport.firePropertyChange("updateView", null, null);
+    }
+
+    public void addGroups() {
+        client.addGroups();
+        propertyChangeSupport.firePropertyChange("updateView", null, null);
+    }
+
     public String getNotification() {
         return notificationMessage;
     }
@@ -190,6 +205,9 @@ public class ClientObservable implements Runnable {
                     Platform.runLater(() -> propertyChangeSupport
                             .firePropertyChange(Strings.USER_REQUEST_FRIENDS_SUCCESS.name(), null, null));
                     break;
+                case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS:
+                    Platform.runLater(() -> propertyChangeSupport
+                            .firePropertyChange(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS.name(), null, null));
                 case USER_REQUEST_GROUPS:
                     break;
                 case USER_REQUEST_GROUPS_FAIL:

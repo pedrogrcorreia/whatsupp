@@ -80,6 +80,18 @@ public class Client {
         setState(state.sendMessage(msg));
     }
 
+    public void seeFriendsRequests() {
+        setState(state.seeFriendsRequests());
+    }
+
+    public void createGroup() {
+        setState(state.createGroup());
+    }
+
+    public void addGroups() {
+        setState(state.addGroups());
+    }
+
     public SharedMessage getNotification() {
         return model.getNotification();
     }

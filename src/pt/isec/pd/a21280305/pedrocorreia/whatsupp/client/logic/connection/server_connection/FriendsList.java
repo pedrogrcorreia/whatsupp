@@ -34,6 +34,19 @@ public class FriendsList extends ClientServerConnection {
         }
     }
 
+    public boolean getFriendsRequests(ObjectOutputStream oout) {
+        try {
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS, this);
+
+            oout.writeObject(msgToSend);
+            oout.flush();
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error receiving the message:\r\n\t" + e);
+            return false;
+        }
+    }
+
     public List<User> getFriends() {
         return friends;
     }

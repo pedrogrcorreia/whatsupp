@@ -32,6 +32,12 @@ public interface IState {
 
     IState sendMessage(Message msg);
 
+    IState seeFriendsRequests();
+
+    IState createGroup();
+
+    IState addGroups();
+
     IState userState();
 
     Situation getAtualState();

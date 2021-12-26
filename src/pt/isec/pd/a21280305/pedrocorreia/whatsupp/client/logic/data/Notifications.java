@@ -36,7 +36,7 @@ public class Notifications extends Data implements Runnable {
         while (true) {
             try {
                 SharedMessage response = (SharedMessage) oin.readObject();
-                System.out.println(response.getMsgType().name());
+                System.out.println("Response type: " + response.getMsgType().name());
                 switch (response.getMsgType()) {
                     case USER_REQUEST_OWN_INFO_SUCCESS -> {
                         Data.user = ((SearchUser) response.getClientServerConnection()).getUser();
@@ -47,6 +47,10 @@ public class Notifications extends Data implements Runnable {
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_FAIL -> {
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> {
+                        Data.friends = ((FriendsList) response.getClientServerConnection()).getFriends();
                         notifyList(response);
                     }
                     case USER_REQUEST_USER_SUCCESS -> {

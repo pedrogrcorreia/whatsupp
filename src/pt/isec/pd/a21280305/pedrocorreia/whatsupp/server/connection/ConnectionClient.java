@@ -74,8 +74,14 @@ public class ConnectionClient extends Thread {
                         oout.writeObject(dbManager.getUser(request));
                         break;
                     case "FriendsList":
-                        System.out.println("User friends");
-                        oout.writeObject(dbManager.getFriends(request));
+                        if (request.getMsgType() == Strings.USER_REQUEST_FRIENDS) {
+                            System.out.println("User friends");
+                            oout.writeObject(dbManager.getFriends(request));
+                        }
+                        if (request.getMsgType() == Strings.USER_REQUEST_FRIENDS_REQUESTS) {
+                            System.out.println("User friends requests");
+                            oout.writeObject(dbManager.getFriendsRequests(request));
+                        }
                         break;
                     case "Friend":
                         System.out.println("User requesting a friend");
@@ -83,29 +89,13 @@ public class ConnectionClient extends Thread {
                         break;
                     case "Messages":
                         if (request.getMsgType() == Strings.USER_REQUEST_MESSAGES) {
-                            System.out.println("User requesting messages");
                             oout.writeObject(dbManager.getMessages(request));
                         }
                         if (request.getMsgType() == Strings.MESSAGE_DELETE) {
-                            // System.out.println("DELETED MESSAGE");
                             oout.writeObject(dbManager.deleteMessage(request));
                         }
                         if (request.getMsgType() == Strings.USER_SENT_MESSAGE) {
-                            // System.out.println("MESSAGE SENT");
-                            // if (dbManager.sendMessage(request).getMsgType() ==
-                            // Strings.MESSAGE_SENT_SUCCESS);
-                            // SharedMessage msgToSend = new SharedMessage(Strings.MESSAGE_SENT_SUCCESS,
-                            // new String("Message sent"));
-                            // server.sendToServerManager(msgToSend);
                             oout.writeObject(dbManager.sendMessage(request));
-                            // User friend = ((Messages)
-                            // request.getClientServerConnection()).getMsg().getReceiver();
-                            // ((Messages) request.getClientServerConnection()).setFriend(friend);
-                            // SharedMessage msgToSend = new SharedMessage(Strings.MESSAGE_SENT_SUCCESS,
-                            // new String("Message sent"));
-                            // server.sendToServerManager(msgToSend);
-                            // oout.writeObject(dbManager.getMessages(request));
-                            // oout.writeObject(dbManager.sendMessage(request));
                         }
                         break;
                 }

@@ -205,6 +205,12 @@ public class Data {
         return friends;
     }
 
+    public List<User> getFriendsRequests() {
+        FriendsList requestFriendsList = new FriendsList(user, friends);
+        requestFriendsList.getFriendsRequests(oout);
+        return friends;
+    }
+
     public User getUser() {
         return user;
     }

@@ -75,7 +75,23 @@ public abstract class StateAdapter implements IState {
         return this;
     }
 
+    @Override
     public IState sendMessage(Message msg) {
+        return this;
+    }
+
+    @Override
+    public IState seeFriendsRequests() {
+        return this;
+    }
+
+    @Override
+    public IState createGroup() {
+        return this;
+    }
+
+    @Override
+    public IState addGroups() {
         return this;
     }
 

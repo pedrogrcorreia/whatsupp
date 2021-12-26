@@ -44,6 +44,8 @@ public class SeeFriendsStatePane extends GridPane {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_SUCCESS.name(), e -> updateSuccess());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_FAIL.name(), e -> updateFail());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS.name(),
+                e -> updateFriendsRequests());
     }
 
     private void update() {
@@ -68,6 +70,22 @@ public class SeeFriendsStatePane extends GridPane {
                 // clientObservable.seeMessages(2);
                 // add(debug, 10, 10);
             });
+        }
+    }
+
+    private void updateFriendsRequests() {
+        getChildren().clear();
+        setAlignment(Pos.TOP_LEFT);
+        add(friends, 0, 1);
+        lFriends = ((FriendsList) clientObservable.getNotificationSM().getClientServerConnection()).getFriends();
+        for (int i = 0; i < lFriends.size(); i++) {
+            Label friend = new Label(lFriends.get(i).getUsername());
+            add(friend, 1, i + 1);
+            Button accept = new Button("Accept request");
+            add(accept, 2, i + 1);
+
+            // accept.setOnAction(e ->
+            // clientObservable.acceptFriendRequest(lFriends.get(getRowIndex(accept) - 1)));
         }
     }
 

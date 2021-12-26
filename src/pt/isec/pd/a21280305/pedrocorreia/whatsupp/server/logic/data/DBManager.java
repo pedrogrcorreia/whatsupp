@@ -27,9 +27,9 @@ public class DBManager {
         this.dbAddress = server.getDB();
         this.server = server;
         // DEBUG
-        String db = "jdbc:mysql://localhost:3306/whatsupp_db";
+        // String db = "jdbc:mysql://localhost:3306/whatsupp_db";
 
-        // String db = "jdbc:mysql://" + this.dbAddress;
+        String db = "jdbc:mysql://" + this.dbAddress;
         // DEBUG
         // final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 
@@ -191,11 +191,11 @@ public class DBManager {
                 newFriend = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
                 friends.add(newFriend);
             }
-            return new SharedMessage(Strings.USER_REQUEST_FRIENDS_SUCCESS, new String(friends.toString()),
+            return new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS, new String(friends.toString()),
                     new FriendsList(user, friends));
         } catch (SQLException e) {
             System.out.println("Error querying the database:\r\n\t" + e);
-            return new SharedMessage(Strings.USER_REQUEST_FRIENDS_FAIL, new String("Error on database."));
+            return new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS_FAIL, new String("Error on database."));
         }
     }
 
