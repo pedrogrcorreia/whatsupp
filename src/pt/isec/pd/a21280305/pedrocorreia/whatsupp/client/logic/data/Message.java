@@ -2,6 +2,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 public class Message implements Serializable {
     @Serial
@@ -9,19 +10,26 @@ public class Message implements Serializable {
     User sender;
     User receiver;
     String msg;
+    Timestamp time;
     int group;
+    int id;
 
     /**
-     * Constructor for messages sent between users
+     * Constructor for messages sent between users when
+     * querying them from database
      * 
      * @param sender   - user that sent the message
      * @param receiver - user that addresses the message
      * @param msg      - message text
+     * @param id       - message id
      */
-    public Message(User sender, User receiver, String msg) {
+
+    public Message(User sender, User receiver, String msg, int id, Timestamp timestamp) {
         this.sender = sender;
         this.receiver = receiver;
         this.msg = new String(msg);
+        this.id = id;
+        this.time = timestamp;
     }
 
     /**
@@ -36,6 +44,21 @@ public class Message implements Serializable {
         this.sender = sender;
         this.msg = new String(msg);
         this.group = group;
+    }
+
+    /**
+     * Constructor for messages sent between users when
+     * creating them to be sent.
+     * 
+     * @param sender   - user that sent the message
+     * @param receiver - user that addresses the message
+     * @param msg      - message text
+     */
+
+    public Message(User sender, User receiver, String msg) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.msg = new String(msg);
     }
 
     public User getSender() {
@@ -54,8 +77,16 @@ public class Message implements Serializable {
         return group;
     }
 
+    public int getID() {
+        return id;
+    }
+
+    public Timestamp getTime() {
+        return time;
+    }
+
     @Override
     public String toString() {
-        return "User " + sender.getID() + " said: " + msg + " to " + receiver.getID() + ".";
+        return "(ID: " + id + ") User " + sender.getID() + " said: " + msg + " to " + receiver.getID() + ".";
     }
 }

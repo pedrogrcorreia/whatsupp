@@ -14,10 +14,12 @@ public class ConnectedServer extends Server {
     private Calendar pingedTime;
     private boolean isSuspended = false;
     private int timeoutPenalties = 0;
+    private DatagramPacket serverPacket;
 
     public ConnectedServer(DatagramPacket serverPacket) {
         super(serverPacket);
         isSuspended = false;
+        this.serverPacket = serverPacket;
         listeningUdpPort = serverPacket.getPort();
         serverAddress = serverPacket.getAddress().getHostAddress();
     }
@@ -56,6 +58,10 @@ public class ConnectedServer extends Server {
 
     public void setListeningTcpPort(int tcpPort) {
         listeningTcpPort = tcpPort;
+    }
+
+    public DatagramPacket getServerPacket() {
+        return serverPacket;
     }
 
     @Override

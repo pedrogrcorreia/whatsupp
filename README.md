@@ -9,6 +9,7 @@
 ### TO-DO
 #### Server Manager
 - [ ] Multicast
+- [X] Sends notifications to all active servers
 
 #### Server
 - [X] Register on Server Manager
@@ -19,7 +20,9 @@
 - [X] Register user 
 - [X] Return friends list
 - [X] Return message list
-- [ ] Return groups list
+- [] Return groups list
+- [X] Sends notifications on message sent and deleted to Server Manager
+- [] Send notifications on register
 
 #### Client
 - [X] Connect to Server
@@ -31,10 +34,13 @@
     - [ ] A thread that receives the responses from server?
     - [X] A class derived from Data that implements a runnable?
 - [X] Get friends
+- [] Get friends requests
 - [X] Get messages
 - [] Get groups
 - [] Get files
-- [] Send messages
+- [X] Send messages
+- [X] Notifications for messages sent and deleted
+- [] Notifications for friends requests and new users
 - [] Beautify panes
 
 #### Shared

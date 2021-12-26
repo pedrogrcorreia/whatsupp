@@ -13,6 +13,7 @@ public enum Strings {
     SERVER_REGISTER_SUCCESS("Registered the server successfully"),
     SERVER_REGISTER_FAIL("Failed to register the server"),
     SERVER_PING("Server pinging"),
+    NEW_MESSAGE("Alert users that a new message has been sent"),
 
     /** Client <-> Server Manager */
 
@@ -36,6 +37,9 @@ public enum Strings {
     USER_SENT_MESSAGE("User sent a message"),
     MESSAGE_SENT_SUCCESS("Message was sent successfully"),
     MESSAGE_SENT_FAIL("Message couldn't be sent"),
+    MESSAGE_DELETE("Delete a message"),
+    MESSAGE_DELETE_SUCCESS("Message deleted"),
+    MESSAGE_DELETE_FAIL("Failed to delete message"),
 
     /** Requests */
 

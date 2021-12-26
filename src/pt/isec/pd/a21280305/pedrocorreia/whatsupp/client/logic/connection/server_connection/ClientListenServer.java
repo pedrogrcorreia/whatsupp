@@ -13,6 +13,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
  * This {@code Thread} only starts after an user is
  * logged in, because all events before are listened
  * from the methods called.
+ * 
+ * @deprecated
  */
 
 public class ClientListenServer extends Thread {

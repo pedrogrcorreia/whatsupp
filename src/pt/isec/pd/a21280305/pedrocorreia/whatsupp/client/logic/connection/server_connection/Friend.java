@@ -7,11 +7,11 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
-public class UserRequestFriend extends ClientServerConnection {
+public class Friend extends ClientServerConnection {
 
     User userToAdd;
 
-    public UserRequestFriend(User user, User userToAdd) {
+    public Friend(User user, User userToAdd) {
         super(user);
         this.userToAdd = userToAdd;
     }

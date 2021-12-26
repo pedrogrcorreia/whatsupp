@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Messages;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 
@@ -20,6 +23,24 @@ public class ConnectionClient extends Thread {
         this.server = server;
     }
 
+    public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin) {
+        this.clientSocket = clientSocket;
+        this.server = server;
+        this.oout = oout;
+        this.oin = oin;
+    }
+
+    public void sendMsgToClient(SharedMessage msg) {
+
+        try {
+            oout.writeObject(msg);
+            oout.flush();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
         DBManager dbManager = new DBManager(server);
@@ -33,52 +54,61 @@ public class ConnectionClient extends Thread {
                                     + clientSocket.getPort());
                     firstRun = false;
 
-                    oout = new ObjectOutputStream(clientSocket.getOutputStream());
-                    oin = new ObjectInputStream(clientSocket.getInputStream());
+                    // oout = new ObjectOutputStream(clientSocket.getOutputStream());
+                    // oin = new ObjectInputStream(clientSocket.getInputStream());
                 } else {
                     System.out.println("Client still connected.");
                 }
 
-                // ClientServerConnection request = (ClientServerConnection) oin.readObject();
                 SharedMessage request = (SharedMessage) oin.readObject();
 
-                // System.out.println(request.getUsername() + " " + request.getPassword());
-
-                // switch (request.getClass().getSimpleName()) {
                 switch (request.getClientServerConnection().getClass().getSimpleName()) {
-                    case "ClientRequestRegister":
-                        // oout.writeObject(dbManager.registerUser(request.getClientServerConnection().getUsername(),
-                        // request.getClientServerConnection().getPassword(),
-                        // request.getClientServerConnection().getConfPassword(),
-                        // request.getClientServerConnection().getFName(),
-                        // request.getClientServerConnection().getLName()));
+                    case "Register":
                         oout.writeObject(dbManager.registerUser(request));
                         break;
-                    case "ClientRequestLogin":
+                    case "Login":
                         oout.writeObject(dbManager.loginUser(request));
                         break;
-                    // case "ClientRequestInfo":
-                    // System.out.println("User requesting info");
-                    // oout.writeObject(dbManager.getFriends(request));
-                    // break;
-                    case "ClientRequestUser":
+                    case "SearchUser":
                         System.out.println("User info");
                         oout.writeObject(dbManager.getUser(request));
                         break;
-                    case "ClientRequestFriends":
+                    case "FriendsList":
                         System.out.println("User friends");
                         oout.writeObject(dbManager.getFriends(request));
                         break;
-                    case "UserRequestFriend":
+                    case "Friend":
                         System.out.println("User requesting a friend");
                         oout.writeObject(dbManager.addFriend(request));
                         break;
-                    case "ClientRequestMessages":
-                        System.out.println("User requesting messages");
-                        oout.writeObject(dbManager.getMessages(request));
+                    case "Messages":
+                        if (request.getMsgType() == Strings.USER_REQUEST_MESSAGES) {
+                            System.out.println("User requesting messages");
+                            oout.writeObject(dbManager.getMessages(request));
+                        }
+                        if (request.getMsgType() == Strings.MESSAGE_DELETE) {
+                            // System.out.println("DELETED MESSAGE");
+                            oout.writeObject(dbManager.deleteMessage(request));
+                        }
+                        if (request.getMsgType() == Strings.USER_SENT_MESSAGE) {
+                            // System.out.println("MESSAGE SENT");
+                            // if (dbManager.sendMessage(request).getMsgType() ==
+                            // Strings.MESSAGE_SENT_SUCCESS);
+                            // SharedMessage msgToSend = new SharedMessage(Strings.MESSAGE_SENT_SUCCESS,
+                            // new String("Message sent"));
+                            // server.sendToServerManager(msgToSend);
+                            oout.writeObject(dbManager.sendMessage(request));
+                            // User friend = ((Messages)
+                            // request.getClientServerConnection()).getMsg().getReceiver();
+                            // ((Messages) request.getClientServerConnection()).setFriend(friend);
+                            // SharedMessage msgToSend = new SharedMessage(Strings.MESSAGE_SENT_SUCCESS,
+                            // new String("Message sent"));
+                            // server.sendToServerManager(msgToSend);
+                            // oout.writeObject(dbManager.getMessages(request));
+                            // oout.writeObject(dbManager.sendMessage(request));
+                        }
                         break;
                 }
-                System.out.println("Wrote the response...");
                 oout.flush();
                 // closeSocket when client disconnects
             } catch (SocketException e) {

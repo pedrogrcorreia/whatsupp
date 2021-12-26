@@ -45,6 +45,10 @@ public class ActiveServers extends Thread {
         }
     }
 
+    public List<ConnectedServer> getServers() {
+        return servers;
+    }
+
     // public int registerClient() {
     // if (lastServer == servers.size()) {
     // lastServer = 0;
@@ -83,7 +87,6 @@ public class ActiveServers extends Thread {
                 Calendar curTime = GregorianCalendar.getInstance();
                 long delay = (curTime.getTimeInMillis() - server.getPingedTime().getTimeInMillis()) / 1000;
                 System.out.println("Delay: " + delay);
-                // System.out.println("TcpPort: " + server.getListeningTcpPort());
                 if ((delay * 1000) > pingTime) {
                     server.setSuspended(true);
                     server.setTimeoutPenalty();

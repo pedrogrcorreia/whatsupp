@@ -9,25 +9,24 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
- * Class used to request the list of groups
+ * Class used to request the list of friends
  * from the user (client) that asks.
  */
 
-public class ClientRequestGroups extends ClientServerConnection {
-    private List<String> groups;
+public class FriendsList extends ClientServerConnection {
+    private List<User> friends;
 
-    public ClientRequestGroups(User user, List<String> groups) {
+    public FriendsList(User user, List<User> friends) {
         super(user);
-        this.groups = groups;
+        this.friends = friends;
     }
 
-    public boolean getGroups(ObjectOutputStream oout) {
+    public boolean getFriends(ObjectOutputStream oout) {
         try {
-            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_GROUPS, this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_FRIENDS, this);
 
             oout.writeObject(msgToSend);
             oout.flush();
-
             return true;
         } catch (IOException e) {
             System.out.println("Error receiving the message:\r\n\t" + e);
@@ -35,7 +34,7 @@ public class ClientRequestGroups extends ClientServerConnection {
         }
     }
 
-    public List<String> getGroups() {
-        return groups;
+    public List<User> getFriends() {
+        return friends;
     }
 }

@@ -21,7 +21,7 @@ public class Server {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    static final int MAX_SIZE = 4096;
+    static final int MAX_SIZE = 8192;
     static final int TIMEOUT = 10 * 1000; // 10 seconds timeout
 
     // Server variables
@@ -63,6 +63,7 @@ public class Server {
 
     /** ArrayList of all connected clients */
     List<Socket> clients;
+    List<ConnectionClient> clientsConnected;
 
     /**
      * Constructor of Server to create an initial instance when the Server
@@ -157,17 +158,32 @@ public class Server {
             pingServerManager.start();
             connectionServerManager.start();
             clients = new ArrayList<>();
-            // dbManager = new DBManager(this);
-            // Main thread just accepts connections from clients
+            clientsConnected = new ArrayList<>();
             while (true) {
                 nextClient = tcpSocket.accept();
                 clients.add(nextClient);
-                newClient = new ConnectionClient(nextClient, this);
+                // newClient = new ConnectionClient(nextClient, this);
+                oout = new ObjectOutputStream(nextClient.getOutputStream());
+                oin = new ObjectInputStream(nextClient.getInputStream());
+                newClient = new ConnectionClient(nextClient, this, oout, oin);
+                clientsConnected.add(newClient);
                 newClient.start();
             }
 
         } catch (IOException e) {
             System.out.println("Error creating TCP Socket: \r\n\t" + e);
+        }
+    }
+
+    public void alertClients() {
+        for (int i = 0; i < clientsConnected.size(); i++) {
+            // System.out.println("ESTOU AQUI");
+            // oout.writeObject(new SharedMessage(Strings.USER_FAILED_LOGIN, "teste"));
+            // oout.flush();
+            SharedMessage request = new SharedMessage(Strings.NEW_MESSAGE, Strings.NEW_MESSAGE.toString());
+            clientsConnected.get(i)
+                    .sendMsgToClient(request);
+
         }
     }
 

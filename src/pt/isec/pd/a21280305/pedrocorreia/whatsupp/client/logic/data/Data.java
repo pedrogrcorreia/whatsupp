@@ -18,18 +18,19 @@ import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestFriends;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestLogin;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestMessages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestRegister;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestUser;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.UserRequestFriend;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.FriendsList;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Login;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Messages;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Register;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.SearchUser;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Friend;
 
 public class Data {
     private static final int MAX_SIZE = 4096;
 
     protected static User user = new User();
     protected static User searched = new User();
+    protected static User friend = new User();
     static boolean loggedIn = false;
 
     // To communicate with Server Manager
@@ -60,7 +61,8 @@ public class Data {
     Thread t;
     Notifications not;
 
-    ClientRequestLogin crl;
+    Login loginRequest;
+    Messages requestMessages;
 
     public Data(String serverManagerAddress, int serverManagerPort) {
         this.serverManagerAddress = serverManagerAddress;
@@ -179,30 +181,27 @@ public class Data {
     }
 
     public boolean login(String username, String password) {
-        crl = new ClientRequestLogin(new User(username, password));
-        user = crl.getUser();
-        // t = new Thread(not);
-        // t.start();
-        return crl.login(oin, oout, notLog);
+        loginRequest = new Login(new User(username, password));
+        user = loginRequest.getUser();
+        return loginRequest.login(oin, oout, notLog);
     }
 
     public boolean register(String username, String password, String confPassword, String fName, String lName) {
-        ClientRequestRegister crr = new ClientRequestRegister(new User(username, password, confPassword, fName, lName));
-        return crr.register(oin, oout, notLog);
+        Register requestRegister = new Register(
+                new User(username, password, confPassword, fName, lName));
+        return requestRegister.register(oin, oout, notLog);
     }
 
     public boolean retrieveInfo() {
         t = new Thread(not);
         t.start();
-        // ClientRequestFriends crf = new ClientRequestFriends(user, friends);
-        // crf.getFriends(oout);
-        user = crl.getUser();
+        user = loginRequest.getUser();
         return true;
     }
 
     public List<User> getFriends() {
-        ClientRequestFriends crf = new ClientRequestFriends(user, friends);
-        crf.getFriends(oout);
+        FriendsList requestFriendsList = new FriendsList(user, friends);
+        requestFriendsList.getFriends(oout);
         return friends;
     }
 
@@ -210,10 +209,29 @@ public class Data {
         return user;
     }
 
+    public User getFriend() {
+        return friend;
+    }
+
     public List<Message> getMessages(User friend) {
-        ClientRequestMessages crm = new ClientRequestMessages(user, messages);
-        crm.getMessagesFromUser(oout, friend);
+        Data.friend = friend;
+        requestMessages = new Messages(user, messages);
+        requestMessages.getMessagesFromUser(oout, Data.friend);
         return messages;
+    }
+
+    public void deleteMessage(Message msg) {
+        Messages rqm = new Messages(user, messages);
+
+        // System.out.println(msg);
+        rqm.deleteMessage(oout, msg);
+        requestMessages.getMessagesFromUser(oout, friend);
+    }
+
+    public void sendMessage(Message msg) {
+        Messages requestSendingMessage = new Messages(user, messages);
+        requestSendingMessage.sendMessage(oout, msg);
+        // requestMessages.getMessagesFromUser(oout, friend);
     }
 
     public List<String> groups() {
@@ -222,12 +240,12 @@ public class Data {
 
     public boolean searchUser(String username) {
         searched = new User(username);
-        ClientRequestUser cru = new ClientRequestUser(searched);
-        return cru.getUser(oout);
+        SearchUser requestUser = new SearchUser(searched);
+        return requestUser.getUser(oout);
     }
 
     public boolean addFriend(int userID) {
-        UserRequestFriend urf = new UserRequestFriend(user, new User(userID));
+        Friend urf = new Friend(user, new User(userID));
         return urf.addFriend(oout);
     }
 

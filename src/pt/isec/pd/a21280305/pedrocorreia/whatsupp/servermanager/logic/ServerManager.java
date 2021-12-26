@@ -4,14 +4,16 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ActiveServers;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ConnectedServer;
 
 public class ServerManager {
 
-    static final int MAX_SIZE = 4096;
+    static final int MAX_SIZE = 8192;
 
     ActiveServers activeServers;
 
@@ -35,8 +37,6 @@ public class ServerManager {
     public ServerManager(int listeningPort) {
         this.listeningPort = listeningPort;
         activeServers = new ActiveServers();
-        // activeServers = new Thread(new ActiveServers(), "Thread to verify active
-        // servers");
     }
 
     /**
@@ -60,7 +60,6 @@ public class ServerManager {
 
     private void runServerManager() {
         System.out.println("Ready to receive requests.");
-        // activeServers.start();
         while (true) {
             request = receiveRequests();
             if (request.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
@@ -83,11 +82,14 @@ public class ServerManager {
                 answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
                 answerToRequest(answer, myPacket);
             } else if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
-                // answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
-                // String.valueOf(activeServers.registerClient()));
                 answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
                         activeServers.registerClient());
                 answerToRequest(answer, myPacket);
+            } else { // TODO necessary to use more constraints? this applies for notifications from
+                     // the server
+                answer = new SharedMessage(Strings.NEW_MESSAGE, Strings.NEW_MESSAGE.toString());
+                // answerToRequest(answer, myPacket);
+                answerToAll(answer);
             }
         }
     }
@@ -122,7 +124,7 @@ public class ServerManager {
             oin = new ObjectInputStream(bin);
 
             newRequest = (SharedMessage) oin.readObject();
-            System.out.println("Request: " + newRequest.getMsgType() + " from " + myPacket.getPort());
+            System.out.println("Request: " + newRequest.getMsgType().name() + " from " + myPacket.getPort());
 
             return newRequest;
         } catch (IOException e) {
@@ -151,6 +153,24 @@ public class ServerManager {
             mySocket.send(serverPacket);
         } catch (IOException e) {
             System.out.println("Error writing object: \r\n\t" + e);
+        }
+    }
+
+    private void answerToAll(SharedMessage msgToSend) {
+        List<ConnectedServer> cs = activeServers.getServers();
+        for (int i = 0; i < cs.size(); i++) {
+            try {
+                bout = new ByteArrayOutputStream();
+                oout = new ObjectOutputStream(bout);
+                oout.writeUnshared(msgToSend);
+                DatagramPacket serverPacket;
+                serverPacket = cs.get(i).getServerPacket();
+                serverPacket.setData(bout.toByteArray());
+                serverPacket.setLength(bout.size());
+                mySocket.send(serverPacket);
+            } catch (IOException e) {
+                System.out.println("Error writing object:\r\n\t" + e);
+            }
         }
     }
 

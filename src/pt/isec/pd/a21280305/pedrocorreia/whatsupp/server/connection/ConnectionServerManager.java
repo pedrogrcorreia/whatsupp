@@ -17,7 +17,13 @@ public class ConnectionServerManager extends Thread {
     public void run() {
         while (true) {
             receivedRequest = server.receiveFromServerManager();
-            System.out.println(receivedRequest.getMsg());
+            System.out.println("Request from ServerManager: " + receivedRequest.getMsgType().name());
+            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_MESSAGE")) {
+                server.alertClients();
+            }
+            if (receivedRequest.getMsgType().name().equalsIgnoreCase("MESSAGE_SENT_SUCCESS")) {
+                server.alertClients();
+            }
         }
     }
 

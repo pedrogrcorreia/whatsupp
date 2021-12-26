@@ -36,6 +36,10 @@ public class SharedMessage implements Serializable {
         return msg;
     }
 
+    public void setMsgType(Strings type) {
+        msgType = type;
+    }
+
     public ClientServerConnection getClientServerConnection() {
         return csc;
     }

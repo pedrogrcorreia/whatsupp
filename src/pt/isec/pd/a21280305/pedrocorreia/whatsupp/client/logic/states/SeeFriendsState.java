@@ -12,7 +12,6 @@ public class SeeFriendsState extends StateAdapter {
 
     @Override
     public IState seeFriends() {
-        System.out.println("here");
         getModel().getFriends();
         return new SeeFriendsState(getModel());
     }

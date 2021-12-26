@@ -2,28 +2,26 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.serve
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
- * Class used to request the list of friends
+ * Class used to request the user info
  * from the user (client) that asks.
  */
 
-public class ClientRequestFriends extends ClientServerConnection {
-    private List<User> friends;
+public class SearchUser extends ClientServerConnection {
 
-    public ClientRequestFriends(User user, List<User> friends) {
+    public SearchUser(User user) {
         super(user);
-        this.friends = friends;
+        // this.user = user;
     }
 
-    public boolean getFriends(ObjectOutputStream oout) {
+    public boolean getUser(ObjectOutputStream oout) {
         try {
-            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_FRIENDS, this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_OWN_INFO, this);
 
             oout.writeObject(msgToSend);
             oout.flush();
@@ -32,9 +30,5 @@ public class ClientRequestFriends extends ClientServerConnection {
             System.out.println("Error receiving the message:\r\n\t" + e);
             return false;
         }
-    }
-
-    public List<User> getFriends() {
-        return friends;
     }
 }

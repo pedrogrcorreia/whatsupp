@@ -8,9 +8,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientRequestFriends;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.FriendsList;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 public class SeeFriendsStatePane extends GridPane {
@@ -41,8 +42,8 @@ public class SeeFriendsStatePane extends GridPane {
 
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
-        clientObservable.addPropertyChangeListener("success", e -> updateSuccess());
-        clientObservable.addPropertyChangeListener("fail", e -> updateFail());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_SUCCESS.name(), e -> updateSuccess());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_FAIL.name(), e -> updateFail());
     }
 
     private void update() {
@@ -53,7 +54,7 @@ public class SeeFriendsStatePane extends GridPane {
         getChildren().clear();
         setAlignment(Pos.TOP_LEFT);
         add(friends, 0, 1);
-        lFriends = ((ClientRequestFriends) clientObservable.getNotificationSM().getClientServerConnection())
+        lFriends = ((FriendsList) clientObservable.getNotificationSM().getClientServerConnection())
                 .getFriends();
         for (int i = 0; i < lFriends.size(); i++) {
             Label friend = new Label(lFriends.get(i).getUsername());

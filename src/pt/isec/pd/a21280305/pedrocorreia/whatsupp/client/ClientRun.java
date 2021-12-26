@@ -28,7 +28,7 @@ public class ClientRun extends Application {
             ClientUI clientUI = new ClientUI(clientObservable);
             // Thread t = new Thread(clientUI);
             // t.start();
-            Scene scene = new Scene(clientUI, 600, 400);
+            Scene scene = new Scene(clientUI, 800, 800);
             stage.setScene(scene);
             stage.setResizable(false);
             stage.setTitle("Whatsupp");

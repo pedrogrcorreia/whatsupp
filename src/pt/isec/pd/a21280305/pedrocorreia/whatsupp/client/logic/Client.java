@@ -2,6 +2,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
@@ -71,6 +72,14 @@ public class Client {
         setState(state.back());
     }
 
+    public void deleteMessage(Message msg) {
+        setState(state.deleteMessage(msg));
+    }
+
+    public void sendMessage(Message msg) {
+        setState(state.sendMessage(msg));
+    }
+
     public SharedMessage getNotification() {
         return model.getNotification();
     }
@@ -81,5 +90,9 @@ public class Client {
 
     public User getUser() {
         return model.getUser();
+    }
+
+    public User getFriend() {
+        return model.getFriend();
     }
 }

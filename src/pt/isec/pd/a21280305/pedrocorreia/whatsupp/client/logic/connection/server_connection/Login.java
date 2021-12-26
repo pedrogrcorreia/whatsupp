@@ -10,40 +10,38 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 /**
- * Class used to request the register
+ * Class used to request the login
  * from the user (client) that asks.
  */
 
-public class ClientRequestRegister extends ClientServerConnection {
+public class Login extends ClientServerConnection {
 
-    public ClientRequestRegister(User user) {
+    public Login(User user) {
         super(user);
     }
 
-    public boolean register(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
+    public boolean login(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
         try {
-            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_REGISTER,
-                    Strings.USER_REQUEST_REGISTER.toString(), this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_LOGIN,
+                    Strings.USER_REQUEST_LOGIN.toString(), this);
             oout.writeObject(msgToSend);
             oout.flush();
 
             SharedMessage response = (SharedMessage) oin.readObject();
-
             synchronized (list) {
                 list.add(response);
                 list.notifyAll();
             }
-
-            if (response.getMsgType() == Strings.USER_REGISTER_SUCCESS) {
-                System.out.println(response.getMsg());
+            if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
+                user = response.getClientServerConnection().getUser();
                 return true;
             } else {
-                System.out.println(response.getMsg());
                 return false;
             }
 
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Couldn't establish connection with this socket:\r\n\t" + e);
+            System.out.println("Couldn't establish connection with this socket:\r\n\t" +
+                    e);
             return false;
         }
     }

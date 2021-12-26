@@ -41,6 +41,7 @@ public class ClientUI extends BorderPane {
     // Layout
     private VBox notificationPanel;
     private ScrollPane notificationPanelScroll;
+
     ContactServerManagerPane contactServerManagerPane;
     InitialStatePane initialStatePane;
     LoginStatePane loginStatePane;

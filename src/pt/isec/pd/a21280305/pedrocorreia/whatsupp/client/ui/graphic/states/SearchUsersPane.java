@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
@@ -56,8 +57,8 @@ public class SearchUsersPane extends GridPane {
 
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
-        clientObservable.addPropertyChangeListener("success", e -> updateSuccess());
-        clientObservable.addPropertyChangeListener("fail", e -> updateFail());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_USER_SUCCESS.name(), e -> updateSuccess());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_USER_SUCCESS.name(), e -> updateFail());
     }
 
     private void update() {
