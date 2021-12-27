@@ -1,8 +1,8 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
 public interface IState {
 
@@ -34,11 +34,11 @@ public interface IState {
 
     IState seeFriendsRequests();
 
+    IState seeFriendsRequestsPending();
+
     IState createGroup();
 
     IState addGroups();
-
-    IState userState();
 
     Situation getAtualState();
 }

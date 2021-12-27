@@ -6,9 +6,6 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.FriendsList;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Messages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.SearchUser;
 
 public class Notifications extends Data implements Runnable {
 
@@ -38,23 +35,27 @@ public class Notifications extends Data implements Runnable {
                 SharedMessage response = (SharedMessage) oin.readObject();
                 System.out.println("Response type: " + response.getMsgType().name());
                 switch (response.getMsgType()) {
-                    case USER_REQUEST_OWN_INFO_SUCCESS -> {
-                        Data.user = ((SearchUser) response.getClientServerConnection()).getUser();
+                    case USER_REQUEST_USER_INFO_SUCCESS -> {
+                        Data.user = response.getClientRequest().getUser();
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_SUCCESS -> {
-                        Data.friends = ((FriendsList) response.getClientServerConnection()).getFriends();
+                        Data.friends = response.getClientRequest().getFriendsRequests();
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_FAIL -> {
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> {
-                        Data.friends = ((FriendsList) response.getClientServerConnection()).getFriends();
+                        Data.friendsSent = response.getClientRequest().getFriendsRequests();
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> {
+                        Data.friendsPending = response.getClientRequest().getFriendsRequests();
                         notifyList(response);
                     }
                     case USER_REQUEST_USER_SUCCESS -> {
-                        Data.searched = ((SearchUser) response.getClientServerConnection()).getUser();
+                        Data.selectedFriend = response.getClientRequest().getSelectedUser();
                         notifyList(response);
                     }
                     case USER_REQUEST_USER_FAIL -> {
@@ -67,7 +68,7 @@ public class Notifications extends Data implements Runnable {
                         notifyList(response);
                     }
                     case USER_REQUEST_MESSAGES_SUCCESS -> {
-                        Data.messages = ((Messages) response.getClientServerConnection()).getMessages();
+                        Data.messages = response.getClientRequest().getMessages();
                         notifyList(response);
                     }
                     case MESSAGE_DELETE_SUCCESS -> {

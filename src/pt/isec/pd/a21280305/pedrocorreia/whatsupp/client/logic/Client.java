@@ -1,9 +1,12 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
+import java.util.List;
+
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
 
@@ -32,6 +35,9 @@ public class Client {
         setState(state.initialOption(opt));
     }
 
+    /**
+     * Login and Register
+     */
     public void login(String username, String password) {
         setState(state.login(username, password));
     }
@@ -40,48 +46,41 @@ public class Client {
         setState(state.register(username, password, confPassword, fname, lname));
     }
 
+    /**
+     * Search user
+     */
     public void searchUsers() {
         setState(state.searchUsers());
-    }
-
-    public void seeFriends() {
-        setState(state.seeFriends());
-    }
-
-    public void seeGroups() {
-        setState(state.seeGroups());
     }
 
     public void searchUser(String username) {
         setState(state.searchUser(username));
     }
 
-    public void seeMessages(User user) {
-        setState(state.seeMessages(user));
-    }
-
-    public void addFriend(int userID) {
-        model.addFriend(userID);
-    }
-
-    public void userLoggedIn() {
-        setState(state.userState());
-    }
-
-    public void back() {
-        setState(state.back());
-    }
-
-    public void deleteMessage(Message msg) {
-        setState(state.deleteMessage(msg));
-    }
-
-    public void sendMessage(Message msg) {
-        setState(state.sendMessage(msg));
+    /**
+     * Friends
+     */
+    public void seeFriends() {
+        setState(state.seeFriends());
     }
 
     public void seeFriendsRequests() {
         setState(state.seeFriendsRequests());
+    }
+
+    public void seeFriendsRequestsPending() {
+        setState(state.seeFriendsRequestsPending());
+    }
+
+    public void addFriend(User user) {
+        model.addFriend(user);
+    }
+
+    /**
+     * Groups
+     */
+    public void seeGroups() {
+        setState(state.seeGroups());
     }
 
     public void createGroup() {
@@ -92,6 +91,29 @@ public class Client {
         setState(state.addGroups());
     }
 
+    /**
+     * Messages
+     */
+    public void seeMessages(User user) {
+        setState(state.seeMessages(user));
+    }
+
+    public void deleteMessage(Message msg) {
+        setState(state.deleteMessage(msg));
+    }
+
+    public void sendMessage(Message msg) {
+        setState(state.sendMessage(msg));
+    }
+
+    /**
+     * Back to start state
+     */
+    public void back() {
+        setState(state.back());
+    }
+
+    /** Get notifications */
     public SharedMessage getNotification() {
         return model.getNotification();
     }
@@ -100,11 +122,29 @@ public class Client {
         return state.getAtualState();
     }
 
+    /** Gets directly from model */
+
     public User getUser() {
         return model.getUser();
     }
 
     public User getFriend() {
         return model.getFriend();
+    }
+
+    public List<FriendsRequests> getFriendsRequests() {
+        return model.getFriendsRequests();
+    }
+
+    public List<FriendsRequests> getFriendsRequestsPending() {
+        return model.getFriendsRequestsPending();
+    }
+
+    public List<FriendsRequests> getFriendsRequestsSent() {
+        return model.getFriendsRequestsSent();
+    }
+
+    public List<Message> getMessages() {
+        return model.getMessages();
     }
 }

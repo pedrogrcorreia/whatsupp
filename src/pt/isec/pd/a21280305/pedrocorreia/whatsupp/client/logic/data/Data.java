@@ -18,22 +18,22 @@ import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.FriendsList;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Login;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Messages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Register;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.SearchUser;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Friend;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.Friends;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.LoginRegister;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.Messages;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.SearchUser;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
 public class Data {
-    private static final int MAX_SIZE = 4096;
+    private static final int MAX_SIZE = 8192;
 
     protected static User user = new User();
-    protected static User searched = new User();
-    protected static User friend = new User();
-    static boolean loggedIn = false;
+    protected static User selectedFriend;
 
-    // To communicate with Server Manager
     protected String serverManagerAddress;
     protected int serverManagerPort;
     protected String serverAddress;
@@ -49,35 +49,41 @@ public class Data {
     ByteArrayInputStream bin;
     ObjectInputStream oin;
 
-    protected boolean connected = false;
-
     // To communicate with Server
     protected Socket socketToServer;
 
     protected static List<Message> messages;
-    protected static List<User> friends;
-    protected static List<String> groups;
+    protected static List<FriendsRequests> friends;
+    protected static List<FriendsRequests> friendsPending;
+    protected static List<FriendsRequests> friendsSent;
+    protected static List<Group> groups;
+    protected static List<GroupRequests> groupRequests;
 
     Thread t;
     Notifications not;
 
-    Login loginRequest;
-    Messages requestMessages;
+    LoginRegister loginRegister;
 
     public Data(String serverManagerAddress, int serverManagerPort) {
         this.serverManagerAddress = serverManagerAddress;
         this.serverManagerPort = serverManagerPort;
         notLog = new ArrayList<>();
         friends = new ArrayList<>();
+        friendsPending = new ArrayList<>();
+        friendsSent = new ArrayList<>();
         messages = new ArrayList<>();
         groups = new ArrayList<>();
+        groupRequests = new ArrayList<>();
     }
 
     public Data() {
         notLog = new ArrayList<>();
         friends = new ArrayList<>();
+        friendsPending = new ArrayList<>();
+        friendsSent = new ArrayList<>();
         messages = new ArrayList<>();
         groups = new ArrayList<>();
+        groupRequests = new ArrayList<>();
     };
 
     public boolean contactServerManager() {
@@ -181,78 +187,89 @@ public class Data {
     }
 
     public boolean login(String username, String password) {
-        loginRequest = new Login(new User(username, password));
-        user = loginRequest.getUser();
-        return loginRequest.login(oin, oout, notLog);
+        loginRegister = new LoginRegister(new User(username, password));
+        return loginRegister.login(oin, oout, notLog);
     }
 
     public boolean register(String username, String password, String confPassword, String fName, String lName) {
-        Register requestRegister = new Register(
-                new User(username, password, confPassword, fName, lName));
-        return requestRegister.register(oin, oout, notLog);
+        loginRegister = new LoginRegister(new User(username, password, confPassword, fName, lName));
+        return loginRegister.register(oin, oout, notLog);
     }
 
     public boolean retrieveInfo() {
         t = new Thread(not);
         t.start();
-        user = loginRequest.getUser();
+
+        System.out.println(user = loginRegister.getUser());
         return true;
     }
 
-    public List<User> getFriends() {
-        FriendsList requestFriendsList = new FriendsList(user, friends);
-        requestFriendsList.getFriends(oout);
-        return friends;
+    public boolean searchUser(String username) {
+        selectedFriend = new User(username);
+        SearchUser su = new SearchUser(user, selectedFriend);
+        return su.getUser(oout);
     }
 
-    public List<User> getFriendsRequests() {
-        FriendsList requestFriendsList = new FriendsList(user, friends);
-        requestFriendsList.getFriendsRequests(oout);
-        return friends;
+    public boolean seeFriends() {
+        Friends f = new Friends(user);
+        return f.getFriends(oout);
     }
+
+    public boolean seeFriendsRequests() {
+        Friends f = new Friends(user);
+        return f.getFriendsRequests(oout);
+    }
+
+    public boolean seeFriendsRequestsPending() {
+        Friends f = new Friends(user);
+        return f.getFriendsRequestsPending(oout);
+    }
+
+    public boolean addFriend(User friend) {
+        Friends f = new Friends(user, friend);
+        return f.addFriend(oout);
+    }
+
+    public boolean seeMessages(User selectedUser) {
+        selectedFriend = selectedUser;
+        Messages m = new Messages(user, selectedFriend, messages);
+        return m.getMessagesFromUser(oout);
+    }
+
+    public boolean deleteMessage(Message message) {
+        Messages m = new Messages(user, message);
+        return m.deleteMessage(oout);
+    }
+
+    public boolean sendMessage(Message message) {
+        Messages m = new Messages(user, selectedFriend, message);
+        return m.sendMessageToUser(oout);
+    }
+
+    /** GETS */
 
     public User getUser() {
         return user;
     }
 
     public User getFriend() {
-        return friend;
+        return selectedFriend;
     }
 
-    public List<Message> getMessages(User friend) {
-        Data.friend = friend;
-        requestMessages = new Messages(user, messages);
-        requestMessages.getMessagesFromUser(oout, Data.friend);
+    public List<FriendsRequests> getFriendsRequests() {
+        return friends;
+    }
+
+    public List<FriendsRequests> getFriendsRequestsPending() {
+        return friendsPending;
+    }
+
+    public List<FriendsRequests> getFriendsRequestsSent() {
+        return friendsSent;
+    }
+
+    public List<Message> getMessages() {
         return messages;
-    }
-
-    public void deleteMessage(Message msg) {
-        Messages rqm = new Messages(user, messages);
-
-        // System.out.println(msg);
-        rqm.deleteMessage(oout, msg);
-        requestMessages.getMessagesFromUser(oout, friend);
-    }
-
-    public void sendMessage(Message msg) {
-        Messages requestSendingMessage = new Messages(user, messages);
-        requestSendingMessage.sendMessage(oout, msg);
-        // requestMessages.getMessagesFromUser(oout, friend);
-    }
-
-    public List<String> groups() {
-        return groups;
-    }
-
-    public boolean searchUser(String username) {
-        searched = new User(username);
-        SearchUser requestUser = new SearchUser(searched);
-        return requestUser.getUser(oout);
-    }
-
-    public boolean addFriend(int userID) {
-        Friend urf = new Friend(user, new User(userID));
-        return urf.addFriend(oout);
     }
 
     public SharedMessage getNotification() {

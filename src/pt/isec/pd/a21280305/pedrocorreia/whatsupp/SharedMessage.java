@@ -3,29 +3,29 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp;
 import java.io.Serial;
 import java.io.Serializable;
 
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.ClientServerConnection;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.ClientRequests;
 
 public class SharedMessage implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private Strings msgType;
     private String msg;
-    private ClientServerConnection csc;
+    private ClientRequests cr;
 
     public SharedMessage(Strings msgType, String msg) {
         this.msgType = msgType;
         this.msg = new String(msg);
     }
 
-    public SharedMessage(Strings msgType, String msg, ClientServerConnection csc) {
+    public SharedMessage(Strings msgType, String msg, ClientRequests cr) {
         this.msgType = msgType;
-        this.msg = new String(msg);
-        this.csc = csc;
+        this.msg = msg;
+        this.cr = cr;
     }
 
-    public SharedMessage(Strings msgType, ClientServerConnection csc) {
+    public SharedMessage(Strings msgType, ClientRequests cr) {
         this.msgType = msgType;
-        this.csc = csc;
+        this.cr = cr;
     }
 
     public Strings getMsgType() {
@@ -40,8 +40,8 @@ public class SharedMessage implements Serializable {
         msgType = type;
     }
 
-    public ClientServerConnection getClientServerConnection() {
-        return csc;
+    public ClientRequests getClientRequest() {
+        return cr;
     }
 
     @Override

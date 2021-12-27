@@ -11,8 +11,9 @@ public class UserStatePane extends GridPane {
     private ClientObservable clientObservable;
     private Label welcome;
     private Button searchUsers;
-    private Button seeFriendsRequests;
     private Button seeFriends;
+    private Button seeFriendsRequests;
+    private Button seeFriendsRequestsPending;
     private Button seeGroups;
     private Button createGroup;
     private Button addGroups;
@@ -42,8 +43,11 @@ public class UserStatePane extends GridPane {
         seeFriends = new Button("See friends");
         add(seeFriends, 0, 3);
 
-        seeFriendsRequests = new Button("Friends requests");
+        seeFriendsRequests = new Button("Friends requests sent");
         add(seeFriendsRequests, 1, 3);
+
+        seeFriendsRequestsPending = new Button("Friends requests pending");
+        add(seeFriendsRequestsPending, 2, 3);
 
         seeGroups = new Button("See groups");
         add(seeGroups, 0, 4);
@@ -59,6 +63,8 @@ public class UserStatePane extends GridPane {
         seeFriends.setOnAction(e -> clientObservable.seeFriends());
 
         seeFriendsRequests.setOnAction(e -> clientObservable.seeFriendsRequests());
+
+        seeFriendsRequestsPending.setOnAction(e -> clientObservable.seeFriendsRequestsPending());
 
         seeGroups.setOnAction(e -> clientObservable.seeGroups());
 

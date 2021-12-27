@@ -4,9 +4,6 @@ import java.io.*;
 import java.net.*;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Messages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 
@@ -17,11 +14,6 @@ public class ConnectionClient extends Thread {
     private Server server;
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
-
-    public ConnectionClient(Socket clientSocket, Server server) {
-        this.clientSocket = clientSocket;
-        this.server = server;
-    }
 
     public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin) {
         this.clientSocket = clientSocket;
@@ -36,8 +28,7 @@ public class ConnectionClient extends Thread {
             oout.writeObject(msg);
             oout.flush();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
         }
     }
 
@@ -53,51 +44,50 @@ public class ConnectionClient extends Thread {
                             .println("Client connecteced from: " + clientSocket.getInetAddress().getHostAddress() + ":"
                                     + clientSocket.getPort());
                     firstRun = false;
-
-                    // oout = new ObjectOutputStream(clientSocket.getOutputStream());
-                    // oin = new ObjectInputStream(clientSocket.getInputStream());
                 } else {
                     System.out.println("Client still connected.");
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
 
-                switch (request.getClientServerConnection().getClass().getSimpleName()) {
-                    case "Register":
-                        oout.writeObject(dbManager.registerUser(request));
-                        break;
-                    case "Login":
+                switch (request.getMsgType()) {
+                    /** Login or register */
+                    case USER_REQUEST_LOGIN -> {
                         oout.writeObject(dbManager.loginUser(request));
-                        break;
-                    case "SearchUser":
-                        System.out.println("User info");
+                    }
+                    case USER_REQUEST_REGISTER -> {
+                        oout.writeObject(dbManager.registerUser(request));
+                    }
+                    /** Search user */
+                    case USER_REQUEST_USER -> {
                         oout.writeObject(dbManager.getUser(request));
-                        break;
-                    case "FriendsList":
-                        if (request.getMsgType() == Strings.USER_REQUEST_FRIENDS) {
-                            System.out.println("User friends");
-                            oout.writeObject(dbManager.getFriends(request));
-                        }
-                        if (request.getMsgType() == Strings.USER_REQUEST_FRIENDS_REQUESTS) {
-                            System.out.println("User friends requests");
-                            oout.writeObject(dbManager.getFriendsRequests(request));
-                        }
-                        break;
-                    case "Friend":
-                        System.out.println("User requesting a friend");
+                    }
+                    /** Friends requests */
+                    case USER_REQUEST_FRIENDS -> {
+                        oout.writeObject(dbManager.getFriends(request));
+                    }
+                    case USER_REQUEST_FRIENDS_REQUESTS -> {
+                        oout.writeObject(dbManager.getFriendsRequests(request));
+                    }
+                    case USER_REQUEST_FRIENDS_REQUESTS_PENDING -> {
+                        oout.writeObject(dbManager.getFriendsRequestsPending(request));
+                    }
+                    case USER_SEND_FRIEND_REQUEST -> {
                         oout.writeObject(dbManager.addFriend(request));
-                        break;
-                    case "Messages":
-                        if (request.getMsgType() == Strings.USER_REQUEST_MESSAGES) {
-                            oout.writeObject(dbManager.getMessages(request));
-                        }
-                        if (request.getMsgType() == Strings.MESSAGE_DELETE) {
-                            oout.writeObject(dbManager.deleteMessage(request));
-                        }
-                        if (request.getMsgType() == Strings.USER_SENT_MESSAGE) {
-                            oout.writeObject(dbManager.sendMessage(request));
-                        }
-                        break;
+                    }
+                    /** Messages requests */
+                    case USER_REQUEST_MESSAGES -> {
+                        oout.writeObject(dbManager.getMessages(request));
+                    }
+                    case USER_SENT_MESSAGE -> {
+                        oout.writeObject(dbManager.sendMessage(request));
+                    }
+                    case MESSAGE_DELETE -> {
+                        oout.writeObject(dbManager.deleteMessage(request));
+                    }
+                    default -> {
+                        System.out.println("\t\nDEFAULT\n\t");
+                    }
                 }
                 oout.flush();
                 // closeSocket when client disconnects
@@ -106,7 +96,6 @@ public class ConnectionClient extends Thread {
                 try {
                     clientSocket.close();
                     oout.flush();
-                    // return;
                 } catch (IOException e1) {
                     System.out.println("Error closing client socket:\r\n\t" + e1);
                 }

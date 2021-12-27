@@ -25,9 +25,8 @@ import javafx.scene.text.Font;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection.Messages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
 public class MessagesStatePane extends BorderPane {
 
@@ -77,7 +76,8 @@ public class MessagesStatePane extends BorderPane {
 
         send.setOnAction(e -> {
             clientObservable.sendMessage(
-                    new Message(clientObservable.getUser(), clientObservable.getFriend(), msgToSend.getText()));
+                    new Message(clientObservable.getUser(), clientObservable.getFriend(),
+                            msgToSend.getText()));
         });
     }
 
@@ -98,7 +98,7 @@ public class MessagesStatePane extends BorderPane {
         details.setOnAction(e -> {
             Alert msgBox = new Alert(Alert.AlertType.INFORMATION);
             msgBox.setTitle("Message from " + m.getSender().getName() + " to " + m.getReceiver().getName());
-            msgBox.setHeaderText("Message: " + m.getMsg() + "\nSent at: " + m.getTime());
+            msgBox.setHeaderText("Message: " + m.getMsgTxt() + "\nSent at: " + m.getTime());
             msgBox.showAndWait();
         });
         return menu;
@@ -107,8 +107,6 @@ public class MessagesStatePane extends BorderPane {
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(), e -> updateSuccess());
-        // clientObservable.addPropertyChangeListener(Strings.MESSAGE_SENT_SUCCESS.name(),
-        // e -> updateSuccess());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_FAIL.name(), e -> updateFail());
         clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE.name(), e -> updateNewMessage());
     }
@@ -121,13 +119,14 @@ public class MessagesStatePane extends BorderPane {
         getChildren().clear();
         gridPane.getChildren().clear();
         gridPane.setAlignment(Pos.TOP_LEFT);
-        lMessages = ((Messages) clientObservable.getNotificationSM().getClientServerConnection())
-                .getMessages();
+        // lMessages =
+        // clientObservable.getNotificationSM().getClientRequest().getMessages();
+        lMessages = clientObservable.getMessages();
         messages.setFont(new Font(25.0));
         gridPane.add(messages, 2, 0);
         for (int i = 0; i < lMessages.size(); i++) {
             Message msg = lMessages.get(i);
-            Label message = new Label(msg.getMsg());
+            Label message = new Label(msg.getMsgTxt());
             if (clientObservable.getUser().getID() == msg.getSender().getID()) {
                 Label name = new Label(msg.getSender().getUsername());
                 gridPane.add(name, 0, i + 1);
@@ -142,41 +141,14 @@ public class MessagesStatePane extends BorderPane {
             message.setBorder(new Border(new BorderStroke(Color.BLUE,
                     BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
         }
-        // scrollPane = new ScrollPane();
-        // scrollPane.setPannable(true);
+        scrollPane.vvalueProperty().bind(gridPane.heightProperty());
         scrollPane.setContent(gridPane);
         setCenter(scrollPane);
         setBottom(bottom);
     }
 
     private void updateNewMessage() {
-        // clientObservable.seeMessages(clientObservable.getFriend());
-        gridPane.getChildren().clear();
-        gridPane.setAlignment(Pos.TOP_LEFT);
-        lMessages = ((Messages) clientObservable.getNotificationSM().getClientServerConnection())
-                .getMessages();
-        messages.setFont(new Font(25.0));
-        gridPane.add(messages, 2, 0);
-        for (int i = 0; i < lMessages.size(); i++) {
-            Message msg = lMessages.get(i);
-            Label message = new Label(msg.getMsg());
-            if (clientObservable.getUser().getID() == msg.getSender().getID()) {
-                Label name = new Label(msg.getSender().getUsername());
-                gridPane.add(name, 0, i + 1);
-                gridPane.add(message, 1, i + 1);
-            } else {
-                Label name = new Label(msg.getSender().getUsername());
-                gridPane.add(name, 3, i + 1);
-                gridPane.add(message, 4, i + 1);
-            }
-
-            message.setContextMenu(createContextMenu(message, msg));
-            message.setBorder(new Border(new BorderStroke(Color.BLUE,
-                    BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
-        }
-        scrollPane.setContent(gridPane);
-        setCenter(scrollPane);
-        setBottom(bottom);
+        clientObservable.seeMessages(clientObservable.getFriend());
     }
 
     private void updateFail() {

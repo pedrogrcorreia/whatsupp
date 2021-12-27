@@ -70,7 +70,7 @@ public class Message implements Serializable {
         return receiver;
     }
 
-    public String getmsgTxt() {
+    public String getMsgTxt() {
         return msgTxt;
     }
 

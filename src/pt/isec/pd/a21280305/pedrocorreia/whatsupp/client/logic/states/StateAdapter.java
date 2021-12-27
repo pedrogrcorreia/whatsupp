@@ -1,8 +1,8 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
 
 public abstract class StateAdapter implements IState {
     private final Data model;
@@ -46,17 +46,17 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState searchUser(String username) {
+        return this;
+    }
+
+    @Override
     public IState seeFriends() {
         return this;
     }
 
     @Override
     public IState seeGroups() {
-        return this;
-    }
-
-    @Override
-    public IState searchUser(String username) {
         return this;
     }
 
@@ -86,17 +86,17 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState seeFriendsRequestsPending() {
+        return this;
+    }
+
+    @Override
     public IState createGroup() {
         return this;
     }
 
     @Override
     public IState addGroups() {
-        return this;
-    }
-
-    @Override
-    public IState userState() {
         return this;
     }
 }

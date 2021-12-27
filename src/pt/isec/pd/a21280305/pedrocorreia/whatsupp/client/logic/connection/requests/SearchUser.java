@@ -1,27 +1,26 @@
-package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.server_connection;
+package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
 /**
  * Class used to request the user info
  * from the user (client) that asks.
  */
 
-public class SearchUser extends ClientServerConnection {
+public class SearchUser extends ClientRequests {
 
-    public SearchUser(User user) {
-        super(user);
-        // this.user = user;
+    public SearchUser(User user, User selectedUser) {
+        super(user, selectedUser);
     }
 
     public boolean getUser(ObjectOutputStream oout) {
         try {
-            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_OWN_INFO, this);
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_REQUEST_USER, this);
 
             oout.writeObject(msgToSend);
             oout.flush();

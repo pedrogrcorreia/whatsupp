@@ -2,12 +2,14 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 
 import javafx.application.Platform;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
 public class ClientObservable implements Runnable {
     private Client client;
@@ -75,12 +77,8 @@ public class ClientObservable implements Runnable {
         client.searchUser(username);
     }
 
-    public void addFriend(int userID) {
-        client.addFriend(userID);
-    }
-
-    public void userLoggedIn() {
-        client.userLoggedIn();
+    public void addFriend(User user) {
+        client.addFriend(user);
     }
 
     public User getUser() {
@@ -89,6 +87,22 @@ public class ClientObservable implements Runnable {
 
     public User getFriend() {
         return client.getFriend();
+    }
+
+    public List<FriendsRequests> getFriendsRequests() {
+        return client.getFriendsRequests();
+    }
+
+    public List<FriendsRequests> getFriendsRequestsPending() {
+        return client.getFriendsRequestsPending();
+    }
+
+    public List<FriendsRequests> getFriendsRequestsSent() {
+        return client.getFriendsRequestsSent();
+    }
+
+    public List<Message> getMessages() {
+        return client.getMessages();
     }
 
     public void back() {
@@ -111,6 +125,11 @@ public class ClientObservable implements Runnable {
         propertyChangeSupport.firePropertyChange("updateView", null, null);
     }
 
+    public void seeFriendsRequestsPending() {
+        client.seeFriendsRequestsPending();
+        propertyChangeSupport.firePropertyChange("updateView", null, null);
+    }
+
     public void createGroup() {
         client.createGroup();
         propertyChangeSupport.firePropertyChange("updateView", null, null);
@@ -126,7 +145,7 @@ public class ClientObservable implements Runnable {
     }
 
     public User getNotificationUser() {
-        return notification.getClientServerConnection().getUser();
+        return notification.getClientRequest().getSelectedUser();
     }
 
     public SharedMessage getNotificationSM() {
@@ -149,7 +168,6 @@ public class ClientObservable implements Runnable {
         return client.getAtualState();
     }
 
-    // Thread to update the notifications status bar
     /**
      * Thread to check for notifications
      * Only call update when a notification is received.
@@ -158,32 +176,17 @@ public class ClientObservable implements Runnable {
     @Override
     public void run() {
         while (true) {
-            // notification = client.getNotification();
-            // StringBuilder notificationBuilder = new StringBuilder();
-            // notificationBuilder.append(notification.getMsg());
-            // if (notification.getMsgType() == Strings.USER_FAILED_LOGIN) {
-            // notificationBuilder.append(" (" + notification.getMsgType().name() + ")");
-            // notificationMessage = notificationBuilder.toString();
-            // }
-            // notificationMessage = notificationBuilder.toString();
-            // System.out.println(notificationMessage);
-            // Platform.runLater(() -> updateNotification());
             notification = client.getNotification();
-            // System.out.println(notification);
             switch (notification.getMsgType()) {
                 case CLIENT_REQUEST_SERVER:
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());
                     break;
-                case MESSAGE_SENT_FAIL:
-                    Platform.runLater(() -> propertyChangeSupport.firePropertyChange(Strings.MESSAGE_SENT_FAIL.name(),
-                            null, null));
-                    break;
-                case MESSAGE_SENT_SUCCESS:
-                    Platform.runLater(() -> propertyChangeSupport
-                            .firePropertyChange(Strings.MESSAGE_SENT_SUCCESS.name(), null, null));
-                    break;
                 case USER_FAILED_LOGIN:
+                    notificationMessage = notification.getMsg();
+                    Platform.runLater(() -> updateNotification());
+                    break;
+                case USER_SUCCESS_LOGIN:
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());
                     break;
@@ -194,8 +197,6 @@ public class ClientObservable implements Runnable {
                 case USER_REGISTER_SUCCESS:
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());
-                    break;
-                case USER_REQUEST_FRIENDS:
                     break;
                 case USER_REQUEST_FRIENDS_FAIL:
                     Platform.runLater(() -> propertyChangeSupport
@@ -208,19 +209,26 @@ public class ClientObservable implements Runnable {
                 case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS:
                     Platform.runLater(() -> propertyChangeSupport
                             .firePropertyChange(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS.name(), null, null));
-                case USER_REQUEST_GROUPS:
                     break;
-                case USER_REQUEST_GROUPS_FAIL:
+                case USER_REQUEST_FRIENDS_REQUESTS_FAIL:
+                    Platform.runLater(() -> propertyChangeSupport
+                            .firePropertyChange(Strings.USER_REQUEST_FRIENDS_REQUESTS_FAIL.name(), null, null));
                     break;
-                case USER_REQUEST_GROUPS_SUCCESS:
+                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS:
+                    Platform.runLater(() -> propertyChangeSupport.firePropertyChange(
+                            Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS.name(), null, null));
                     break;
-                case USER_REQUEST_INFO_FAIL:
+                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL:
+                    Platform.runLater(() -> propertyChangeSupport.firePropertyChange(
+                            Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL.name(), null, null));
                     break;
-                case USER_REQUEST_INFO_SUCCESS:
+                case MESSAGE_SENT_FAIL:
+                    Platform.runLater(() -> propertyChangeSupport.firePropertyChange(Strings.MESSAGE_SENT_FAIL.name(),
+                            null, null));
                     break;
-                case USER_REQUEST_LOGIN:
-                    break;
-                case USER_REQUEST_MESSAGES:
+                case MESSAGE_SENT_SUCCESS:
+                    Platform.runLater(() -> propertyChangeSupport
+                            .firePropertyChange(Strings.MESSAGE_SENT_SUCCESS.name(), null, null));
                     break;
                 case USER_REQUEST_MESSAGES_FAIL:
                     Platform.runLater(() -> propertyChangeSupport
@@ -230,16 +238,6 @@ public class ClientObservable implements Runnable {
                     Platform.runLater(
                             () -> propertyChangeSupport.firePropertyChange(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(),
                                     null, null));
-                    break;
-                case USER_REQUEST_OWN_INFO:
-                    break;
-                case USER_REQUEST_OWN_INFO_FAIL:
-                    break;
-                case USER_REQUEST_OWN_INFO_SUCCESS:
-                    break;
-                case USER_REQUEST_REGISTER:
-                    break;
-                case USER_REQUEST_USER:
                     break;
                 case USER_REQUEST_USER_FAIL:
                     notificationMessage = notification.getMsg();
@@ -252,15 +250,9 @@ public class ClientObservable implements Runnable {
                     break;
                 case USER_SENT_MESSAGE:
                     break;
-                case USER_SUCCESS_LOGIN:
-                    notificationMessage = notification.getMsg();
-                    Platform.runLater(() -> updateNotification());
-                    break;
                 case NEW_MESSAGE:
-                    System.out.println("Friend: " + client.getFriend());
-                    seeMessages(client.getFriend());
-                    // Platform.runLater(() -> propertyChangeSupport
-                    // .firePropertyChange(Strings.NEW_MESSAGE.name(), null, null));
+                    Platform.runLater(() -> propertyChangeSupport
+                            .firePropertyChange(Strings.NEW_MESSAGE.name(), null, null));
                     break;
                 default:
                     notificationMessage = notification.getMsg();

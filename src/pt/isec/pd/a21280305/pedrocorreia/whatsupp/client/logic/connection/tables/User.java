@@ -27,13 +27,21 @@ public class User implements Serializable {
     }
 
     public User(String username, String password) {
-        this.username = password;
+        this.username = username;
+        this.password = password;
     }
 
     public User(String username, String name, int id) {
         this.username = username;
         this.name = name;
         this.id = id;
+    }
+
+    public User(String username, String name, int id, int status) {
+        this.username = username;
+        this.name = name;
+        this.id = id;
+        this.status = status;
     }
 
     public User(String username, String password, String name, int id) {
@@ -59,7 +67,7 @@ public class User implements Serializable {
         return password;
     }
 
-    public String getConfPasswor() {
+    public String getConfPassword() {
         return confPassword;
     }
 

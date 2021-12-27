@@ -26,4 +26,30 @@ public class FriendsRequests implements Serializable {
         this.answerTime = answerTime;
     }
 
+    public FriendsRequests(User requester, User receiver, Timestamp requestTime, Timestamp answerTime) {
+        this.requester = requester;
+        this.receiver = receiver;
+        this.requestTime = requestTime;
+        this.answerTime = answerTime;
+    }
+
+    public User getRequester() {
+        return requester;
+    }
+
+    public User getReceiver() {
+        return receiver;
+    }
+
+    public Timestamp getRequestTime() {
+        return requestTime;
+    }
+
+    public Timestamp getAnswerTime() {
+        return answerTime;
+    }
+
+    public int getStatus() {
+        return request_status;
+    }
 }
