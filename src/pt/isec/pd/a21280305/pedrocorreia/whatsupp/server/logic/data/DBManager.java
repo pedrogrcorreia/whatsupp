@@ -16,19 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DBManager {
-    private String dbAddress;
     Connection con;
     static Statement stmt;
 
-    private Server server;
+    private final Server server;
 
     public DBManager(Server server) {
-        this.dbAddress = server.getDB();
+        String dbAddress = server.getDB();
         this.server = server;
         // DEBUG
         // String db = "jdbc:mysql://localhost:3306/whatsupp_db";
 
-        String db = "jdbc:mysql://" + this.dbAddress;
+        String db = "jdbc:mysql://" + dbAddress;
         // DEBUG
         // final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 
@@ -169,7 +168,7 @@ public class DBManager {
         String query = new String(
                 "SELECT COUNT(*) AS nusers, username, name, user_id, status " +
                         "FROM users where username = '" + selectedUser.getUsername() + "'");
-        User userResponse = null;
+        User userResponse = new User();
         try {
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -251,7 +250,7 @@ public class DBManager {
     public SharedMessage getFriendsRequests(SharedMessage request) {
         User user = request.getClientRequest().getUser();
         List<FriendsRequests> friends = new ArrayList<>();
-        FriendsRequests newFriend = null;
+        FriendsRequests newFriend = new FriendsRequests();
         String query = new String("SELECT user_id, username, users.name, " +
                 "requester_user_id, friend_user_id, friends_requests.request_time, " +
                 "friends_requests.answer_time " +

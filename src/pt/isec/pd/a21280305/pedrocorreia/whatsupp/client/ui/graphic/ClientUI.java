@@ -20,17 +20,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states.*;
 
 public class ClientUI extends BorderPane {
 
-    // private final Background lBckColor = new Background(new
-    // BackgroundFill(Color.WHITE, null, null));
-    // private final Background dBckColor = new Background(new
-    // BackgroundFill(Color.DARKGRAY.darker(), null, null));
-    // private final Color lFontColor = Color.BLACK;
-    // private final Color dFontColor = Color.WHITE;
-    // private final Background lNotBckColor = new Background(new
-    // BackgroundFill(Color.WHITE, null, null));
-    // private final Background dNotBckColor = new Background(new
-    // BackgroundFill(Color.GRAY, null, null));
-
     private ClientObservable clientObservable;
 
     // Menu
@@ -120,7 +109,7 @@ public class ClientUI extends BorderPane {
 
         // DEBUG
         update.setOnAction((ActionEvent e) -> {
-            clientObservable.update();
+            clientObservable.forceUpdate();
         });
         menuBar.getMenus().addAll(file);
     }
@@ -142,7 +131,7 @@ public class ClientUI extends BorderPane {
             notificationPanelScroll.setContent(notificationPanel);
             setRight(notificationPanelScroll);
         } else {
-            System.out.println("Notificacao vazia");
+            System.out.println("Empty notification");
         }
     }
 

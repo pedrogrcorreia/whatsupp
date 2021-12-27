@@ -6,31 +6,38 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 
 public interface IState {
 
-    IState createConnection();
-
+    /**
+     * Contact Server Manager
+     */
     IState contactServerManager();
 
+    /**
+     * Initial menu
+     */
+
     IState initialOption(String opt);
+
+    /**
+     * Login or register
+     */
 
     IState login(String username, String password);
 
     IState register(String username, String password, String confPassword, String fname, String lname);
 
+    /**
+     * Search Users
+     */
+
     IState searchUsers();
-
-    IState seeFriends();
-
-    IState seeGroups();
 
     IState searchUser(String username);
 
-    IState seeMessages(User user);
+    /**
+     * Friends
+     */
 
-    IState back();
-
-    IState deleteMessage(Message msg);
-
-    IState sendMessage(Message msg);
+    IState seeFriends();
 
     IState seeFriendsRequests();
 
@@ -44,9 +51,32 @@ public interface IState {
 
     IState deleteFriendship(User user);
 
+    /**
+     * Groups
+     */
+
+    IState seeGroups();
+
     IState createGroup();
 
     IState addGroups();
 
+    /**
+     * Messages
+     */
+
+    IState seeMessages(User user);
+
+    IState deleteMessage(Message msg);
+
+    IState sendMessage(Message msg);
+
+    /**
+     * Back button
+     */
+
+    IState back();
+
+    /** Returns the atual state */
     Situation getAtualState();
 }

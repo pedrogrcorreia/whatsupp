@@ -15,20 +15,27 @@ public abstract class StateAdapter implements IState {
         return model;
     }
 
-    @Override
-    public IState createConnection() {
-        return this;
-    }
+    /**
+     * Contact Server Manager
+     */
 
     @Override
     public IState contactServerManager() {
         return this;
     }
 
+    /**
+     * Initial menu
+     */
+
     @Override
     public IState initialOption(String opt) {
         return this;
     }
+
+    /**
+     * Login or register
+     */
 
     @Override
     public IState login(String username, String password) {
@@ -40,6 +47,10 @@ public abstract class StateAdapter implements IState {
         return this;
     }
 
+    /**
+     * Search users
+     */
+
     @Override
     public IState searchUsers() {
         return this;
@@ -50,33 +61,10 @@ public abstract class StateAdapter implements IState {
         return this;
     }
 
+    /** Friends */
+
     @Override
     public IState seeFriends() {
-        return this;
-    }
-
-    @Override
-    public IState seeGroups() {
-        return this;
-    }
-
-    @Override
-    public IState seeMessages(User user) {
-        return this;
-    }
-
-    @Override
-    public IState back() {
-        return new UserState(getModel());
-    }
-
-    @Override
-    public IState deleteMessage(Message msg) {
-        return this;
-    }
-
-    @Override
-    public IState sendMessage(Message msg) {
         return this;
     }
 
@@ -91,12 +79,17 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
-    public IState addFriend(User user) {
+    public IState acceptRequest(User user) {
         return this;
     }
 
     @Override
-    public IState acceptRequest(User user) {
+    public IState cancelRequest(User user) {
+        return this;
+    }
+
+    @Override
+    public IState addFriend(User user) {
         return this;
     }
 
@@ -105,8 +98,12 @@ public abstract class StateAdapter implements IState {
         return this;
     }
 
+    /**
+     * Groups
+     */
+
     @Override
-    public IState cancelRequest(User user) {
+    public IState seeGroups() {
         return this;
     }
 
@@ -119,4 +116,33 @@ public abstract class StateAdapter implements IState {
     public IState addGroups() {
         return this;
     }
+
+    /**
+     * Messages
+     */
+
+    @Override
+    public IState seeMessages(User user) {
+        return this;
+    }
+
+    @Override
+    public IState deleteMessage(Message msg) {
+        return this;
+    }
+
+    @Override
+    public IState sendMessage(Message msg) {
+        return this;
+    }
+
+    /**
+     * Back button
+     */
+
+    @Override
+    public IState back() {
+        return new UserState(getModel());
+    }
+
 }

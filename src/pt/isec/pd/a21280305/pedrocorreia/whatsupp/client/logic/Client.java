@@ -19,17 +19,26 @@ public class Client {
         state = new ContactServerManagerState(model);
     }
 
+    /**
+     * Sets a new state
+     * 
+     * @param state
+     */
     private void setState(IState state) {
         this.state = state;
     }
 
-    public void createConnection() {
-        setState(state.createConnection());
-    }
+    /**
+     * Contact server manager
+     */
 
     public void contactServerManager() {
         setState(state.contactServerManager());
     }
+
+    /**
+     * Initial menu
+     */
 
     public void initialStatus(String opt) {
         setState(state.initialOption(opt));
@@ -38,6 +47,7 @@ public class Client {
     /**
      * Login and Register
      */
+
     public void login(String username, String password) {
         setState(state.login(username, password));
     }
@@ -49,6 +59,7 @@ public class Client {
     /**
      * Search user
      */
+
     public void searchUsers() {
         setState(state.searchUsers());
     }
@@ -60,6 +71,7 @@ public class Client {
     /**
      * Friends
      */
+
     public void seeFriends() {
         setState(state.seeFriends());
     }
@@ -72,17 +84,16 @@ public class Client {
         setState(state.seeFriendsRequestsPending());
     }
 
-    public void addFriend(User user) {
-        // model.addFriend(user);
-        setState(state.addFriend(user));
-    }
-
     public void acceptRequest(User user) {
         setState(state.acceptRequest(user));
     }
 
     public void cancelRequest(User user) {
         setState(state.cancelRequest(user));
+    }
+
+    public void addFriend(User user) {
+        setState(state.addFriend(user));
     }
 
     public void deleteFriendship(User user) {
@@ -92,6 +103,7 @@ public class Client {
     /**
      * Groups
      */
+
     public void seeGroups() {
         setState(state.seeGroups());
     }
@@ -107,6 +119,7 @@ public class Client {
     /**
      * Messages
      */
+
     public void seeMessages(User user) {
         setState(state.seeMessages(user));
     }
@@ -122,11 +135,13 @@ public class Client {
     /**
      * Back to start state
      */
+
     public void back() {
         setState(state.back());
     }
 
     /** Get notifications */
+
     public SharedMessage getNotification() {
         return model.getNotification();
     }

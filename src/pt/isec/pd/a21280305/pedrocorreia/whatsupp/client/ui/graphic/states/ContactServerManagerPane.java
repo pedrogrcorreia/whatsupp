@@ -12,7 +12,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 public class ContactServerManagerPane extends BorderPane {
 
     private ClientObservable clientObservable;
-    // private static int debug = 0;
 
     private Label welcomeText;
     private Label text;
@@ -38,7 +37,7 @@ public class ContactServerManagerPane extends BorderPane {
         text.setVisible(false);
 
         start.setOnAction(e -> {
-            setCursor(Cursor.WAIT);
+            // setCursor(Cursor.WAIT);
             clientObservable.contactServerManager();
         });
 
@@ -59,6 +58,7 @@ public class ContactServerManagerPane extends BorderPane {
         }
 
         if (firstRun) {
+            setCursor(Cursor.DEFAULT);
             firstRun = false;
         }
 

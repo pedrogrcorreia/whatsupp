@@ -28,57 +28,74 @@ public class ClientObservable implements Runnable {
         propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
-    public void createConnection() {
-        client.createConnection();
+    public void forceUpdate() {
         propertyChangeSupport.firePropertyChange("updateView", null, null);
     }
+
+    public void updateNotification() {
+        propertyChangeSupport.firePropertyChange("notification", null, null);
+    }
+
+    /**
+     * Contact server manager
+     */
 
     public void contactServerManager() {
         client.contactServerManager();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
+        forceUpdate();
     }
+
+    /**
+     * Initial menu
+     */
 
     public void initialStatus(String opt) {
         client.initialStatus(opt);
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
+        forceUpdate();
     }
+
+    /**
+     * Login and register
+     */
 
     public void login(String username, String password) {
         client.login(username, password);
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
+        forceUpdate();
     }
 
     public void register(String username, String password, String confPassword, String fname, String lname) {
         client.register(username, password, confPassword, fname, lname);
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
+        forceUpdate();
     }
+
+    /**
+     * Search users
+     */
 
     public void searchUsers() {
         client.searchUsers();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void seeFriends() {
-        client.seeFriends();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void seeGroups() {
-        client.seeGroups();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void seeMessages(User user) {
-        client.seeMessages(user);
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
+        forceUpdate();
     }
 
     public void searchUser(String username) {
         client.searchUser(username);
     }
 
-    public void addFriend(User user) {
-        client.addFriend(user);
+    /** Friends */
+
+    public void seeFriends() {
+        client.seeFriends();
+        forceUpdate();
+    }
+
+    public void seeFriendsRequests() {
+        client.seeFriendsRequests();
+        forceUpdate();
+    }
+
+    public void seeFriendsRequestsPending() {
+        client.seeFriendsRequestsPending();
+        forceUpdate();
     }
 
     public void acceptRequest(User user) {
@@ -89,9 +106,78 @@ public class ClientObservable implements Runnable {
         client.cancelRequest(user);
     }
 
+    public void addFriend(User user) {
+        client.addFriend(user);
+    }
+
     public void deleteFriendship(User user) {
         client.deleteFriendship(user);
     }
+
+    /**
+     * Groups
+     */
+
+    public void seeGroups() {
+        client.seeGroups();
+        forceUpdate();
+    }
+
+    public void createGroup() {
+        client.createGroup();
+        forceUpdate();
+    }
+
+    public void addGroups() {
+        client.addGroups();
+        forceUpdate();
+    }
+
+    /**
+     * Messages
+     */
+
+    public void seeMessages(User user) {
+        client.seeMessages(user);
+        forceUpdate();
+    }
+
+    public void deleteMessage(Message msg) {
+        client.deleteMessage(msg);
+        forceUpdate();
+    }
+
+    public void sendMessage(Message msg) {
+        client.sendMessage(msg);
+        forceUpdate();
+    }
+
+    /**
+     * Back to start state
+     */
+
+    public void back() {
+        client.back();
+        propertyChangeSupport.firePropertyChange("updateView", null, null);
+    }
+
+    /**
+     * Get notifications
+     */
+
+    public String getNotification() {
+        return notificationMessage;
+    }
+
+    public SharedMessage getNotificationSM() {
+        return notification;
+    }
+
+    public Situation getAtualState() {
+        return client.getAtualState();
+    }
+
+    /** Gets directly from model */
 
     public User getUser() {
         return client.getUser();
@@ -115,69 +201,6 @@ public class ClientObservable implements Runnable {
 
     public List<Message> getMessages() {
         return client.getMessages();
-    }
-
-    public void back() {
-        client.back();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void deleteMessage(Message msg) {
-        client.deleteMessage(msg);
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void sendMessage(Message msg) {
-        client.sendMessage(msg);
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void seeFriendsRequests() {
-        client.seeFriendsRequests();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void seeFriendsRequestsPending() {
-        client.seeFriendsRequestsPending();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void createGroup() {
-        client.createGroup();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void addGroups() {
-        client.addGroups();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public String getNotification() {
-        return notificationMessage;
-    }
-
-    public User getNotificationUser() {
-        return notification.getClientRequest().getSelectedUser();
-    }
-
-    public SharedMessage getNotificationSM() {
-        return notification;
-    }
-
-    public void update() {
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
-    }
-
-    public void updateNotification() {
-        propertyChangeSupport.firePropertyChange("notification", null, null);
-    }
-
-    public void updateScreen() {
-        propertyChangeSupport.firePropertyChange("viewChange", null, null);
-    }
-
-    public Situation getAtualState() {
-        return client.getAtualState();
     }
 
     /**
@@ -250,10 +273,10 @@ public class ClientObservable implements Runnable {
                     } else if (getAtualState() == Situation.SEE_FRIENDS) {
                         Platform.runLater(() -> propertyChangeSupport
                                 .firePropertyChange(Strings.REMOVED_FRIEND.name(), null, null));
-                    } else {
-                        notificationMessage = notification.getMsg();
-                        Platform.runLater(() -> updateNotification());
                     }
+                    notificationMessage = notification.getMsg();
+                    Platform.runLater(() -> updateNotification());
+                    break;
                 case MESSAGE_SENT_FAIL:
                     Platform.runLater(() -> propertyChangeSupport.firePropertyChange(Strings.MESSAGE_SENT_FAIL.name(),
                             null, null));
