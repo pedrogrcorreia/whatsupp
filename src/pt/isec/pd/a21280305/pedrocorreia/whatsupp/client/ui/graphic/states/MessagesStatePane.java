@@ -25,6 +25,7 @@ import javafx.scene.text.Font;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
@@ -109,6 +110,7 @@ public class MessagesStatePane extends BorderPane {
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(), e -> updateSuccess());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_FAIL.name(), e -> updateFail());
         clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE.name(), e -> updateNewMessage());
+        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
     }
 
     private void update() {
@@ -141,6 +143,7 @@ public class MessagesStatePane extends BorderPane {
             message.setBorder(new Border(new BorderStroke(Color.BLUE,
                     BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
         }
+
         scrollPane.vvalueProperty().bind(gridPane.heightProperty());
         scrollPane.setContent(gridPane);
         setCenter(scrollPane);
@@ -149,6 +152,37 @@ public class MessagesStatePane extends BorderPane {
 
     private void updateNewMessage() {
         clientObservable.seeMessages(clientObservable.getFriend());
+    }
+
+    private void updateRemovedFriend() {
+        getChildren().clear();
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        boolean match = false;
+        clientObservable.seeFriends();
+        User userFriend = clientObservable.getFriend();
+        List<FriendsRequests> friends = clientObservable.getFriendsRequests();
+        for (FriendsRequests friend : friends) {
+            if (friend.getRequester() == userFriend) {
+                match = true;
+                // return;
+            } else if (friend.getReceiver() == userFriend) {
+                match = true;
+                // return;
+            }
+        }
+        System.out.println("MATCH: " + match);
+        if (match) {
+            Label userBlocked = new Label("This friendship is over...");
+            gridPane.add(userBlocked, 0, 1);
+            send.setDisable(true);
+            msgToSend.setDisable(true);
+            scrollPane.setContent(gridPane);
+            setCenter(scrollPane);
+            setBottom(bottom);
+        } else {
+            updateNewMessage();
+        }
     }
 
     private void updateFail() {

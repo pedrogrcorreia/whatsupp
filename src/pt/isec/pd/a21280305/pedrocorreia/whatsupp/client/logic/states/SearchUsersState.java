@@ -1,6 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 
 public class SearchUsersState extends StateAdapter {
@@ -12,6 +13,12 @@ public class SearchUsersState extends StateAdapter {
     @Override
     public IState searchUser(String username) {
         getModel().searchUser(username);
+        return new SearchUsersState(getModel());
+    }
+
+    @Override
+    public IState addFriend(User user) {
+        getModel().addFriend(user);
         return new SearchUsersState(getModel());
     }
 

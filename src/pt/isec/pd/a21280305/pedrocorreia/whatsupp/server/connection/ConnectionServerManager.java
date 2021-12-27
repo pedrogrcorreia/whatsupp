@@ -19,10 +19,13 @@ public class ConnectionServerManager extends Thread {
             receivedRequest = server.receiveFromServerManager();
             System.out.println("Request from ServerManager: " + receivedRequest.getMsgType().name());
             if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_MESSAGE")) {
-                server.alertClients();
+                server.alertClients(receivedRequest);
             }
-            if (receivedRequest.getMsgType().name().equalsIgnoreCase("MESSAGE_SENT_SUCCESS")) {
-                server.alertClients();
+            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_FRIEND")) {
+                server.alertClients(receivedRequest);
+            }
+            if (receivedRequest.getMsgType().name().equalsIgnoreCase("REMOVED_FRIEND")) {
+                server.alertClients(receivedRequest);
             }
         }
     }

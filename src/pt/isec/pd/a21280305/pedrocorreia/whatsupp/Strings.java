@@ -13,13 +13,21 @@ public enum Strings {
     SERVER_REGISTER_SUCCESS("Registered the server successfully"),
     SERVER_REGISTER_FAIL("Failed to register the server"),
     SERVER_PING("Server pinging"),
-    NEW_MESSAGE("Alert users that a new message has been sent"),
+    NEW_MESSAGE("A new message has been sent to the system"),
+    NEW_FRIEND("A new friend request has been updated on the system"),
+    REMOVED_FRIEND("A friendship has been cancelled"),
 
     /** Client <-> Server Manager */
 
     CLIENT_REQUEST_SERVER("Client is requesting a server"),
 
     /** Client <-> Server */
+
+    /** Set users status */
+    SET_USER_ONLINE("User is online"),
+    SET_USER_OFFLINE("User is offline"),
+    NEW_USER_ONLINE("An user came online"),
+    NEW_USER_OFFLINE("An user went offline"),
 
     /** Login */
 
@@ -80,6 +88,15 @@ public enum Strings {
     USER_SEND_FRIEND_REQUEST("Friend request"),
     USER_SEND_FRIEND_REQUEST_SUCCESS("Success"),
     USER_SEND_FRIEND_REQUEST_FAIL("Failed"),
+    USER_ACCEPT_FRIEND_REQUEST("Accepting a friend request"),
+    USER_ACCEPT_FRIEND_REQUEST_SUCCESS("Success"),
+    USER_ACCEPT_FRIEND_REQUEST_FAIL("Failed"),
+    USER_CANCEL_FRIEND_REQUEST("Cancel a friend request"),
+    USER_CANCEL_FRIEND_REQUEST_SUCCESS("Success"),
+    USER_CANCEL_FRIEND_REQUEST_FAIL("Fail"),
+    USER_CANCEL_FRIENDSHIP("Delete friendship"),
+    USER_CANCEL_FRIENDSHIP_SUCCESS("Friendship cancelled"),
+    USER_CANCEL_FRIENDSHIP_FAIL("Couldn't cancel this friendship"),
 
     /** Messages */
     USER_REQUEST_MESSAGES("Get messages"),

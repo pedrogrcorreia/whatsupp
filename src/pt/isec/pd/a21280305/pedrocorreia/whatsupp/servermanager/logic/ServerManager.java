@@ -85,12 +85,17 @@ public class ServerManager {
                 answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
                         activeServers.registerClient());
                 answerToRequest(answer, myPacket);
-            } else { // TODO necessary to use more constraints? this applies for notifications from
-                     // the server
-                answer = new SharedMessage(Strings.NEW_MESSAGE, Strings.NEW_MESSAGE.toString());
-                // answerToRequest(answer, myPacket);
-                answerToAll(answer);
+            } else {
+                answerToAll(request);
             }
+            // } else if (request.getMsgType().equals(Strings.NEW_MESSAGE)) {
+            // // answer = new SharedMessage(Strings.NEW_MESSAGE,
+            // // Strings.NEW_MESSAGE.toString());
+            // // answerToAll(answer);
+            // answerToAll(request);
+            // } else if (request.getMsgType().equals(Strings.NEW_FRIEND)) {
+            // answerToAll(request);
+            // }
         }
     }
 

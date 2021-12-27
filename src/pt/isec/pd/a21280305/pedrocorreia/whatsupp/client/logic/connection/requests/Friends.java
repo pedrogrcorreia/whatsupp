@@ -77,4 +77,43 @@ public class Friends extends ClientRequests {
             return false;
         }
     }
+
+    public boolean acceptRequest(ObjectOutputStream oout) {
+        try {
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST, this);
+
+            oout.writeObject(msgToSend);
+            oout.flush();
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error receiving the message:\r\n\t" + e);
+            return false;
+        }
+    }
+
+    public boolean cancelRequest(ObjectOutputStream oout) {
+        try {
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST, this);
+
+            oout.writeObject(msgToSend);
+            oout.flush();
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error receiving the message:\r\n\t" + e);
+            return false;
+        }
+    }
+
+    public boolean deleteFriendship(ObjectOutputStream oout) {
+        try {
+            SharedMessage msgToSend = new SharedMessage(Strings.USER_CANCEL_FRIENDSHIP, this);
+
+            oout.writeObject(msgToSend);
+            oout.flush();
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error receiving the message:\r\n\t" + e);
+            return false;
+        }
+    }
 }

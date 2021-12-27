@@ -230,6 +230,23 @@ public class Data {
         return f.addFriend(oout);
     }
 
+    public boolean acceptRequest(User friend) {
+        selectedFriend = friend;
+        Friends f = new Friends(user, friend);
+        return f.acceptRequest(oout);
+    }
+
+    public boolean cancelRequest(User friend) {
+        selectedFriend = friend;
+        Friends f = new Friends(user, friend);
+        return f.cancelRequest(oout);
+    }
+
+    public boolean deleteFriendship(User friend) {
+        Friends f = new Friends(user, friend);
+        return f.deleteFriendship(oout);
+    }
+
     public boolean seeMessages(User selectedUser) {
         selectedFriend = selectedUser;
         Messages m = new Messages(user, selectedFriend, messages);

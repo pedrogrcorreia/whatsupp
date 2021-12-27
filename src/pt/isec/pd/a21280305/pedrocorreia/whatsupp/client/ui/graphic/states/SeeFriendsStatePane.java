@@ -12,6 +12,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
@@ -25,6 +26,7 @@ public class SeeFriendsStatePane extends GridPane {
     List<FriendsRequests> lFriends;
 
     private Label friends;
+    private int method = 0;
 
     public SeeFriendsStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -75,6 +77,8 @@ public class SeeFriendsStatePane extends GridPane {
                 e -> updateFriendsRequests());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS.name(),
                 e -> updateFriendsRequestsPending());
+        clientObservable.addPropertyChangeListener(Strings.NEW_FRIEND.name(), e -> updateNewFriend());
+        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateNewFriend());
     }
 
     private void update() {
@@ -87,8 +91,14 @@ public class SeeFriendsStatePane extends GridPane {
         add(friends, 0, 1);
         // lFriends =
         // clientObservable.getNotificationSM().getClientRequest().getFriendsRequests();
+        method = 0;
         lFriends = clientObservable.getFriendsRequests();
         User me = clientObservable.getUser();
+        if (lFriends.size() == 0) {
+            Label noFriends = new Label("No friends to list.");
+            add(noFriends, 1, 1);
+            return;
+        }
         for (int i = 0; i < lFriends.size(); i++) {
             Label friend;
             User f;
@@ -98,13 +108,23 @@ public class SeeFriendsStatePane extends GridPane {
                 f = lFriends.get(i).getReceiver();
             }
             friend = new Label(f.getName());
+            if (f.getStatus() == 1) {
+                friend.setTextFill(Color.GREEN);
+            }
             add(friend, 1, i + 1);
             friend.setContextMenu(createContextMenu(friend, lFriends.get(i)));
             Button friendSee = new Button("See messages");
             add(friendSee, 2, i + 1);
+            Button delete = new Button("Delete friendship");
+            add(delete, 3, i + 1);
 
             friendSee.setOnAction(e -> {
                 clientObservable.seeMessages(f);
+            });
+
+            delete.setOnAction(e -> {
+                clientObservable.deleteFriendship(f);
+                method = 0;
             });
         }
     }
@@ -117,6 +137,12 @@ public class SeeFriendsStatePane extends GridPane {
         // clientObservable.getNotificationSM().getClientRequest().getFriendsRequests();
         lFriends = clientObservable.getFriendsRequestsSent();
         User me = clientObservable.getUser();
+        method = 1;
+        if (lFriends.size() == 0) {
+            Label noFriends = new Label("No friend requests sent.");
+            add(noFriends, 1, 1);
+            return;
+        }
         for (int i = 0; i < lFriends.size(); i++) {
             Label friend;
             User f;
@@ -132,7 +158,8 @@ public class SeeFriendsStatePane extends GridPane {
             add(cancel, 2, i + 1);
 
             cancel.setOnAction(e -> {
-                clientObservable.seeMessages(f);
+                method = 1;
+                clientObservable.cancelRequest(f);
             });
         }
     }
@@ -145,6 +172,12 @@ public class SeeFriendsStatePane extends GridPane {
         // clientObservable.getNotificationSM().getClientRequest().getFriendsRequests();
         lFriends = clientObservable.getFriendsRequestsPending();
         User me = clientObservable.getUser();
+        method = 2;
+        if (lFriends.size() == 0) {
+            Label noFriends = new Label("No friend requests received.");
+            add(noFriends, 1, 1);
+            return;
+        }
         for (int i = 0; i < lFriends.size(); i++) {
             Label friend;
             User f;
@@ -160,9 +193,25 @@ public class SeeFriendsStatePane extends GridPane {
             add(accept, 2, i + 1);
 
             accept.setOnAction(e -> {
-                clientObservable.seeMessages(f);
+                method = 2;
+                clientObservable.acceptRequest(f);
             });
         }
+    }
+
+    private void updateNewFriend() {
+        if (method == 1) {
+            clientObservable.seeFriendsRequests();
+        }
+        if (method == 2) {
+            clientObservable.seeFriendsRequestsPending();
+        }
+        if (method == 0) {
+            clientObservable.seeFriends();
+        }
+        // clientObservable.seeFriendsRequests();
+        // clientObservable.getFriendsRequests();
+        // clientObservable.getFriendsRequestsPending();
     }
 
     private void updateFail() {

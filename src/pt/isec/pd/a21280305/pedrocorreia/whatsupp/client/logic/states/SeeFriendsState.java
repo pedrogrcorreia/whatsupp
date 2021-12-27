@@ -17,9 +17,48 @@ public class SeeFriendsState extends StateAdapter {
     }
 
     @Override
+    public IState seeFriendsRequests() {
+        getModel().seeFriendsRequests();
+        return new SeeFriendsState(getModel());
+    }
+
+    @Override
+    public IState seeFriendsRequestsPending() {
+        getModel().seeFriendsRequestsPending();
+        return new SeeFriendsState(getModel());
+    }
+
+    @Override
     public IState seeMessages(User user) {
+        if (user == null) {
+            return new SeeFriendsState(getModel());
+        }
         getModel().seeMessages(user);
         return new MessagesState(getModel());
+    }
+
+    @Override
+    public IState addFriend(User user) {
+        getModel().addFriend(user);
+        return new SeeFriendsState(getModel());
+    }
+
+    @Override
+    public IState acceptRequest(User user) {
+        getModel().acceptRequest(user);
+        return new SeeFriendsState(getModel());
+    }
+
+    @Override
+    public IState cancelRequest(User user) {
+        getModel().cancelRequest(user);
+        return new SeeFriendsState(getModel());
+    }
+
+    @Override
+    public IState deleteFriendship(User user) {
+        getModel().deleteFriendship(user);
+        return new SeeFriendsState(getModel());
     }
 
     @Override

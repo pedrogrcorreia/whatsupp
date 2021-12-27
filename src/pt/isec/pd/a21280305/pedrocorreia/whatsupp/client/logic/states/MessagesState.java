@@ -18,6 +18,12 @@ public class MessagesState extends StateAdapter {
     }
 
     @Override
+    public IState seeFriends() {
+        getModel().seeFriends();
+        return new MessagesState(getModel());
+    }
+
+    @Override
     public IState deleteMessage(Message msg) {
         getModel().deleteMessage(msg);
         return new MessagesState(getModel());

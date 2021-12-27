@@ -54,6 +54,12 @@ public class Notifications extends Data implements Runnable {
                         Data.friendsPending = response.getClientRequest().getFriendsRequests();
                         notifyList(response);
                     }
+                    case USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> {
+                        notifyList(response);
+                    }
+                    case USER_CANCEL_FRIEND_REQUEST_SUCCESS -> {
+                        notifyList(response);
+                    }
                     case USER_REQUEST_USER_SUCCESS -> {
                         Data.selectedFriend = response.getClientRequest().getSelectedUser();
                         notifyList(response);
@@ -84,6 +90,12 @@ public class Notifications extends Data implements Runnable {
                         notifyList(response);
                     }
                     case NEW_MESSAGE -> {
+                        notifyList(response);
+                    }
+                    case NEW_FRIEND -> {
+                        notifyList(response);
+                    }
+                    case REMOVED_FRIEND -> {
                         notifyList(response);
                     }
                     default -> {

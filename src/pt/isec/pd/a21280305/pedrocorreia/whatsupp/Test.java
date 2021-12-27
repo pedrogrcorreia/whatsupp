@@ -17,6 +17,10 @@ public class Test {
     }
 
     public static void main(String[] args) throws IOException {
+        String query = new String("DELETE FROM friends_requests WHERE (requester_user_id = " +
+                1 + " AND friend_user_id = " + 2 + ")" +
+                "OR requester_user_id = " + 2 + " AND friend_user_id = " + 1 + ")");
+        System.out.println(query);
         // ByteArrayOutputStream bout;
         // ObjectOutputStream oout;
         // bout = new ByteArrayOutputStream();

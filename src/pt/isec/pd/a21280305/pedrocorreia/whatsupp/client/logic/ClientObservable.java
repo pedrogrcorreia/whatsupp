@@ -81,6 +81,18 @@ public class ClientObservable implements Runnable {
         client.addFriend(user);
     }
 
+    public void acceptRequest(User user) {
+        client.acceptRequest(user);
+    }
+
+    public void cancelRequest(User user) {
+        client.cancelRequest(user);
+    }
+
+    public void deleteFriendship(User user) {
+        client.deleteFriendship(user);
+    }
+
     public User getUser() {
         return client.getUser();
     }
@@ -222,6 +234,26 @@ public class ClientObservable implements Runnable {
                     Platform.runLater(() -> propertyChangeSupport.firePropertyChange(
                             Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL.name(), null, null));
                     break;
+                case NEW_FRIEND:
+                    if (getAtualState() == Situation.SEE_FRIENDS) {
+                        Platform.runLater(() -> propertyChangeSupport
+                                .firePropertyChange(Strings.NEW_FRIEND.name(), null, null));
+                    } else {
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                    break;
+                case REMOVED_FRIEND:
+                    if (getAtualState() == Situation.MESSAGE) {
+                        Platform.runLater(() -> propertyChangeSupport
+                                .firePropertyChange(Strings.REMOVED_FRIEND.name(), null, null));
+                    } else if (getAtualState() == Situation.SEE_FRIENDS) {
+                        Platform.runLater(() -> propertyChangeSupport
+                                .firePropertyChange(Strings.REMOVED_FRIEND.name(), null, null));
+                    } else {
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
                 case MESSAGE_SENT_FAIL:
                     Platform.runLater(() -> propertyChangeSupport.firePropertyChange(Strings.MESSAGE_SENT_FAIL.name(),
                             null, null));
@@ -251,10 +283,16 @@ public class ClientObservable implements Runnable {
                 case USER_SENT_MESSAGE:
                     break;
                 case NEW_MESSAGE:
-                    Platform.runLater(() -> propertyChangeSupport
-                            .firePropertyChange(Strings.NEW_MESSAGE.name(), null, null));
+                    if (getAtualState() == Situation.MESSAGE) {
+                        Platform.runLater(() -> propertyChangeSupport
+                                .firePropertyChange(Strings.NEW_MESSAGE.name(), null, null));
+                    } else {
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
                     break;
                 default:
+                    System.out.println("State: " + getAtualState());
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());
                     break;

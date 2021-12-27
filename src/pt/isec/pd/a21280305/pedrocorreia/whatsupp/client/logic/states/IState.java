@@ -36,6 +36,14 @@ public interface IState {
 
     IState seeFriendsRequestsPending();
 
+    IState acceptRequest(User user);
+
+    IState cancelRequest(User user);
+
+    IState addFriend(User user);
+
+    IState deleteFriendship(User user);
+
     IState createGroup();
 
     IState addGroups();

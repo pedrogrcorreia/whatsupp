@@ -4,12 +4,16 @@ import java.io.*;
 import java.net.*;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 
 /** This class represents each client connected. */
 
 public class ConnectionClient extends Thread {
+    private static final int OFFLINE_TIMEOUT = 30 * 1000;
+
     private Socket clientSocket;
     private Server server;
     private ObjectOutputStream oout;
@@ -36,7 +40,7 @@ public class ConnectionClient extends Thread {
     public void run() {
         DBManager dbManager = new DBManager(server);
         boolean firstRun = true;
-
+        User user = new User();
         while (!clientSocket.isClosed()) {
             try {
                 if (firstRun) {
@@ -49,11 +53,17 @@ public class ConnectionClient extends Thread {
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
-
+                clientSocket.setSoTimeout(OFFLINE_TIMEOUT);
                 switch (request.getMsgType()) {
                     /** Login or register */
                     case USER_REQUEST_LOGIN -> {
-                        oout.writeObject(dbManager.loginUser(request));
+                        SharedMessage response = dbManager.loginUser(request);
+                        if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
+                            user = response.getClientRequest().getUser();
+                            System.out.println("The user on this server is " + user);
+                            dbManager.setStatus(user, 1);
+                        }
+                        oout.writeObject(response);
                     }
                     case USER_REQUEST_REGISTER -> {
                         oout.writeObject(dbManager.registerUser(request));
@@ -75,6 +85,15 @@ public class ConnectionClient extends Thread {
                     case USER_SEND_FRIEND_REQUEST -> {
                         oout.writeObject(dbManager.addFriend(request));
                     }
+                    case USER_ACCEPT_FRIEND_REQUEST -> {
+                        oout.writeObject(dbManager.acceptRequest(request));
+                    }
+                    case USER_CANCEL_FRIEND_REQUEST -> {
+                        oout.writeObject(dbManager.deleteRequest(request));
+                    }
+                    case USER_CANCEL_FRIENDSHIP -> {
+                        oout.writeObject(dbManager.deleteFriendship(request));
+                    }
                     /** Messages requests */
                     case USER_REQUEST_MESSAGES -> {
                         oout.writeObject(dbManager.getMessages(request));
@@ -92,13 +111,17 @@ public class ConnectionClient extends Thread {
                 oout.flush();
                 // closeSocket when client disconnects
             } catch (SocketException e) {
-                System.out.println("Client terminated abruptly: \r\n\t" + e);
+                System.out.println("User disconnected...");
                 try {
                     clientSocket.close();
+                    dbManager.setStatus(user, 0);
                     oout.flush();
                 } catch (IOException e1) {
                     System.out.println("Error closing client socket:\r\n\t" + e1);
                 }
+            } catch (SocketTimeoutException e) {
+                System.out.println("Setting user offline (30 sec without actions)");
+                dbManager.setStatus(user, 0);
             } catch (IOException e) {
                 System.out.println("Problem communicating with client: \r\n\t" + e);
             } catch (ClassNotFoundException e) {

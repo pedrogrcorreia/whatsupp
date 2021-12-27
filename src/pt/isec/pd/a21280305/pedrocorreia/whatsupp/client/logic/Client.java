@@ -73,7 +73,20 @@ public class Client {
     }
 
     public void addFriend(User user) {
-        model.addFriend(user);
+        // model.addFriend(user);
+        setState(state.addFriend(user));
+    }
+
+    public void acceptRequest(User user) {
+        setState(state.acceptRequest(user));
+    }
+
+    public void cancelRequest(User user) {
+        setState(state.cancelRequest(user));
+    }
+
+    public void deleteFriendship(User user) {
+        setState(state.deleteFriendship(user));
     }
 
     /**

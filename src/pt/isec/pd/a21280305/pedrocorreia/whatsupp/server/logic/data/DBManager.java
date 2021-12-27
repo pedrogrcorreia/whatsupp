@@ -51,6 +51,37 @@ public class DBManager {
         }
     }
 
+    public SharedMessage setStatus(User user, int status) {
+        String query = new String("UPDATE users SET status = " + status +
+                " WHERE user_id = " + user.getID());
+        try {
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate(query);
+            if (status == 1) {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_ONLINE,
+                        new String("Friend request accepted..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.SET_USER_ONLINE,
+                        new String("Friend request accepted successfull."));
+            } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_OFFLINE,
+                        new String("Friend request accepted..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.SET_USER_OFFLINE,
+                        new String("Friend request accepted successfull."));
+            }
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
     public SharedMessage registerUser(SharedMessage request) {
         String username = request.getClientRequest().getUser().getUsername();
         String password = request.getClientRequest().getUser().getPassword();
@@ -174,7 +205,7 @@ public class DBManager {
         User user = request.getClientRequest().getUser();
         List<FriendsRequests> friends = new ArrayList<>();
         FriendsRequests newFriend = null;
-        String query = new String("SELECT user_id, username, users.name, " +
+        String query = new String("SELECT user_id, username, users.name, users.status, " +
                 "requester_user_id, friend_user_id, friends_requests.request_time, " +
                 "friends_requests.answer_time, friends_requests.request_status " +
                 "FROM users " +
@@ -189,13 +220,13 @@ public class DBManager {
                 if (rs.getInt("requester_user_id") == user.getID()) {
                     newFriend = new FriendsRequests(user,
                             new User(rs.getString("username"), rs.getString("name"),
-                                    rs.getInt("user_id")),
+                                    rs.getInt("user_id"), rs.getInt("status")),
                             rs.getTimestamp("request_time"), rs.getInt("request_status"),
                             rs.getTimestamp("answer_time"));
                 } else {
                     newFriend = new FriendsRequests(
                             new User(rs.getString("username"), rs.getString("name"),
-                                    rs.getInt("user_id")),
+                                    rs.getInt("user_id"), rs.getInt("status")),
                             user,
                             rs.getTimestamp("request_time"), rs.getInt("request_status"),
                             rs.getTimestamp("answer_time"));
@@ -316,6 +347,8 @@ public class DBManager {
                 return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_FAIL,
                         new String("Problem inserting on table new friend request."));
             } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND, new String("Friend request sent..."));
+                server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_SUCCESS, new String("Friend request sent."));
             }
         } catch (SQLIntegrityConstraintViolationException e) {
@@ -324,6 +357,103 @@ public class DBManager {
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage acceptRequest(SharedMessage request) {
+        User user = request.getClientRequest().getUser();
+        User newFriend = request.getClientRequest().getSelectedUser();
+
+        String query = new String("UPDATE friends_requests SET request_status = 1, answer_time = current_timestamp() " +
+                "WHERE requester_user_id = " + newFriend.getID() + " AND friend_user_id = " + user.getID());
+        try {
+            Statement stmt = con.createStatement();
+            if (stmt.executeUpdate(query) < 1) {
+                return new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST_FAIL,
+                        new String("Couldn't accept the friend request."));
+            } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND,
+                        new String("Friend request accepted..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST_SUCCESS,
+                        new String("Friend request accepted successfull."));
+            }
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage deleteRequest(SharedMessage request) {
+        User user = request.getClientRequest().getUser();
+        User friend = request.getClientRequest().getSelectedUser();
+
+        String query = new String("DELETE FROM friends_requests WHERE (requester_user_id = " +
+                user.getID() + " AND friend_user_id = " + friend.getID() + ") " +
+                "OR (requester_user_id = " + friend.getID() + " AND friend_user_id = " + user.getID() + ")");
+        try {
+            Statement stmt = con.createStatement();
+            if (stmt.executeUpdate(query) < 1) {
+                return new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST_FAIL,
+                        new String("Couldn't delete the friend request."));
+            } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND,
+                        new String("Friend request deleted..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST_SUCCESS,
+                        new String("Friend request deleted successfully."));
+            }
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage deleteFriendship(SharedMessage request) {
+        User user = request.getClientRequest().getUser();
+        User friend = request.getClientRequest().getSelectedUser();
+        String query = new String("DELETE FROM friends_requests WHERE (requester_user_id = " +
+                user.getID() + " AND friend_user_id = " + friend.getID() + ") " +
+                "OR (requester_user_id = " + friend.getID() + " AND friend_user_id = " + user.getID() + ")");
+        String nextQuery = new String("DELETE FROM messages WHERE (user_id_from = " +
+                user.getID() + " AND user_id_to = " + friend.getID() + ") " +
+                "OR (user_id_from = " + friend.getID() + " AND user_id_to = " + user.getID() + ")");
+        try {
+            Statement stmt = con.createStatement();
+            if (stmt.executeUpdate(query) < 1) {
+                System.out.println("HERE");
+                return new SharedMessage(Strings.USER_CANCEL_FRIENDSHIP_FAIL,
+                        new String("Couldn't delete the friend request."));
+            } else {
+                stmt.close();
+                stmt = con.createStatement();
+                stmt.executeUpdate(nextQuery);
+                SharedMessage msgToSend = new SharedMessage(Strings.REMOVED_FRIEND,
+                        new String("A friendship is cancelled..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_CANCEL_FRIENDSHIP_SUCCESS, new String("Friendship deleted"));
+            }
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST_FAIL, new String("Problem with SQL query."));
         } finally {
             try {
                 stmt.close();
@@ -389,7 +519,7 @@ public class DBManager {
                 return new SharedMessage(Strings.MESSAGE_DELETE_FAIL,
                         new String("Problem deleting message."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.MESSAGE_SENT_SUCCESS, new String("Message sent"));
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_MESSAGE, new String("Message deleted..."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_DELETE_SUCCESS, new String("Message deleted"));
             }
@@ -417,7 +547,7 @@ public class DBManager {
                 return new SharedMessage(Strings.MESSAGE_SENT_FAIL,
                         new String("Problem sending message."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_MESSAGE, new String("Message sent"));
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_MESSAGE, new String("New message sent..."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_SENT_SUCCESS, new String("Message sent"));
             }
@@ -436,68 +566,4 @@ public class DBManager {
         }
     }
 
-    // }
-    // public SharedMessage getMessages(SharedMessage request){
-    // String username = request.getClientServerConnection().getUsername();
-    // List<String> messages = new ArrayList<>();
-    // String query = new String("SELECT messages.text from messages" +
-    // "where user_id_from");
-    // try{
-    // ResultSet rs = stmt.executeQuery(query);
-    // while(rs.next()){
-    // System.out.println(rs.getString("text"));
-    // }
-    // }catch(SQLException e){
-    // System.out.println("");
-    // }
-    // }
-
-    // public static void main(String[] args) {
-    // DBManager db = new DBManager(new Server(new DatagramPacket(new byte[1], 1)));
-    // User user = new User("pedro", "pedro correia", 1);
-    // User friend = new User("zetolo", "ze bartolo", 2);
-    // List<FriendsRequests> friends;
-    // Friends f = new Friends(user);
-    // SharedMessage request = new SharedMessage(null, null, f);
-    // SharedMessage response = db.getFriends(request);
-    // System.out.println(response.getClientRequest().getFriendsRequests());
-    // }
-
-    // public static void main(String[] args) throws SQLException {
-    // int id;
-    // // String username, name;
-    // DBManager db = new DBManager(new Server(new DatagramPacket(new byte[1], 1)));
-    // Statement stmt = db.con.createStatement();
-    // // ResultSet rs = stmt.executeUpdate("SELECT * FROM users;");
-    // String username = "p";
-    // String password = "1234";
-    // String name = "pedro correia";
-    // int status = 0;
-    // String query = new String("SELECT COUNT(*) AS nusers, username, password FROM
-    // users where username = '" +
-    // username + "'");
-    // ResultSet rs = stmt.executeQuery(query);
-    // rs.next();
-    // System.out.println(rs.getInt("nusers"));
-
-    // // while (rs.next()) {
-    // // id = rs.getInt("user_id");
-    // // username = rs.getString("username");
-    // // name = rs.getString("name");
-
-    // // System.out.println(id + " " + username + " " + name);
-    // // }
-    // }
-
-    // public boolean register(String username, String password, String
-    // confPassword, String fname, String lname){
-    // if(!password.equals(confPassword)){
-    // return false;
-    // }
-
-    // }
-
-    // public boolean login(String username, String password){
-
-    // }
 }

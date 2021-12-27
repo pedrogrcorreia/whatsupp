@@ -91,6 +91,26 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState addFriend(User user) {
+        return this;
+    }
+
+    @Override
+    public IState acceptRequest(User user) {
+        return this;
+    }
+
+    @Override
+    public IState deleteFriendship(User user) {
+        return this;
+    }
+
+    @Override
+    public IState cancelRequest(User user) {
+        return this;
+    }
+
+    @Override
     public IState createGroup() {
         return this;
     }

@@ -175,15 +175,22 @@ public class Server {
         }
     }
 
-    public void alertClients() {
-        for (int i = 0; i < clientsConnected.size(); i++) {
-            // System.out.println("ESTOU AQUI");
-            // oout.writeObject(new SharedMessage(Strings.USER_FAILED_LOGIN, "teste"));
-            // oout.flush();
-            SharedMessage request = new SharedMessage(Strings.NEW_MESSAGE, Strings.NEW_MESSAGE.toString());
-            clientsConnected.get(i)
-                    .sendMsgToClient(request);
+    // public void alertClients() {
+    // for (int i = 0; i < clientsConnected.size(); i++) {
+    // // System.out.println("ESTOU AQUI");
+    // // oout.writeObject(new SharedMessage(Strings.USER_FAILED_LOGIN, "teste"));
+    // // oout.flush();
+    // SharedMessage request = new SharedMessage(Strings.NEW_MESSAGE,
+    // Strings.NEW_MESSAGE.toString());
+    // clientsConnected.get(i)
+    // .sendMsgToClient(request);
 
+    // }
+    // }
+
+    public void alertClients(SharedMessage request) {
+        for (int i = 0; i < clientsConnected.size(); i++) {
+            clientsConnected.get(i).sendMsgToClient(request);
         }
     }
 
