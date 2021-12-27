@@ -42,12 +42,11 @@ public class DBManager {
         }
 
         try {
-            con = DriverManager.getConnection(db, "root", "BCMFMAsp13");
-            // stmt = con.createStatement();
+            con = DriverManager.getConnection(db, "tester", "password-123");
+             stmt = con.createStatement();
             System.out.println("Connection successful.");
         } catch (SQLException e) {
             System.out.println("Couldn't connect to Database: \r\n\t " + e);
-            return;
         }
     }
 
