@@ -2,15 +2,12 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.Friends;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.LoginRegister;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.Messages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.SearchUser;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.*;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +24,7 @@ public class DBManager {
         // DEBUG
         // String db = "jdbc:mysql://localhost:3306/whatsupp_db";
 
-        String db = "jdbc:mysql://" + dbAddress;
+        String db = "jdbc:mysql://" + dbAddress + "?allowMultiQueries=true";
         // DEBUG
         // final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 
@@ -183,7 +180,7 @@ public class DBManager {
                         rs.getInt("user_id"), rs.getInt("status"));
                 rs.close();
                 return new SharedMessage(Strings.USER_REQUEST_USER_SUCCESS,
-                        Strings.USER_REQUEST_USER_SUCCESS.toString(), new SearchUser(user, userResponse));
+                        Strings.USER_REQUEST_USER_SUCCESS.toString(), new ClientRequests(user, userResponse));
             }
         } catch (SQLException e) {
             System.out.println("[getUser] Error querying the database:\r\n\t" + e);
@@ -233,12 +230,16 @@ public class DBManager {
             }
             rs.close();
             return new SharedMessage(Strings.USER_REQUEST_FRIENDS_SUCCESS, new String(friends.toString()),
-                    new Friends(user, friends));
+                    new ClientRequests(user, friends));
         } catch (SQLException e) {
             System.out.println("[getFriends] Error querying the database:\r\n\t" + e);
             return new SharedMessage(Strings.USER_REQUEST_FRIENDS_FAIL, new String("Error " +
                     "on database."));
-        } finally {
+        } catch (NullPointerException e){
+            e.printStackTrace();
+            return new SharedMessage(Strings.USER_REQUEST_FRIENDS_FAIL, new String("Error " +
+                    "on database."));
+        }finally {
             try {
                 stmt.close();
             } catch (SQLException e) {
@@ -275,7 +276,7 @@ public class DBManager {
             }
             rs.close();
             return new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS, new String(friends.toString()),
-                    new Friends(user, friends));
+                    new ClientRequests(user, friends));
         } catch (SQLException e) {
             System.out.println("[getFriendsRequests] Error querying the database:\r\n\t" + e);
             return new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS_FAIL, new String("Error " +
@@ -318,7 +319,7 @@ public class DBManager {
             rs.close();
             return new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS,
                     new String(friends.toString()),
-                    new Friends(user, friends));
+                    new ClientRequests(user, friends));
         } catch (SQLException e) {
             System.out.println("[getFriendsRequests] Error querying the database:\r\n\t" + e);
             return new SharedMessage(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL, new String("Error " +
@@ -464,46 +465,73 @@ public class DBManager {
     public SharedMessage getMessages(SharedMessage request) {
         User user = request.getClientRequest().getUser();
         User friend = request.getClientRequest().getSelectedUser();
+        Group group = request.getClientRequest().getGroup();
         List<Message> messages = new ArrayList<>();
-        String query = new String(
-                "SELECT username, user_id, users.name, message_id, messages.text, user_id_to, user_id_from, messages.sent_time "
-                        +
-                        "FROM users " +
-                        "JOIN messages ON user_id = user_id_to " +
-                        "WHERE (user_id_from = " + user.getID() + " and user_id_to = " + friend.getID() + ") " +
-                        "OR (user_id_from = " + friend.getID() + " and user_id_to = " + user.getID() + ")" +
-                        "ORDER BY sent_time");
-        if (friend.getID() == 0) {
-            return new SharedMessage(Strings.USER_REQUEST_MESSAGES_FAIL, new String(messages.toString()),
-                    new Messages(user, friend, messages));
+        String query;
+        if(group == null){
+            query = new String(
+                    "SELECT file_path, username, user_id, users.name, messages.message_id, messages.text, user_id_to, user_id_from, messages.sent_time "
+                            +
+                            "FROM users " +
+                            "JOIN messages ON user_id = user_id_to " +
+                            "LEFT JOIN files on files.message_id = messages.message_id " +
+                            "WHERE (user_id_from = " + user.getID() + " and user_id_to = " + friend.getID() + ") " +
+                            "OR (user_id_from = " + friend.getID() + " and user_id_to = " + user.getID() + ")" +
+                            "ORDER BY sent_time");
         }
+        else{
+            query = new String("SELECT file_path, username, user_id, u.name, m.message_id, user_id_from, text, sent_time, m.group_id\n" +
+                    "FROM users u\n" +
+                    "JOIN messages m on user_id = m.user_id_from\n" +
+                    "JOIN whatsupp_db.groups g on m.group_id = g.group_id\n" +
+                    "LEFT JOIN files on files.message_id = m.message_id\n" +
+                    "WHERE g.group_id = " + group.getID() + "\n" +
+                    "ORDER BY sent_time");
+        }
+//        if (friend.getID() == 0) {
+//            return new SharedMessage(Strings.USER_REQUEST_MESSAGES_FAIL, new String(messages.toString()),
+//                    new ClientRequests(user, friend, messages));
+//        }
         try {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 Message newMessage;
-                if (rs.getInt("user_id_to") == friend.getID()) {
-                    newMessage = new Message(user,
-                            friend,
-                            rs.getString("text"),
-                            rs.getInt("message_id"),
-                            rs.getTimestamp("sent_time"));
-                } else {
-                    newMessage = new Message(
-                            friend, user,
-                            rs.getString("text"), rs.getInt("message_id"), rs.getTimestamp("sent_time"));
+                if(group == null) {
+                    if (rs.getInt("user_id_to") == friend.getID()) {
+                        newMessage = new Message(user,
+                                friend,
+                                rs.getString("text"),
+                                rs.getInt("message_id"),
+                                rs.getTimestamp("sent_time"), null, new File(rs.getString("file_path"), rs.getInt("message_id")));
+                    } else {
+                        newMessage = new Message(
+                                friend, user,
+                                rs.getString("text"), rs.getInt("message_id"), rs.getTimestamp("sent_time"), null, new File(rs.getString("file_path"), rs.getInt("message_id")));
+                    }
+                }
+                else {
+                        newMessage = new Message(new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id")),
+                                null,
+                                rs.getString("text"),
+                                rs.getInt("message_id"),
+                                rs.getTimestamp("sent_time"),
+                                group,
+                                new File(rs.getString("file_path"), rs.getInt("message_id")));
+
                 }
                 messages.add(newMessage);
             }
             rs.close();
             stmt.close();
-            return new SharedMessage(Strings.USER_REQUEST_MESSAGES_SUCCESS, new String(messages.toString()),
-                    new Messages(user, friend, messages));
+            return new SharedMessage(Strings.USER_REQUEST_MESSAGES_SUCCESS, new String("Sent success."),
+                    new ClientRequests(user, friend, messages));
         } catch (SQLException e) {
             System.out.println("[getMessages] Error querying the database:\r\n\t" + e);
             return new SharedMessage(Strings.USER_REQUEST_MESSAGES_FAIL, new String("Error on database."));
         } catch (NullPointerException e) {
             System.out.println("[getMessages] Error:\r\n\t" + e);
+            e.printStackTrace();
             return new SharedMessage(Strings.USER_REQUEST_MESSAGES_FAIL, new String("ERRO QUE NAO SEI"));
         }
     }
@@ -513,6 +541,7 @@ public class DBManager {
 
         String query = new String("DELETE FROM messages WHERE message_id = " + message.getID());
         try {
+            stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.MESSAGE_DELETE_FAIL,
                         new String("Problem deleting message."));
@@ -533,12 +562,20 @@ public class DBManager {
     public SharedMessage sendMessage(SharedMessage request) {
         User sender = request.getClientRequest().getUser();
         User receiver = request.getClientRequest().getSelectedUser();
+        Group group = request.getClientRequest().getGroup();
         Message message = request.getClientRequest().getSelectedMessage();
         // System.out.println("TESTE" + messages);
-
-        String query = new String("INSERT INTO messages (user_id_from, text, sent_time, user_id_to) " +
+        String query;
+        if(group == null) {
+            query = new String("INSERT INTO messages (user_id_from, text, sent_time, user_id_to) " +
                 "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
                 + receiver.getID() + ")");
+        }
+        else {
+            query = new String("INSERT INTO messages (user_id_from, text, sent_time, group_id) " +
+                    "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
+                    + group.getID() + ")");
+        }
         try {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
@@ -564,4 +601,412 @@ public class DBManager {
         }
     }
 
+    public SharedMessage createNewGroup(SharedMessage request) {
+        User admin = request.getClientRequest().getUser();
+        Group newGroup = request.getClientRequest().getGroup();
+
+        String query = new String("INSERT INTO whatsupp_db.groups (admin_user_id, name) " +
+                "VALUES(" + admin.getID() + ", '" + newGroup.getName() + "')");
+        String filterQuery = new String("SELECT admin_user_id, name FROM whatsupp_db.groups " +
+                "WHERE name = '" + newGroup.getName() + "'");
+        try{
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(filterQuery);
+            while(rs.next()){
+                if(rs.getInt("admin_user_id") == admin.getID()) {
+                    return new SharedMessage(Strings.REQUEST_NEW_GROUP_FAIL, new String("You already own a group with the same name."));
+                }
+            }
+            stmt.close();
+            rs.close();
+            stmt = con.createStatement();
+            if(stmt.executeUpdate(query) < 1){
+                return new SharedMessage(Strings.REQUEST_NEW_GROUP_FAIL, new String("Problem inserting new group."));
+            }else{
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_GROUP, new String("New group created on the server."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.REQUEST_NEW_GROUP_SUCCESS, new String("Group created successfully."));
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Couldn't delete this message:\r\n\t" + e);
+            return new SharedMessage(Strings.MESSAGE_DELETE_FAIL, new String("Couldn't delete this message."));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.MESSAGE_DELETE_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage getGroups(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        List<GroupRequests> groupRequests = new ArrayList<>();
+        String query = new String("SELECT g.group_id, g.admin_user_id, g.name, gr.*, u.name, u.username\n" +
+                "FROM whatsupp_db.groups g\n" +
+                "LEFT JOIN group_requests gr ON gr.group_id = g.group_id \n" +
+                "LEFT JOIN users u on g.admin_user_id = u.user_id\n" +
+                "WHERE admin_user_id = " + user.getID() + "\n" +
+                "OR g.group_id IN (\n" +
+                "SELECT group_id\n" +
+                "FROM group_requests\n" +
+                "WHERE requester_user_id = " + user.getID() + "\n" +
+                "AND request_status = 1)" +
+                "GROUP BY g.group_id");
+        try{
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                User admin = new User(rs.getString("username"), rs.getString("name"), rs.getInt("admin_user_id"));
+                if(admin.getID() == user.getID()){
+                    Group newGroup = new Group(user, rs.getString("name"), rs.getInt("group_id"));
+                    GroupRequests newGR = new GroupRequests(admin, newGroup);
+                    groupRequests.add(newGR);
+                }
+                else {
+                    Group newGroup = new Group(admin, rs.getString("name"), rs.getInt("g.group_id"));
+                    GroupRequests newGR = new GroupRequests(user, newGroup, rs.getTimestamp("request_time"), rs.getTimestamp("answer_time"), rs.getInt("request_status"));
+                    groupRequests.add(newGR);
+                }
+            }
+            rs.close();
+            return new SharedMessage(Strings.USER_REQUEST_GROUPS_SUCCESS, new String("Requested success"), new ClientRequests(user, groupRequests));
+        } catch (SQLException e) {
+            System.out.println("[getMessages] Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_GROUPS_FAIL, new String("Error on database."));
+        } catch (NullPointerException e) {
+            System.out.println("[getMessages] Error:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_MESSAGES_FAIL, new String("ERRO QUE NAO SEI"));
+        }finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage getGroupsPending(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        List<GroupRequests> groupRequests = new ArrayList<>();
+        String query = new String("SELECT g.group_id, g.name, gr.group_id, gr.request_time, gr.request_status, u.username, u.name, u.user_id\n" +
+                "FROM whatsupp_db.groups g, group_requests gr, users u\n" +
+                "WHERE admin_user_id != " + user.getID() + "\n" +
+                "AND g.group_id IN (\n" +
+                "SELECT group_id\n" +
+                "FROM group_requests\n" +
+                "WHERE requester_user_id = " + user.getID() + "\n" +
+                "AND request_status = 0)\n" +
+                "AND gr.group_id = g.group_id\n" +
+                "AND u.user_id = g.admin_user_id\n" +
+                "group by g.group_id");
+        try{
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                User admin = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
+                Group newGroup = new Group(admin, rs.getString("name"), rs.getInt("group_id"));
+                GroupRequests newGR = new GroupRequests(user, newGroup, rs.getTimestamp("request_time"), rs.getInt("request_status"));
+                groupRequests.add(newGR);
+            }
+            rs.close();
+            return new SharedMessage(Strings.USER_REQUEST_PENDING_GROUPS_SUCCESS, new String("Requested success"), new ClientRequests(user, groupRequests));
+        } catch (SQLException e) {
+            System.out.println("[getMessages] Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_PENDING_GROUPS_FAIL, new String("Error on database."));
+        } catch (NullPointerException e) {
+            System.out.println("[getMessages] Error:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_PENDING_GROUPS_FAIL, new String("ERRO QUE NAO SEI"));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage getGroupsAvailable(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        List<Group> groups = new ArrayList<>();
+
+        String query = new String("SELECT g.group_id, g.name, u.name, u.username, g.admin_user_id\n" +
+                "FROM whatsupp_db.groups g, users u\n" +
+                "WHERE g.group_id NOT IN (\n" +
+                "SELECT group_id\n" +
+                "FROM group_requests\n" +
+                "WHERE requester_user_id = " + user.getID() + ")\n" +
+                "AND admin_user_id != " + user.getID() + "\n" +
+                "AND u.user_id = admin_user_id\n" +
+                "group by g.group_id");
+
+        try{
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                User admin = new User(rs.getString("username"), rs.getString("name"), rs.getInt("admin_user_id"));
+                Group newGroup = new Group(admin, rs.getString("name"), rs.getInt("group_id"));
+                groups.add(newGroup);
+            }
+            rs.close();
+            return new SharedMessage(Strings.USER_REQUEST_AVAILABLE_GROUPS_SUCCESS, new String("Requested success"), new ClientRequests(user, groups));
+        } catch (SQLException e) {
+            System.out.println("[getMessages] Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_AVAILABLE_GROUPS_FAIL, new String("Error on database."));
+        } catch (NullPointerException e) {
+            System.out.println("[getMessages] Error:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_AVAILABLE_GROUPS_FAIL, new String("ERRO QUE NAO SEI"));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage getGroupsManage(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        List<Group> groups = new ArrayList<>();
+
+        String query = new String("SELECT * FROM whatsupp_db.groups\n" +
+                "WHERE admin_user_id = " + user.getID());
+
+        try{
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                Group newGroup = new Group(new User(rs.getInt("admin_user_id")), rs.getString("name"), rs.getInt("group_id"));
+                groups.add(newGroup);
+            }
+            return new SharedMessage(Strings.USER_REQUEST_MANAGE_GROUPS_SUCCESS, new String("Requested success"), new ClientRequests(user, groups));
+        } catch (SQLException e) {
+            System.out.println("[getMessages] Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_MANAGE_GROUPS_FAIL, new String("Error on database."));
+        } catch (NullPointerException e) {
+            System.out.println("[getMessages] Error:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_MANAGE_GROUPS_FAIL, new String("ERRO QUE NAO SEI"));
+        }
+    }
+
+    public SharedMessage quitGroup(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        Group group = request.getClientRequest().getGroup();
+        String query = new String("DELETE FROM group_requests WHERE requester_user_id = " +
+                user.getID() + " and group_id = " + group.getID());
+        try {
+            stmt = con.createStatement();
+            if (stmt.executeUpdate(query) < 1) {
+                return new SharedMessage(Strings.USER_QUIT_GROUP_FAIL,
+                        new String("Problem deleting message."));
+            } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.QUIT_GROUP, new String("Message deleted..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Message deleted"));
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Couldn't delete this message:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Couldn't delete this message."));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage deleteGroup(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        Group group = request.getClientRequest().getGroup();
+
+        String query = new String("DELETE FROM whatsupp_db.groups WHERE group_id = " + group.getID());
+        String nextQuery = new String("DELETE FROM group_requests WHERE group_id = " + group.getID());
+        String finalQuery = new String("DELETE FROM messages WHERE group_id = " + group.getID());
+        String exQuery = query + nextQuery + finalQuery;
+        try {
+            Statement stmt = con.createStatement();
+            stmt.addBatch(finalQuery);
+            stmt.addBatch(nextQuery);
+            stmt.addBatch(query);
+            stmt.executeBatch();
+            SharedMessage msgToSend = new SharedMessage(Strings.DELETED_GROUP,
+                    new String("A friendship is cancelled..."));
+            server.sendToServerManager(msgToSend);
+            return new SharedMessage(Strings.USER_DELETE_GROUP_SUCCESS, new String("Friendship deleted"));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_DELETE_GROUP_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage manageGroup(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        Group group = request.getClientRequest().getGroup();
+        List<GroupRequests> gr = new ArrayList<>();
+        String query = new String("SELECT user_id, username, name, group_id, request_time, request_status, answer_time\n" +
+                "FROM group_requests\n" +
+                "JOIN users on user_id = requester_user_id\n" +
+                "WHERE group_id = " + group.getID());
+
+        try {
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                User requester = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
+                GroupRequests fr = new GroupRequests(requester, group, rs.getTimestamp("request_time"), rs.getInt("request_status"));
+                gr.add(fr);
+            }
+            return new SharedMessage(Strings.USER_MANAGE_GROUP_SUCCESS, new String("Success return list"),
+                    new ClientRequests(user, gr));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_DELETE_GROUP_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage changeGroupName(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        Group group = request.getClientRequest().getGroup();
+
+        String query = new String("UPDATE whatsupp_db.groups SET name = '" + group.getName() + "'" +
+                "\nWHERE group_id = " + group.getID());
+        String filterQuery = new String("SELECT admin_user_id, name FROM whatsupp_db.groups " +
+                "WHERE name = '" + group.getName() + "'");
+        try{
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(filterQuery);
+            while(rs.next()){
+                if(rs.getInt("admin_user_id") == user.getID()) {
+                    return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("You already own a group with the same name."));
+                }
+            }
+            stmt.close();
+            rs.close();
+            stmt = con.createStatement();
+            if(stmt.executeUpdate(query) < 1){
+                return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Problem inserting new group."));
+            }else{
+                SharedMessage msgToSend = new SharedMessage(Strings.CHANGE_NAME, new String("New group created on the server."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_CHANGE_GROUP_SUCCESS, new String("Group created successfully."));
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Couldn't delete this message:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Couldn't delete this message."));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Problem with SQL query."));
+        }
+
+    }
+
+    public SharedMessage sendGroupRequest(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        Group group = request.getClientRequest().getGroup();
+
+        String query = new String("INSERT INTO group_requests(requester_user_id, group_id, request_time)\n" +
+                "VALUES(" + user.getID() + ", " + group.getID() + ", current_timestamp)");
+        try {
+            stmt = con.createStatement();
+            if (stmt.executeUpdate(query) < 1) {
+                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL,
+                        new String("Problem inserting on table new friend request."));
+            } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_GROUP_REQUEST, new String("Friend request sent..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Friend request sent."));
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Friend request already sent:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL, new String("Friend request already sent."));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage acceptGroupRequest(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        User toAccept = request.getClientRequest().getSelectedUser();
+        Group group = request.getClientRequest().getGroup();
+
+        String query = new String("UPDATE group_requests SET request_status = 1 " +
+                "WHERE group_id = " + group.getID() + " AND requester_user_id = " + toAccept.getID());
+
+        try {
+            stmt = con.createStatement();
+            if (stmt.executeUpdate(query) < 1) {
+                return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL,
+                        new String("Problem inserting on table new friend request."));
+            } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.ACCEPTED_GROUP_REQUEST, new String("Friend request sent..."));
+                server.sendToServerManager(msgToSend);
+                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Friend request sent."));
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Friend request already sent:\r\n\t" + e);
+            return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL, new String("Friend request already sent."));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL, new String("Problem with SQL query."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public static void main(String[] args){
+        Server server = null;
+        try {
+            server = new Server("192.168.1.73:3306/whatsupp_db");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        DBManager db = new DBManager(server);
+        User admin = new User("pedro", "pedro correia", 1);
+        Group newGroup = new Group(admin, "queijinho", 10);
+        ClientRequests gRequest = new ClientRequests(admin, newGroup);
+        List<GroupRequests> groupRequests = new ArrayList<>();
+//        Groups gRequests2 = new Groups(admin, groupRequests);
+        SharedMessage request = new SharedMessage(Strings.USER_REQUEST_GROUPS, gRequest);
+//        request = db.getGroups(request);
+//        System.out.println("\t My groups: \t");
+//        for(GroupRequests g :(List<GroupRequests>) request.getClientRequest().getList()){
+//            System.out.println(g.getGroup().getName());
+//        }
+        request = db.deleteGroup(request);
+        System.out.println(request.getMsgType());
+
+    }
 }

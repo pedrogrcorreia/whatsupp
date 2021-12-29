@@ -21,9 +21,15 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 
 public class SeeFriendsStatePane extends GridPane {
 
+    enum PaneState{
+        WINDOW, FRIENDS, REQUESTS, PENDING;
+    }
+
     private ClientObservable clientObservable;
 
     List<FriendsRequests> lFriends;
+
+    PaneState state;
 
     private Label friends;
     private int method = 0;
@@ -41,6 +47,7 @@ public class SeeFriendsStatePane extends GridPane {
         setHgap(10);
         setVgap(10);
         setPadding(new Insets(25, 25, 25, 25));
+        state = PaneState.WINDOW;
 
         friends = new Label("Contact list");
         // add(friends, 0, 1);
@@ -71,27 +78,36 @@ public class SeeFriendsStatePane extends GridPane {
 
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
-        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_SUCCESS.name(), e -> updateSuccess());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_SUCCESS.name(), e -> updateFriends());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_FAIL.name(), e -> updateFail());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS.name(),
                 e -> updateFriendsRequests());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS.name(),
                 e -> updateFriendsRequestsPending());
         clientObservable.addPropertyChangeListener(Strings.NEW_FRIEND.name(), e -> updateNewFriend());
-        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateNewFriend());
+        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> {
+            if(state == PaneState.FRIENDS){
+                clientObservable.seeFriends();
+            }
+            if(state == PaneState.REQUESTS){
+                clientObservable.seeFriendsRequests();
+            }
+            if(state == PaneState.PENDING){
+                clientObservable.seeFriendsRequestsPending();
+            }
+        });
     }
 
     private void update() {
         setVisible(clientObservable.getAtualState() == Situation.SEE_FRIENDS);
     }
 
-    private void updateSuccess() {
+    private void updateFriends() {
         getChildren().clear();
         setAlignment(Pos.TOP_LEFT);
         add(friends, 0, 1);
-        // lFriends =
-        // clientObservable.getNotificationSM().getClientRequest().getFriendsRequests();
         method = 0;
+        state = PaneState.FRIENDS;
         lFriends = clientObservable.getFriendsRequests();
         User me = clientObservable.getUser();
         if (lFriends.size() == 0) {
@@ -133,6 +149,7 @@ public class SeeFriendsStatePane extends GridPane {
         getChildren().clear();
         setAlignment(Pos.TOP_LEFT);
         add(friends, 0, 1);
+        state = PaneState.REQUESTS;
         // lFriends =
         // clientObservable.getNotificationSM().getClientRequest().getFriendsRequests();
         lFriends = clientObservable.getFriendsRequestsSent();
@@ -168,6 +185,7 @@ public class SeeFriendsStatePane extends GridPane {
         getChildren().clear();
         setAlignment(Pos.TOP_LEFT);
         add(friends, 0, 1);
+        state = PaneState.PENDING;
         // lFriends =
         // clientObservable.getNotificationSM().getClientRequest().getFriendsRequests();
         lFriends = clientObservable.getFriendsRequestsPending();
@@ -200,14 +218,11 @@ public class SeeFriendsStatePane extends GridPane {
     }
 
     private void updateNewFriend() {
-        if (method == 1) {
-            clientObservable.seeFriendsRequests();
-        }
-        if (method == 2) {
-            clientObservable.seeFriendsRequestsPending();
-        }
-        if (method == 0) {
-            clientObservable.seeFriends();
+        System.out.println(state);
+        switch(state){
+            case FRIENDS -> clientObservable.seeFriends();
+            case REQUESTS -> clientObservable.seeFriendsRequests();
+            case PENDING -> clientObservable.seeFriendsRequestsPending();
         }
         // clientObservable.seeFriendsRequests();
         // clientObservable.getFriendsRequests();

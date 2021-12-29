@@ -18,15 +18,24 @@ public class ConnectionServerManager extends Thread {
         while (true) {
             receivedRequest = server.receiveFromServerManager();
             System.out.println("Request from ServerManager: " + receivedRequest.getMsgType().name());
-            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_MESSAGE")) {
-                server.alertClients(receivedRequest);
+            switch(receivedRequest.getMsgType()){
+                case NEW_MESSAGE, NEW_FRIEND, REMOVED_FRIEND, NEW_GROUP,
+                        QUIT_GROUP, CHANGE_NAME, NEW_GROUP_REQUEST,
+                        ACCEPTED_GROUP_REQUEST,
+                        DELETED_GROUP -> server.alertClients(receivedRequest);
             }
-            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_FRIEND")) {
-                server.alertClients(receivedRequest);
-            }
-            if (receivedRequest.getMsgType().name().equalsIgnoreCase("REMOVED_FRIEND")) {
-                server.alertClients(receivedRequest);
-            }
+//            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_MESSAGE")) {
+//                server.alertClients(receivedRequest);
+//            }
+//            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_FRIEND")) {
+//                server.alertClients(receivedRequest);
+//            }
+//            if (receivedRequest.getMsgType().name().equalsIgnoreCase("REMOVED_FRIEND")) {
+//                server.alertClients(receivedRequest);
+//            }
+//            if(receivedRequest.getMsgType().name().equalsIgnoreCase(("NEW_GROUP"))){
+//                server.alertClients(receivedRequest);
+//            }
         }
     }
 

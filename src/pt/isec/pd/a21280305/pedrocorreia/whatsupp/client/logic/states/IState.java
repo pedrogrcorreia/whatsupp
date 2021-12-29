@@ -1,6 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
@@ -59,7 +60,29 @@ public interface IState {
 
     IState createGroup();
 
-    IState addGroups();
+    IState createNewGroup(String name);
+
+    IState seeAvailableGroups();
+
+    IState seePendingGroups();
+
+    IState seeManageGroups();
+
+    IState deleteGroup(Group g);
+
+    IState quitGroup(Group g);
+
+    IState quitGroup(User u, Group g);
+
+    IState manageMembers(Group g);
+
+    IState changeName(Group g);
+
+    IState sendGroupRequest(Group g);
+
+    IState cancelGroupRequest(Group g);
+
+    IState acceptGroupRequest(User u, Group g);
 
     /**
      * Messages
@@ -67,9 +90,13 @@ public interface IState {
 
     IState seeMessages(User user);
 
+    IState seeMessages(Group group);
+
     IState deleteMessage(Message msg);
 
     IState sendMessage(Message msg);
+
+    IState sendMessageToGroup(Message msg);
 
     /**
      * Back button
@@ -79,4 +106,6 @@ public interface IState {
 
     /** Returns the atual state */
     Situation getAtualState();
+
+
 }

@@ -1,5 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
@@ -108,12 +110,67 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState createNewGroup(String name) {
+        return this;
+    }
+
+    @Override
     public IState createGroup() {
         return this;
     }
 
     @Override
-    public IState addGroups() {
+    public IState seeAvailableGroups() {
+        return this;
+    }
+
+    @Override
+    public IState seePendingGroups() {
+        return this;
+    }
+
+    @Override
+    public IState seeManageGroups() {
+        return this;
+    }
+
+    @Override
+    public IState deleteGroup(Group g) {
+        return this;
+    }
+
+    @Override
+    public IState quitGroup(Group g) {
+        return this;
+    }
+
+    @Override
+    public IState quitGroup(User u, Group g) {
+        return this;
+    }
+
+    @Override
+    public IState manageMembers(Group g) {
+        return this;
+    }
+
+    @Override
+    public IState changeName(Group g) {
+        return this;
+    }
+
+    @Override
+    public IState sendGroupRequest(Group g) {
+        return this;
+    }
+
+    @Override
+    public IState cancelGroupRequest(Group g) {
+        return this;
+    }
+
+    @Override
+    public IState acceptGroupRequest(User u, Group g) {
         return this;
     }
 
@@ -127,12 +184,22 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState seeMessages(Group group) {
+        return this;
+    }
+
+    @Override
     public IState deleteMessage(Message msg) {
         return this;
     }
 
     @Override
     public IState sendMessage(Message msg) {
+        return this;
+    }
+
+    @Override
+    public IState sendMessageToGroup(Message msg) {
         return this;
     }
 

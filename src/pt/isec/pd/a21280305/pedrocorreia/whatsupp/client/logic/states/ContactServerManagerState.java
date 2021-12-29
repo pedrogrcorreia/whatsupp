@@ -5,9 +5,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 
 public class ContactServerManagerState extends StateAdapter {
 
-    boolean connected = false;
-    int tries = 0;
-
     public ContactServerManagerState(Data model) {
         super(model);
     }

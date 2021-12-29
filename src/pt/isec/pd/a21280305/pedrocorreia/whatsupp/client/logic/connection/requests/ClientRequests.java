@@ -1,43 +1,28 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
-public abstract class ClientRequests implements Serializable {
+public class ClientRequests implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
     protected User user;
     protected User selectedUser;
-    protected List<Message> messages;
-    protected List<FriendsRequests> friends;
-    protected List<Group> groups;
-    protected List<GroupRequests> groupRequests;
+    protected List<?> list;
     protected Message selectedMessage;
+    protected Group group;
 
     public ClientRequests(User user) {
         this.user = user;
-    }
-
-    /**
-     * Constructor to get friends
-     * 
-     * @param user
-     * @param friends
-     */
-    public ClientRequests(User user, List<FriendsRequests> friends) {
-        this.user = user;
-        this.friends = friends;
     }
 
     /**
@@ -56,12 +41,12 @@ public abstract class ClientRequests implements Serializable {
      * 
      * @param user
      * @param selectedUser
-     * @param messages
+     * @param list
      */
-    public ClientRequests(User user, User selectedUser, List<Message> messages) {
+    public ClientRequests(User user, User selectedUser, List<?> list) {
         this.user = user;
         this.selectedUser = selectedUser;
-        this.messages = messages;
+        this.list = list;
     }
 
     /**
@@ -82,16 +67,34 @@ public abstract class ClientRequests implements Serializable {
         this.selectedMessage = selectedMessage;
     }
 
-    public ClientRequests(User user, List<Message> messages, List<FriendsRequests> friends, List<Group> groups,
-            List<GroupRequests> groupRequests) {
+    /** Constructor to create a new group */
+    public ClientRequests(User user, Group group){
         this.user = user;
-        this.messages = messages;
-        this.friends = friends;
-        this.groups = groups;
-        this.groupRequests = groupRequests;
+        this.group = group;
     }
 
-    /** Method on LoginRegister class */
+    public ClientRequests(User user, List<?> list){
+        this.user = user;
+        this.list = list;
+    }
+
+    public ClientRequests(Group group){
+        this.group = group;
+    }
+
+    public ClientRequests(User user, Group group, Message message){
+        this.user = user;
+        this.group = group;
+        this.selectedMessage = message;
+    }
+
+    public ClientRequests(User user, User selectedUser, Group group){
+        this.user = user;
+        this.group = group;
+        this.selectedUser = selectedUser;
+    }
+
+    /** Login and Register */
     public boolean login(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
         return false;
     }
@@ -101,39 +104,19 @@ public abstract class ClientRequests implements Serializable {
         return false;
     }
 
-    /** Method on Friends class */
-    public boolean getFriends(ObjectOutputStream oout) {
-        return false;
-    }
+    /** GENERIC METHOD TO SEND REQUESTS IM SO DUMB */
 
-    /** Method on LoginRegister class */
-    public boolean getFriendsRequests(ObjectOutputStream oout) {
-        return false;
-    }
+    public boolean sendRequest(ObjectOutputStream oout, Strings requestMsg){
+        try {
+            SharedMessage msgToSend = new SharedMessage(requestMsg, this);
 
-    /** Method on LoginRegister class */
-    public boolean addFriend(ObjectOutputStream oout) {
-        return false;
-    }
-
-    /** Method on Messages class */
-    public boolean getMessagesFromUser(ObjectOutputStream oout) {
-        return false;
-    }
-
-    /** Method on Messages class */
-    public boolean getMessagesFromGroup(ObjectOutputStream oout) {
-        return false;
-    }
-
-    /** Method on Messages class */
-    public boolean sendMessageToUser(ObjectOutputStream oout) {
-        return false;
-    }
-
-    /** Method on Messages class */
-    public boolean deleteMessage(ObjectOutputStream oout) {
-        return false;
+            oout.writeObject(msgToSend);
+            oout.flush();
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error receiving the message:\r\n\t" + e);
+            return false;
+        }
     }
 
     public User getUser() {
@@ -144,19 +127,13 @@ public abstract class ClientRequests implements Serializable {
         return selectedUser;
     }
 
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public List<FriendsRequests> getFriendsRequests() {
-        return friends;
-    }
-
-    public List<Group> getGroups() {
-        return groups;
-    }
+    public List<?> getList() { return list; }
 
     public Message getSelectedMessage() {
         return selectedMessage;
+    }
+
+    public Group getGroup(){
+        return group;
     }
 }

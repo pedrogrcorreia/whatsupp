@@ -16,6 +16,12 @@ public enum Strings {
     NEW_MESSAGE("A new message has been sent to the system"),
     NEW_FRIEND("A new friend request has been updated on the system"),
     REMOVED_FRIEND("A friendship has been cancelled"),
+    NEW_GROUP("A new group was created"),
+    QUIT_GROUP("A user quit a group"),
+    CHANGE_NAME("Group changed name"),
+    NEW_GROUP_REQUEST("A new group request has been done"),
+    ACCEPTED_GROUP_REQUEST("A new group request has been accepted"),
+    DELETED_GROUP("A group is deleted"),
 
     /** Client <-> Server Manager */
 
@@ -28,6 +34,7 @@ public enum Strings {
     SET_USER_OFFLINE("User is offline"),
     NEW_USER_ONLINE("An user came online"),
     NEW_USER_OFFLINE("An user went offline"),
+    NEW_FILE("User sent file"),
 
     /** Login */
 
@@ -106,7 +113,37 @@ public enum Strings {
     /** Groups */
     USER_REQUEST_GROUPS("Get groups"),
     USER_REQUEST_GROUPS_SUCCESS("User got the groups"),
-    USER_REQUEST_GROUPS_FAIL("Couldn't retrieve the groups to the user");
+    USER_REQUEST_GROUPS_FAIL("Couldn't retrieve the groups to the user"),
+    USER_REQUEST_AVAILABLE_GROUPS("Get available groups"),
+    USER_REQUEST_AVAILABLE_GROUPS_SUCCESS("User got the available groups"),
+    USER_REQUEST_AVAILABLE_GROUPS_FAIL("Couldn't retrieve the groups to the user"),
+    USER_REQUEST_PENDING_GROUPS("Get pending groups"),
+    USER_REQUEST_PENDING_GROUPS_SUCCESS("User got the pending groups"),
+    USER_REQUEST_PENDING_GROUPS_FAIL("Couldn't retrieve the groups to the user"),
+    USER_REQUEST_MANAGE_GROUPS("Get the groups to manage"),
+    USER_REQUEST_MANAGE_GROUPS_SUCCESS("User got the manageable groups"),
+    USER_REQUEST_MANAGE_GROUPS_FAIL("Couldn't retrieve the groups to the user"),
+    REQUEST_NEW_GROUP("New group"),
+    REQUEST_NEW_GROUP_SUCCESS("New group created"),
+    REQUEST_NEW_GROUP_FAIL("Couldn't create new group"),
+    USER_QUIT_GROUP("Quit a group"),
+    USER_QUIT_GROUP_SUCCESS("Success"),
+    USER_QUIT_GROUP_FAIL("Fail"),
+    USER_DELETE_GROUP("Delete group"),
+    USER_DELETE_GROUP_SUCCESS("Success"),
+    USER_DELETE_GROUP_FAIL("Fail"),
+    USER_MANAGE_GROUP("Manage group"),
+    USER_MANAGE_GROUP_SUCCESS("Success"),
+    USER_MANAGE_GROUP_FAIL("Fail"),
+    USER_CHANGE_GROUP("Change group name"),
+    USER_CHANGE_GROUP_SUCCESS("Success"),
+    USER_CHANGE_GROUP_FAIL("Fail"),
+    USER_SEND_GROUP_REQUEST("Send a request to a group"),
+    USER_SEND_GROUP_REQUEST_SUCCESS("Success"),
+    USER_SEND_GROUP_REQUEST_FAIL("Fail"),
+    ADMIN_ACCEPT_GROUP_REQUEST("Accept an user group request"),
+    ADMIN_ACCEPT_GROUP_REQUEST_SUCCESS("Success"),
+    ADMIN_ACCEPT_GROUP_REQUEST_FAIL("Fail");
 
     private final String description;
 

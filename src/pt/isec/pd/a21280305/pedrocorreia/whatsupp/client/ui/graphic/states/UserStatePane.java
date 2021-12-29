@@ -16,7 +16,9 @@ public class UserStatePane extends GridPane {
     private Button seeFriendsRequestsPending;
     private Button seeGroups;
     private Button createGroup;
-    private Button addGroups;
+    private Button pendingGroups;
+    private Button manageGroups;
+    private Button availableGroups;
 
     public UserStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -49,14 +51,19 @@ public class UserStatePane extends GridPane {
         seeFriendsRequestsPending = new Button("Friends requests pending");
         add(seeFriendsRequestsPending, 2, 3);
 
-        seeGroups = new Button("See groups");
+        seeGroups = new Button("My groups");
         add(seeGroups, 0, 4);
 
         createGroup = new Button("Create new group");
         add(createGroup, 1, 4);
 
-        addGroups = new Button("Enter a group");
-        add(addGroups, 2, 4);
+        manageGroups = new Button("Manage my groups");
+        add(manageGroups, 3, 4);
+
+        pendingGroups = new Button("See pending requests");
+        add(pendingGroups, 4, 4);
+        availableGroups = new Button("Available groups");
+        add(availableGroups, 5, 4);
 
         searchUsers.setOnAction(e -> clientObservable.searchUsers());
 
@@ -70,8 +77,11 @@ public class UserStatePane extends GridPane {
 
         createGroup.setOnAction(e -> clientObservable.createGroup());
 
-        addGroups.setOnAction(e -> clientObservable.addGroups());
+        availableGroups.setOnAction(e -> clientObservable.seeAvailableGroups());
 
+        pendingGroups.setOnAction(e -> clientObservable.seePendingGroups());
+
+        manageGroups.setOnAction(e -> clientObservable.seeManageGroups());
     }
 
     public void update() {

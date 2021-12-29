@@ -43,6 +43,7 @@ public class MessagesStatePane extends BorderPane {
     private Button send;
     private TextField msgToSend;
     User friend;
+    boolean stateFlag; // users is false, groups is true
 
     public MessagesStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -52,10 +53,6 @@ public class MessagesStatePane extends BorderPane {
     }
 
     private void createWindow() {
-        // setAlignment(Pos.CENTER);
-        // setHgap(10);
-        // setVgap(10);
-        // setPadding(new Insets(25, 25, 25, 25));
         gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(10);
@@ -75,11 +72,6 @@ public class MessagesStatePane extends BorderPane {
         setCenter(gridPane);
         setBottom(bottom);
 
-        send.setOnAction(e -> {
-            clientObservable.sendMessage(
-                    new Message(clientObservable.getUser(), clientObservable.getFriend(),
-                            msgToSend.getText()));
-        });
     }
 
     private ContextMenu createContextMenu(Label label, Message m) {
@@ -98,7 +90,12 @@ public class MessagesStatePane extends BorderPane {
         });
         details.setOnAction(e -> {
             Alert msgBox = new Alert(Alert.AlertType.INFORMATION);
-            msgBox.setTitle("Message from " + m.getSender().getName() + " to " + m.getReceiver().getName());
+            if (!stateFlag){
+                msgBox.setTitle("Message from " + m.getSender().getName() + " to " + m.getReceiver().getName());
+            }
+            else{
+                msgBox.setTitle("Message from " + m.getSender().getName() + " to group " + m.getGroup().getName());
+            }
             msgBox.setHeaderText("Message: " + m.getMsgTxt() + "\nSent at: " + m.getTime());
             msgBox.showAndWait();
         });
@@ -110,7 +107,20 @@ public class MessagesStatePane extends BorderPane {
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(), e -> updateSuccess());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_FAIL.name(), e -> updateFail());
         clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE.name(), e -> updateNewMessage());
-        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
+//        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
+    }
+
+    private void registerListener(){
+        send.setOnAction(e -> {
+            if(!clientObservable.messagesTo) {
+                clientObservable.sendMessage(
+                        new Message(clientObservable.getUser(), clientObservable.getFriend(),
+                                msgToSend.getText()));
+            }
+            else{
+                clientObservable.sendMessageToGroup(new Message(clientObservable.getUser(), clientObservable.getGroup(), msgToSend.getText()));
+            }
+        });
     }
 
     private void update() {
@@ -121,27 +131,76 @@ public class MessagesStatePane extends BorderPane {
         getChildren().clear();
         gridPane.getChildren().clear();
         gridPane.setAlignment(Pos.TOP_LEFT);
-        // lMessages =
-        // clientObservable.getNotificationSM().getClientRequest().getMessages();
         lMessages = clientObservable.getMessages();
         messages.setFont(new Font(25.0));
         gridPane.add(messages, 2, 0);
-        for (int i = 0; i < lMessages.size(); i++) {
-            Message msg = lMessages.get(i);
-            Label message = new Label(msg.getMsgTxt());
-            if (clientObservable.getUser().getID() == msg.getSender().getID()) {
-                Label name = new Label(msg.getSender().getUsername());
-                gridPane.add(name, 0, i + 1);
-                gridPane.add(message, 1, i + 1);
-            } else {
-                Label name = new Label(msg.getSender().getUsername());
-                gridPane.add(name, 3, i + 1);
-                gridPane.add(message, 4, i + 1);
-            }
+        registerListener();
+        if(lMessages.size() == 0){
+            Label noMessages = new Label("No messages to show.");
+            gridPane.add(noMessages, 4, 0);
+            scrollPane.setContent(gridPane);
+            setCenter(scrollPane);
+            setBottom(bottom);
+            return;
+        }
+        if(lMessages.get(0).getReceiver() != null) {
+            stateFlag = false;
+            for (int i = 0; i < lMessages.size(); i++) {
+                Message msg = lMessages.get(i);
+                Label message = new Label(msg.getMsgTxt());
+                Button file = new Button();
+//                if(msg.getFile().getPath() != null){
+//                    message = new Label(msg.getMsgTxt() + msg.getFile().getPath());
+//                }
+                if (clientObservable.getUser().getID() == msg.getSender().getID()) {
+                    Label name = new Label(msg.getSender().getUsername());
+                    if(msg.getFile().getPath() != null){
+                        file = new Button("Download file.");
+                        gridPane.add(file, 1, i+1);
+                        gridPane.add(name, 0, i + 1);
+                        break;
+                    }
+                    gridPane.add(name, 0, i + 1);
+                    gridPane.add(message, 1, i + 1);
 
-            message.setContextMenu(createContextMenu(message, msg));
-            message.setBorder(new Border(new BorderStroke(Color.BLUE,
-                    BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+                } else {
+                    Label name = new Label(msg.getSender().getUsername());
+                    if(msg.getFile().getPath() != null){
+                        file = new Button("Download file.");
+                        gridPane.add(file, 4, i+1);
+                        gridPane.add(name, 3, i + 1);
+                        break;
+                    }
+                    gridPane.add(name, 3, i + 1);
+                    gridPane.add(message, 4, i + 1);
+
+                }
+                message.setContextMenu(createContextMenu(message, msg));
+                message.setBorder(new Border(new BorderStroke(Color.BLUE,
+                        BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+                file.setBorder(new Border(new BorderStroke(Color.GREEN,
+                        BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+            }
+        }
+        else{
+            stateFlag = true;
+            for (int i = 0; i < lMessages.size(); i++) {
+                Message msg = lMessages.get(i);
+                Label message = new Label(msg.getMsgTxt());
+                if (clientObservable.getUser().getID() == msg.getSender().getID()) {
+                    Label name = new Label(msg.getSender().getUsername());
+                    gridPane.add(name, 0, i + 1);
+                    gridPane.add(message, 1, i + 1);
+                } else {
+                    Label name = new Label(msg.getSender().getUsername());
+                    gridPane.add(name, 3, i + 1);
+                    gridPane.add(message, 4, i + 1);
+                }
+
+                message.setContextMenu(createContextMenu(message, msg));
+                message.setBorder(new Border(new BorderStroke(Color.BLUE,
+                        BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+            }
         }
 
         scrollPane.vvalueProperty().bind(gridPane.heightProperty());
@@ -151,7 +210,12 @@ public class MessagesStatePane extends BorderPane {
     }
 
     private void updateNewMessage() {
-        clientObservable.seeMessages(clientObservable.getFriend());
+        if(!stateFlag) {
+            clientObservable.seeMessages(clientObservable.getFriend());
+        }
+        else {
+            clientObservable.seeMessages(clientObservable.getGroup());
+        }
     }
 
     private void updateRemovedFriend() {
@@ -165,13 +229,10 @@ public class MessagesStatePane extends BorderPane {
         for (FriendsRequests friend : friends) {
             if (friend.getRequester() == userFriend) {
                 match = true;
-                // return;
             } else if (friend.getReceiver() == userFriend) {
                 match = true;
-                // return;
             }
         }
-        System.out.println("MATCH: " + match);
         if (match) {
             Label userBlocked = new Label("This friendship is over...");
             gridPane.add(userBlocked, 0, 1);

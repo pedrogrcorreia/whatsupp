@@ -12,7 +12,8 @@ public class Message implements Serializable {
     User receiver;
     String msgTxt;
     Timestamp time;
-    int group;
+    Group group;
+    File file;
     int id;
 
     /**
@@ -41,7 +42,15 @@ public class Message implements Serializable {
      * @param group  - group that addresses the message
      */
 
-    public Message(User sender, String msgTxt, int group) {
+    public Message(User sender, Group group, String msgTxt, int id, Timestamp timestamp) {
+        this.sender = sender;
+        this.msgTxt = new String(msgTxt);
+        this.group = group;
+        this.id = id;
+        this.time = timestamp;
+    }
+
+    public Message(User sender, Group group, String msgTxt){
         this.sender = sender;
         this.msgTxt = new String(msgTxt);
         this.group = group;
@@ -62,6 +71,16 @@ public class Message implements Serializable {
         this.msgTxt = new String(msgTxt);
     }
 
+    public Message(User sender, User receiver, String msgTxt, int id, Timestamp time, Group group, File file){
+        this.sender = sender;
+        this.receiver = receiver;
+        this.id = id;
+        this.msgTxt = msgTxt;
+        this.time = time;
+        this.group = group;
+        this.file = file;
+    }
+
     public User getSender() {
         return sender;
     }
@@ -74,7 +93,7 @@ public class Message implements Serializable {
         return msgTxt;
     }
 
-    public int getGroup() {
+    public Group getGroup() {
         return group;
     }
 
@@ -85,6 +104,8 @@ public class Message implements Serializable {
     public Timestamp getTime() {
         return time;
     }
+
+    public File getFile() { return file; }
 
     @Override
     public String toString() {

@@ -6,6 +6,10 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 
 public class Notifications extends Data implements Runnable {
 
@@ -40,65 +44,50 @@ public class Notifications extends Data implements Runnable {
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_SUCCESS -> {
-                        Data.friends = response.getClientRequest().getFriendsRequests();
+                        Data.friends = (List<FriendsRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
-                    case USER_REQUEST_FRIENDS_FAIL -> {
+                    case USER_REQUEST_FRIENDS_FAIL, USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> {
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> {
-                        Data.friendsSent = response.getClientRequest().getFriendsRequests();
+                        Data.friendsSent = (List<FriendsRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
                     case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> {
-                        Data.friendsPending = response.getClientRequest().getFriendsRequests();
+                        Data.friendsPending = (List<FriendsRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
-                    case USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> {
+                    case USER_REQUEST_GROUPS_SUCCESS -> {
+                        Data.myGroups = (List<GroupRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
-                    case USER_CANCEL_FRIEND_REQUEST_SUCCESS -> {
+                    case USER_REQUEST_PENDING_GROUPS_SUCCESS -> {
+                        Data.pendingGroups = (List<GroupRequests>) response.getClientRequest().getList();
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_AVAILABLE_GROUPS_SUCCESS -> {
+                        Data.availableGroups = (List<Group>) response.getClientRequest().getList();
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_MANAGE_GROUPS_SUCCESS -> {
+                        Data.manageGroups = (List<Group>) response.getClientRequest().getList();
+                        notifyList(response);
+                    }
+                    case USER_REQUEST_MESSAGES_SUCCESS -> {
+                        Data.messages = (List<Message>) response.getClientRequest().getList();
                         notifyList(response);
                     }
                     case USER_REQUEST_USER_SUCCESS -> {
                         Data.selectedFriend = response.getClientRequest().getSelectedUser();
                         notifyList(response);
                     }
-                    case USER_REQUEST_USER_FAIL -> {
-                        notifyList(response);
-                    }
-                    case USER_SEND_FRIEND_REQUEST_SUCCESS -> {
-                        notifyList(response);
-                    }
-                    case USER_SEND_FRIEND_REQUEST_FAIL -> {
-                        notifyList(response);
-                    }
-                    case USER_REQUEST_MESSAGES_SUCCESS -> {
-                        Data.messages = response.getClientRequest().getMessages();
-                        notifyList(response);
-                    }
-                    case MESSAGE_DELETE_SUCCESS -> {
-                        notifyList(response);
-                    }
-                    case MESSAGE_DELETE_FAIL -> {
-                        notifyList(response);
-                    }
-                    case MESSAGE_SENT_SUCCESS -> {
-                        notifyList(response);
-                    }
-                    case MESSAGE_SENT_FAIL -> {
-                        notifyList(response);
-                    }
-                    case NEW_MESSAGE -> {
-                        notifyList(response);
-                    }
-                    case NEW_FRIEND -> {
-                        notifyList(response);
-                    }
-                    case REMOVED_FRIEND -> {
+                    case USER_MANAGE_GROUP_SUCCESS -> {
+                        Data.groupMembers = (List<GroupRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
                     default -> {
+                        notifyList(response);
                     }
                 }
             } catch (ClassNotFoundException e) {

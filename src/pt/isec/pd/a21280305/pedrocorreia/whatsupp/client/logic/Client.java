@@ -3,9 +3,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
@@ -112,9 +110,45 @@ public class Client {
         setState(state.createGroup());
     }
 
-    public void addGroups() {
-        setState(state.addGroups());
+    public void createNewGroup(String name){
+        setState(state.createNewGroup(name));
     }
+
+    public void seeAvailableGroups() {
+        setState(state.seeAvailableGroups());
+    }
+
+    public void seePendingGroups(){ setState(state.seePendingGroups()); }
+
+    public void seeManageGroups(){ setState(state.seeManageGroups()); }
+
+    public void deleteGroup(Group g){
+        setState(state.deleteGroup(g));
+    }
+
+    public void quitGroup(Group g){
+        setState(state.quitGroup(g));
+    }
+
+    public void quitGroup(User u, Group g){ setState(state.quitGroup(u, g)); }
+
+    public void manageMembers(Group g){
+        setState(state.manageMembers(g));
+    }
+
+    public void changeName(Group g){
+        setState(state.changeName(g));
+    }
+
+    public void sendGroupRequest(Group g){
+        setState(state.sendGroupRequest(g));
+    }
+
+    public void cancelGroupRequest(Group g){
+        setState(state.cancelGroupRequest(g));
+    }
+
+    public void acceptGroupRequest(User u, Group g){ setState(state.acceptGroupRequest(u, g)); }
 
     /**
      * Messages
@@ -124,6 +158,8 @@ public class Client {
         setState(state.seeMessages(user));
     }
 
+    public void seeMessages(Group group) {setState(state.seeMessages(group)); }
+
     public void deleteMessage(Message msg) {
         setState(state.deleteMessage(msg));
     }
@@ -131,6 +167,8 @@ public class Client {
     public void sendMessage(Message msg) {
         setState(state.sendMessage(msg));
     }
+
+    public void sendMessageToGroup(Message msg) { setState(state.sendMessageToGroup(msg)); }
 
     /**
      * Back to start state
@@ -160,6 +198,8 @@ public class Client {
         return model.getFriend();
     }
 
+    public Group getGroup() { return model.getGroup(); }
+
     public List<FriendsRequests> getFriendsRequests() {
         return model.getFriendsRequests();
     }
@@ -175,4 +215,22 @@ public class Client {
     public List<Message> getMessages() {
         return model.getMessages();
     }
+
+    public List<GroupRequests> getMyGroups() {
+        return model.getMyGroups();
+    }
+
+    public List<GroupRequests> getPendingGroups() {
+        return model.getPendingGroups();
+    }
+
+    public List<Group> getManageGroups() {
+        return model.getManageGroups();
+    }
+
+    public List<Group> getAvailableGroups() {
+        return model.getAvailableGroups();
+    }
+
+    public List<GroupRequests> getGroupMembers() { return model.getGroupMembers(); }
 }

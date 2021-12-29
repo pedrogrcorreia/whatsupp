@@ -1,6 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
@@ -14,6 +15,12 @@ public class MessagesState extends StateAdapter {
     @Override
     public IState seeMessages(User user) {
         getModel().seeMessages(user);
+        return new MessagesState(getModel());
+    }
+
+    @Override
+    public IState seeMessages(Group group){
+        getModel().seeMessages(group);
         return new MessagesState(getModel());
     }
 
@@ -34,6 +41,14 @@ public class MessagesState extends StateAdapter {
         getModel().sendMessage(msg);
         seeMessages(getModel().getFriend());
         return new MessagesState(getModel());
+    }
+
+    @Override
+    public IState sendMessageToGroup(Message msg) {
+        getModel().sendMessageToGroup(msg);
+        seeMessages(getModel().getGroup());
+        return new MessagesState(getModel());
+
     }
 
     @Override

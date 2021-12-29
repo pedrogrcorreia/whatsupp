@@ -39,6 +39,8 @@ public class ClientUI extends BorderPane {
     SearchUsersPane searchUsersPane;
     SeeFriendsStatePane seeFriendsStatePane;
     MessagesStatePane messagesStatePane;
+    SeeGroupsStatePane seeGroupsStatePane;
+    CreateGroupStatePane createGroupStatePane;
 
     private Label txtN;
     private List<Label> notifications;
@@ -78,6 +80,8 @@ public class ClientUI extends BorderPane {
         searchUsersPane = new SearchUsersPane(clientObservable);
         seeFriendsStatePane = new SeeFriendsStatePane(clientObservable);
         messagesStatePane = new MessagesStatePane(clientObservable);
+        seeGroupsStatePane = new SeeGroupsStatePane(clientObservable);
+        createGroupStatePane = new CreateGroupStatePane(clientObservable);
 
         setRight(notificationPanel);
         Thread t = new Thread(clientObservable);
@@ -153,6 +157,8 @@ public class ClientUI extends BorderPane {
             case SEARCH_USERS -> setCenter(searchUsersPane);
             case SEE_FRIENDS -> setCenter(seeFriendsStatePane);
             case MESSAGE -> setCenter(messagesStatePane);
+            case SEE_GROUPS -> setCenter(seeGroupsStatePane);
+            case CREATE_GROUP -> setCenter(createGroupStatePane);
             default -> throw new IllegalArgumentException("Unexpected value: " +
                     clientObservable.getAtualState());
         }

@@ -28,6 +28,7 @@ public class Server {
     InetAddress serverManagerAddress;
     int serverManagerPort;
     String serverAddress;
+
     String dbAddress;
     // int serverPort;
 
@@ -99,7 +100,7 @@ public class Server {
     public Server(String dbAddress) throws UnknownHostException, SocketException {
         this.dbAddress = dbAddress;
         this.serverAddress = InetAddress.getLocalHost().getHostAddress();
-        registerServer();
+//        registerServer();
     }
 
     /**
@@ -255,5 +256,9 @@ public class Server {
 
     public ServerSocket getTcpSocket() {
         return tcpSocket;
+    }
+
+    public String getServerAddress() {
+        return serverAddress;
     }
 }

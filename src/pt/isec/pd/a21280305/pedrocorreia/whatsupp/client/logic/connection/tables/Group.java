@@ -17,6 +17,16 @@ public class Group implements Serializable {
         this.id = id;
     }
 
+    public Group(User admin, String name){
+        this.admin = admin;
+        this.name = name;
+    }
+
+    public Group(String name, int id){
+        this.name = name;
+        this.id = id;
+    }
+
     public User getAdmin() {
         return admin;
     }

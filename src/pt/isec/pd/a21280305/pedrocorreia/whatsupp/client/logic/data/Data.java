@@ -18,10 +18,8 @@ import java.util.Scanner;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.Friends;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.LoginRegister;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.Messages;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.SearchUser;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
@@ -56,8 +54,14 @@ public class Data {
     protected static List<FriendsRequests> friends;
     protected static List<FriendsRequests> friendsPending;
     protected static List<FriendsRequests> friendsSent;
-    protected static List<Group> groups;
-    protected static List<GroupRequests> groupRequests;
+
+    protected static List<GroupRequests> myGroups;
+    protected static List<GroupRequests> pendingGroups;
+    protected static List<Group> manageGroups;
+    protected static List<Group> availableGroups;
+    protected static List<GroupRequests> groupMembers;
+
+    protected static Group selectedGroup;
 
     Thread t;
     Notifications not;
@@ -72,8 +76,11 @@ public class Data {
         friendsPending = new ArrayList<>();
         friendsSent = new ArrayList<>();
         messages = new ArrayList<>();
-        groups = new ArrayList<>();
-        groupRequests = new ArrayList<>();
+        myGroups = new ArrayList<>();
+        pendingGroups = new ArrayList<>();
+        manageGroups = new ArrayList<>();
+        availableGroups = new ArrayList<>();
+        groupMembers = new ArrayList<>();
     }
 
     public Data() {
@@ -82,9 +89,12 @@ public class Data {
         friendsPending = new ArrayList<>();
         friendsSent = new ArrayList<>();
         messages = new ArrayList<>();
-        groups = new ArrayList<>();
-        groupRequests = new ArrayList<>();
-    };
+        myGroups = new ArrayList<>();
+        pendingGroups = new ArrayList<>();
+        manageGroups = new ArrayList<>();
+        availableGroups = new ArrayList<>();
+        groupMembers = new ArrayList<>();
+    }
 
     public boolean contactServerManager() {
 
@@ -186,6 +196,10 @@ public class Data {
         }
     }
 
+    /**
+     * Login and Register
+     */
+
     public boolean login(String username, String password) {
         loginRegister = new LoginRegister(new User(username, password));
         return loginRegister.login(oin, oout, notLog);
@@ -196,6 +210,10 @@ public class Data {
         return loginRegister.register(oin, oout, notLog);
     }
 
+    /**
+     * Start notification thread
+     */
+
     public boolean retrieveInfo() {
         t = new Thread(not);
         t.start();
@@ -204,63 +222,156 @@ public class Data {
         return true;
     }
 
+    /**
+     * Search user
+     */
+
     public boolean searchUser(String username) {
         selectedFriend = new User(username);
-        SearchUser su = new SearchUser(user, selectedFriend);
-        return su.getUser(oout);
+        ClientRequests cr = new ClientRequests(user, selectedFriend);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_USER);
     }
 
+    /**
+     * Friends
+     */
+
     public boolean seeFriends() {
-        Friends f = new Friends(user);
-        return f.getFriends(oout);
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_FRIENDS);
     }
 
     public boolean seeFriendsRequests() {
-        Friends f = new Friends(user);
-        return f.getFriendsRequests(oout);
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_FRIENDS_REQUESTS);
     }
 
     public boolean seeFriendsRequestsPending() {
-        Friends f = new Friends(user);
-        return f.getFriendsRequestsPending(oout);
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING);
     }
 
     public boolean addFriend(User friend) {
-        Friends f = new Friends(user, friend);
-        return f.addFriend(oout);
+        ClientRequests cr = new ClientRequests(user, friend);
+        return cr.sendRequest(oout, Strings.USER_SEND_FRIEND_REQUEST);
     }
 
     public boolean acceptRequest(User friend) {
         selectedFriend = friend;
-        Friends f = new Friends(user, friend);
-        return f.acceptRequest(oout);
+        ClientRequests cr = new ClientRequests(user, friend);
+        return cr.sendRequest(oout, Strings.USER_ACCEPT_FRIEND_REQUEST);
     }
 
     public boolean cancelRequest(User friend) {
         selectedFriend = friend;
-        Friends f = new Friends(user, friend);
-        return f.cancelRequest(oout);
+        ClientRequests cr = new ClientRequests(user, friend);
+        return cr.sendRequest(oout, Strings.USER_CANCEL_FRIEND_REQUEST);
     }
 
     public boolean deleteFriendship(User friend) {
-        Friends f = new Friends(user, friend);
-        return f.deleteFriendship(oout);
+        ClientRequests cr = new ClientRequests(user, friend);
+        return cr.sendRequest(oout, Strings.USER_CANCEL_FRIENDSHIP);
     }
+
+    /**
+     * Messages
+     */
 
     public boolean seeMessages(User selectedUser) {
         selectedFriend = selectedUser;
-        Messages m = new Messages(user, selectedFriend, messages);
-        return m.getMessagesFromUser(oout);
+        ClientRequests cr = new ClientRequests(user, selectedUser, messages);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
+    }
+
+    public boolean seeMessages(Group group){
+        selectedGroup = group;
+        ClientRequests cr = new ClientRequests(user, group);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
     }
 
     public boolean deleteMessage(Message message) {
-        Messages m = new Messages(user, message);
-        return m.deleteMessage(oout);
+        ClientRequests cr = new ClientRequests(user, message);
+        return cr.sendRequest(oout, Strings.MESSAGE_DELETE);
     }
 
     public boolean sendMessage(Message message) {
-        Messages m = new Messages(user, selectedFriend, message);
-        return m.sendMessageToUser(oout);
+        ClientRequests cr = new ClientRequests(user, selectedFriend, message);
+        return cr.sendRequest(oout, Strings.USER_SENT_MESSAGE);
+    }
+
+    public boolean sendMessageToGroup(Message message){
+        ClientRequests cr = new ClientRequests(user, selectedGroup, message);
+        return cr.sendRequest(oout, Strings.USER_SENT_MESSAGE);
+    }
+
+    /**
+     * Groups
+     */
+
+    public boolean createNewGroup(String name){
+        Group newGroup = new Group(user, name);
+        ClientRequests cr = new ClientRequests(user, newGroup);
+        return cr.sendRequest(oout, Strings.REQUEST_NEW_GROUP);
+    }
+
+    public boolean seeGroups(){
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_GROUPS);
+    }
+
+    public boolean seeGroupsPending(){
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_PENDING_GROUPS);
+    }
+
+    public boolean seeAvailableGroups(){
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_AVAILABLE_GROUPS);
+    }
+
+    public boolean seeManageGroups(){
+        ClientRequests cr = new ClientRequests(user);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_MANAGE_GROUPS);
+    }
+
+    public void deleteGroup(Group g) {
+        ClientRequests cr = new ClientRequests(user, g);
+        cr.sendRequest(oout, Strings.USER_DELETE_GROUP);
+    }
+
+    public void quitGroup(Group g) {
+        ClientRequests cr = new ClientRequests(user, g);
+        cr.sendRequest(oout, Strings.USER_QUIT_GROUP);
+    }
+
+    public void quitGroup(User u, Group g){
+        ClientRequests cr = new ClientRequests(u, g);
+        cr.sendRequest(oout, Strings.USER_QUIT_GROUP);
+    }
+
+    public void manageMembers(Group g) {
+        ClientRequests cr = new ClientRequests(user, g);
+        cr.sendRequest(oout, Strings.USER_MANAGE_GROUP);
+    }
+
+    public void changeName(Group g) {
+        ClientRequests cr = new ClientRequests(user, g);
+        cr.sendRequest(oout, Strings.USER_CHANGE_GROUP);
+    }
+
+    public void sendGroupRequest(Group g) {
+        ClientRequests cr = new ClientRequests(user, g);
+        cr.sendRequest(oout, Strings.USER_SEND_GROUP_REQUEST);
+    }
+
+    public void cancelGroupRequest(Group g) {
+        ClientRequests cr = new ClientRequests(user, g);
+        cr.sendRequest(oout, Strings.USER_QUIT_GROUP);
+    }
+
+    public void acceptGroupRequest(User u, Group g){
+        ClientRequests cr = new ClientRequests(user, u, g);
+        cr.sendRequest(oout, Strings.ADMIN_ACCEPT_GROUP_REQUEST);
     }
 
     /** GETS */
@@ -272,6 +383,8 @@ public class Data {
     public User getFriend() {
         return selectedFriend;
     }
+
+    public Group getGroup() { return selectedGroup; }
 
     public List<FriendsRequests> getFriendsRequests() {
         return friends;
@@ -288,6 +401,24 @@ public class Data {
     public List<Message> getMessages() {
         return messages;
     }
+
+    public List<GroupRequests> getMyGroups() {
+        return myGroups;
+    }
+
+    public List<GroupRequests> getPendingGroups() {
+        return pendingGroups;
+    }
+
+    public List<Group> getManageGroups() {
+        return manageGroups;
+    }
+
+    public List<Group> getAvailableGroups() {
+        return availableGroups;
+    }
+
+    public List<GroupRequests> getGroupMembers() { return groupMembers; }
 
     public SharedMessage getNotification() {
         synchronized (notLog) {

@@ -9,8 +9,10 @@ public enum Situation {
     CONTACT_SERVER_MANAGER("Contacting Server Manager."),
     SEARCH_USERS("Search user by username."),
     SEE_FRIENDS("See users friends."),
+    CREATE_GROUP("Create a new group."),
     SEE_GROUPS("See users groups."),
-    MESSAGE("Messages state");
+    MESSAGE("Messages state"),
+    MANAGE_GROUP("Group management");
 
     private final String description;
 

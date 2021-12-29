@@ -19,11 +19,6 @@ public class LoginRegister extends ClientRequests {
         super(user);
     }
 
-    public LoginRegister(User user, List<Message> messages, List<FriendsRequests> friends, List<Group> groups,
-            List<GroupRequests> groupRequests) {
-        super(user, messages, friends, groups, groupRequests);
-    }
-
     @Override
     public boolean login(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> list) {
         try {
