@@ -84,15 +84,19 @@ public class MessagesStatePane extends BorderPane {
         MenuItem details = new MenuItem("Details");
         MenuItem delete = new MenuItem("Delete");
         menu.getItems().addAll(details, delete);
-        delete.setOnAction(e -> {
-            Alert msgBox = new Alert(Alert.AlertType.WARNING, null, ButtonType.YES, ButtonType.CANCEL);
-            msgBox.setTitle("Delete message");
-            msgBox.setHeaderText("Sure you want to delete this message?");
-            Optional<ButtonType> result = msgBox.showAndWait();
-            if (result.get() == ButtonType.YES) {
-                clientObservable.deleteMessage(m);
-            }
-        });
+        if(m.getSender().getID() == clientObservable.getUser().getID()) {
+            delete.setOnAction(e -> {
+                Alert msgBox = new Alert(Alert.AlertType.WARNING, null, ButtonType.YES, ButtonType.CANCEL);
+                msgBox.setTitle("Delete message");
+                msgBox.setHeaderText("Sure you want to delete this message?");
+                Optional<ButtonType> result = msgBox.showAndWait();
+                if (result.get() == ButtonType.YES) {
+                    clientObservable.deleteMessage(m);
+                }
+            });
+        }else{
+            delete.setDisable(true);
+        }
         details.setOnAction(e -> {
             Alert msgBox = new Alert(Alert.AlertType.INFORMATION);
             if (!stateFlag){
