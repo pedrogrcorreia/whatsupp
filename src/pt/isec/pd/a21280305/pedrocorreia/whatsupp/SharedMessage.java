@@ -11,7 +11,7 @@ public class SharedMessage implements Serializable {
     private Strings msgType;
     private String msg;
     private ClientRequests cr;
-    private byte[] fileChunk = new byte[4096];
+    private int id;
 
     public SharedMessage(Strings msgType, String msg) {
         this.msgType = msgType;
@@ -29,11 +29,12 @@ public class SharedMessage implements Serializable {
         this.cr = cr;
     }
 
-    public SharedMessage(Strings msgType, ClientRequests cr, byte[] fileChunk){
+    public SharedMessage(Strings msgType, String msg, int id){
         this.msgType = msgType;
-        this.cr = cr;
-        this.fileChunk = fileChunk;
+        this.msg = msg;
+        this.id = id;
     }
+
 
     public Strings getMsgType() {
         return msgType;
@@ -51,7 +52,7 @@ public class SharedMessage implements Serializable {
         return cr;
     }
 
-    public byte[] getFileChunk() { return fileChunk; }
+    public int getID(){ return id; }
 
     @Override
     public String toString() {

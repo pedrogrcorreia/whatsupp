@@ -21,6 +21,8 @@ public class ConnectionClient extends Thread {
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
     private ServerSocket fileSocket;
+    User user = new User();
+
 
     public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin) {
         this.clientSocket = clientSocket;
@@ -40,8 +42,15 @@ public class ConnectionClient extends Thread {
     public void sendMsgToClient(SharedMessage msg) {
 
         try {
-            oout.writeObject(msg);
-            oout.flush();
+            if(msg.getMsgType() == Strings.NEW_MESSAGE_GROUP){
+                oout.writeObject(msg);
+                oout.flush();
+            }else {
+                if (msg.getID() == user.getID()) {
+                    oout.writeObject(msg);
+                    oout.flush();
+                }
+            }
         } catch (IOException e) {
             System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
         }
@@ -62,7 +71,7 @@ public class ConnectionClient extends Thread {
     public void run() {
         DBManager dbManager = new DBManager(server);
         boolean firstRun = true;
-        User user = new User();
+
         while (!clientSocket.isClosed()) {
             try {
                 if (firstRun) {

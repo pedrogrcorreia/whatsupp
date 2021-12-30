@@ -19,7 +19,7 @@ public class ConnectionServerManager extends Thread {
             receivedRequest = server.receiveFromServerManager();
             System.out.println("Request from ServerManager: " + receivedRequest.getMsgType().name());
             switch(receivedRequest.getMsgType()){
-                case NEW_MESSAGE, NEW_FRIEND, REMOVED_FRIEND, NEW_GROUP,
+                case NEW_MESSAGE_USER, NEW_MESSAGE_GROUP, NEW_FRIEND, REMOVED_FRIEND, NEW_GROUP,
                         QUIT_GROUP, CHANGE_NAME, NEW_GROUP_REQUEST,
                         ACCEPTED_GROUP_REQUEST,
                         DELETED_GROUP -> server.alertClients(receivedRequest);

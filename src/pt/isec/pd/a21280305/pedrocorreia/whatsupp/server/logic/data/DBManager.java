@@ -452,7 +452,7 @@ public class DBManager {
                 stmt = con.createStatement();
                 stmt.executeUpdate(nextQuery);
                 SharedMessage msgToSend = new SharedMessage(Strings.REMOVED_FRIEND,
-                        new String("A friendship is cancelled..."));
+                        new String("A friendship is cancelled..."), friend.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_CANCEL_FRIENDSHIP_SUCCESS, new String("Friendship deleted"));
             }
@@ -552,7 +552,8 @@ public class DBManager {
                 return new SharedMessage(Strings.MESSAGE_DELETE_FAIL,
                         new String("Problem deleting message."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_MESSAGE, new String("Message deleted..."));
+                SharedMessage msgToSend = (message.getGroup() == null) ? new SharedMessage(Strings.DELETE_MESSAGE_USER, new String("Message delete by a friend."), message.getReceiver().getID()) :
+                        new SharedMessage(Strings.DELETE_MESSAGE_GROUP, new String("Message deleted on group."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_DELETE_SUCCESS, new String("Message deleted"));
             }
@@ -570,25 +571,27 @@ public class DBManager {
         User receiver = request.getClientRequest().getSelectedUser();
         Group group = request.getClientRequest().getGroup();
         Message message = request.getClientRequest().getSelectedMessage();
-        // System.out.println("TESTE" + messages);
         String query;
-        if(group == null) {
-            query = new String("INSERT INTO messages (user_id_from, text, sent_time, user_id_to) " +
+        int id = (group == null) ? receiver.getID() : group.getID();
+        String type = (group == null) ? "user_id_to" : "group_id";
+//        if(group == null) {
+            query = new String("INSERT INTO messages (user_id_from, text, sent_time, " + type + ") " +
                 "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
-                + receiver.getID() + ")");
-        }
-        else {
-            query = new String("INSERT INTO messages (user_id_from, text, sent_time, group_id) " +
-                    "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
-                    + group.getID() + ")");
-        }
+                + id + ")");
+//        }
+//        else {
+//            query = new String("INSERT INTO messages (user_id_from, text, sent_time, group_id) " +
+//                    "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
+//                    + group.getID() + ")");
+//        }
         try {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.MESSAGE_SENT_FAIL,
                         new String("Problem sending message."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_MESSAGE, new String("New message sent..."));
+                SharedMessage msgToSend = (group == null) ? new SharedMessage(Strings.NEW_MESSAGE_USER, new String("New message received."), id)
+                        : new SharedMessage(Strings.NEW_MESSAGE_GROUP, new String("New message received on group."), id);
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_SENT_SUCCESS, new String("Message sent"));
             }

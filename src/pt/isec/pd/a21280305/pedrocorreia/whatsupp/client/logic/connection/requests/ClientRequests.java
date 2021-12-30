@@ -122,7 +122,7 @@ public class ClientRequests implements Serializable {
 
     public boolean sendRequest(ObjectOutputStream oout, Strings requestMsg){
         try {
-            SharedMessage msgToSend = new SharedMessage(requestMsg, this, this.getFileChunk());
+            SharedMessage msgToSend = new SharedMessage(requestMsg, this);
 
             oout.writeObject(msgToSend);
             oout.flush();

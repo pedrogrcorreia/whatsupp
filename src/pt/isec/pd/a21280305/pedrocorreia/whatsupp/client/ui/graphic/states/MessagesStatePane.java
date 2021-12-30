@@ -115,8 +115,9 @@ public class MessagesStatePane extends BorderPane {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(), e -> updateSuccess());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_FAIL.name(), e -> updateFail());
-        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE.name(), e -> updateNewMessage());
-//        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
+        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_USER.name(), e -> updateNewMessageUser());
+        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_GROUP.name(), e -> updateNewMessageGroup());
+        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
     }
 
     private void registerListener(){
@@ -236,31 +237,30 @@ public class MessagesStatePane extends BorderPane {
         setBottom(bottom);
     }
 
-    private void updateNewMessage() {
-        if(!stateFlag) {
-            clientObservable.seeMessages(clientObservable.getFriend());
-        }
-        else {
-            clientObservable.seeMessages(clientObservable.getGroup());
-        }
+    private void updateNewMessageUser() {
+        clientObservable.seeMessages(clientObservable.getFriend());
+    }
+
+    private void updateNewMessageGroup(){
+        clientObservable.seeMessages(clientObservable.getGroup());
     }
 
     private void updateRemovedFriend() {
         getChildren().clear();
         gridPane.getChildren().clear();
         gridPane.setAlignment(Pos.TOP_LEFT);
-        boolean match = false;
-        clientObservable.seeFriends();
-        User userFriend = clientObservable.getFriend();
-        List<FriendsRequests> friends = clientObservable.getFriendsRequests();
-        for (FriendsRequests friend : friends) {
-            if (friend.getRequester() == userFriend) {
-                match = true;
-            } else if (friend.getReceiver() == userFriend) {
-                match = true;
-            }
-        }
-        if (match) {
+//        boolean match = false;
+//        clientObservable.seeFriends();
+//        User userFriend = clientObservable.getFriend();
+//        List<FriendsRequests> friends = clientObservable.getFriendsRequests();
+//        for (FriendsRequests friend : friends) {
+//            if (friend.getRequester() == userFriend) {
+//                match = true;
+//            } else if (friend.getReceiver() == userFriend) {
+//                match = true;
+//            }
+//        }
+//        if (match) {
             Label userBlocked = new Label("This friendship is over...");
             gridPane.add(userBlocked, 0, 1);
             send.setDisable(true);
@@ -268,9 +268,9 @@ public class MessagesStatePane extends BorderPane {
             scrollPane.setContent(gridPane);
             setCenter(scrollPane);
             setBottom(bottom);
-        } else {
-            updateNewMessage();
-        }
+//        } else {
+//            updateNewMessageUser();
+//        }
     }
 
     private void updateFail() {

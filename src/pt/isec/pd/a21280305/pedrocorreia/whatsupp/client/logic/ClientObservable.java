@@ -355,11 +355,19 @@ public class ClientObservable implements Runnable {
                 case USER_REQUEST_MESSAGES_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_FAIL));
                 case USER_REQUEST_USER_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_SUCCESS));
                 case USER_REQUEST_USER_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_FAIL));
-//                case USER_SENT_MESSAGE -> //NADA
-                case NEW_MESSAGE -> {
+                case NEW_MESSAGE_USER -> {
                     if (getAtualState() == Situation.MESSAGE) {
                         Platform.runLater(() -> propertyChangeSupport
-                                .firePropertyChange(Strings.NEW_MESSAGE.name(), null, null));
+                                .firePropertyChange(Strings.NEW_MESSAGE_USER.name(), null, null));
+                    } else {
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case NEW_MESSAGE_GROUP -> {
+                    if (getAtualState() == Situation.MESSAGE) {
+                        Platform.runLater(() -> propertyChangeSupport
+                                .firePropertyChange(Strings.NEW_MESSAGE_GROUP.name(), null, null));
                     } else {
                         notificationMessage = notification.getMsg();
                         Platform.runLater(() -> updateNotification());
