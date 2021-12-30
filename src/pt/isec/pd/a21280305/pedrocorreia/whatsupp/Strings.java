@@ -143,7 +143,21 @@ public enum Strings {
     USER_SEND_GROUP_REQUEST_FAIL("Fail"),
     ADMIN_ACCEPT_GROUP_REQUEST("Accept an user group request"),
     ADMIN_ACCEPT_GROUP_REQUEST_SUCCESS("Success"),
-    ADMIN_ACCEPT_GROUP_REQUEST_FAIL("Fail");
+    ADMIN_ACCEPT_GROUP_REQUEST_FAIL("Fail"),
+
+    /**
+     * Files
+     */
+
+    USER_SEND_FILE("User sent a new file"),
+    USER_SEND_FILE_SUCCESS("Success"),
+    USER_SEND_FILE_FAIL("Fail"),
+    UPLOAD_FILE("File upload"),
+    UPLOAD_SUCCESS("Success"),
+    UPLOAD_FAIL("Fail"),
+    DOWNLOAD_FILE("File download"),
+    DOWNLOAD_SUCCESS("Success"),
+    DOWNLOAD_FAIL("Fail");
 
     private final String description;
 

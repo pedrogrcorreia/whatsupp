@@ -1,5 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +24,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
@@ -42,6 +45,7 @@ public class MessagesStatePane extends BorderPane {
     private HBox bottom;
     private Button send;
     private TextField msgToSend;
+    private Button sendFile;
     User friend;
     boolean stateFlag; // users is false, groups is true
 
@@ -65,8 +69,9 @@ public class MessagesStatePane extends BorderPane {
         msgToSend.requestFocus();
 
         send = new Button("Send");
+        sendFile = new Button("Send file");
         bottom.setAlignment(Pos.BOTTOM_CENTER);
-        bottom.getChildren().addAll(msgToSend, send);
+        bottom.getChildren().addAll(msgToSend, send, sendFile);
 
         messages = new Label("Messages");
         setCenter(gridPane);
@@ -121,6 +126,20 @@ public class MessagesStatePane extends BorderPane {
                 clientObservable.sendMessageToGroup(new Message(clientObservable.getUser(), clientObservable.getGroup(), msgToSend.getText()));
             }
         });
+
+        sendFile.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialDirectory(new File("./"));
+
+            File selectedFile = fileChooser.showOpenDialog(null);
+            if(selectedFile != null) {
+                try {
+                    clientObservable.sendFile(new Message(clientObservable.getUser(), clientObservable.getFriend(), new pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.File(selectedFile.getCanonicalPath())));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
     }
 
     private void update() {
@@ -158,7 +177,8 @@ public class MessagesStatePane extends BorderPane {
                         file = new Button("Download file.");
                         gridPane.add(file, 1, i+1);
                         gridPane.add(name, 0, i + 1);
-                        break;
+                        file.setOnAction(e -> clientObservable.downloadFile(msg));
+                        continue;
                     }
                     gridPane.add(name, 0, i + 1);
                     gridPane.add(message, 1, i + 1);
@@ -169,7 +189,8 @@ public class MessagesStatePane extends BorderPane {
                         file = new Button("Download file.");
                         gridPane.add(file, 4, i+1);
                         gridPane.add(name, 3, i + 1);
-                        break;
+                        file.setOnAction(e -> clientObservable.downloadFile(msg));
+                        continue;
                     }
                     gridPane.add(name, 3, i + 1);
                     gridPane.add(message, 4, i + 1);
@@ -180,6 +201,8 @@ public class MessagesStatePane extends BorderPane {
                         BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
                 file.setBorder(new Border(new BorderStroke(Color.GREEN,
                         BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+
+
             }
         }
         else{

@@ -5,6 +5,7 @@ import java.net.*;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.UploadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
@@ -36,6 +37,17 @@ public class ConnectionClient extends Thread {
         }
     }
 
+    public void downloadToLocal(SharedMessage request){
+        try{
+            FileOutputStream localFileOutputStream = new FileOutputStream(request.getClientRequest().getSelectedMessage().getFile().getPath()); // nao existe
+//                SharedMessage request = (SharedMessage) oin.readObject();
+//            localFileOutputStream.write(request.getFileChunk());
+            System.out.println("IM HERE");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
         DBManager dbManager = new DBManager(server);
@@ -53,6 +65,7 @@ public class ConnectionClient extends Thread {
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
+                System.out.println(request.getMsgType().name());
                 clientSocket.setSoTimeout(OFFLINE_TIMEOUT);
                 switch (request.getMsgType()) {
                     /** Login or register */
@@ -139,9 +152,22 @@ public class ConnectionClient extends Thread {
                     case ADMIN_ACCEPT_GROUP_REQUEST -> {
                         oout.writeObject(dbManager.acceptGroupRequest(request));
                     }
-//                    case NEW_FILE ->{
-//                        server.
-//                    }
+                    case USER_SEND_FILE ->{
+                        oout.writeObject(dbManager.newFile(request));
+                    }
+                    case UPLOAD_FILE -> {
+//                        downloadToLocal(request);
+//                        oout.writeObject(dbManager.uploadFile(request));
+//                        System.out.println("TA TUDO");
+                    }
+                    case DOWNLOAD_FILE -> {
+                        String path = dbManager.downloadFile(request);
+                        File f = new File(path);
+                        System.out.println(path);
+
+                        Thread u = new Thread(new UploadFile(f, clientSocket.getLocalAddress().getHostAddress(), request.getClientRequest().getPort()));
+                        u.start();
+                    }
                     default -> {
                         System.out.println("\t\nDEFAULT\n\t");
                     }

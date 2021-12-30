@@ -99,6 +99,16 @@ public interface IState {
     IState sendMessageToGroup(Message msg);
 
     /**
+     * Files
+     * @param file
+     */
+
+    IState sendFile(Message file);
+
+    IState uploadFile(Message file);
+
+    IState downloadFile(Message file);
+    /**
      * Back button
      */
 

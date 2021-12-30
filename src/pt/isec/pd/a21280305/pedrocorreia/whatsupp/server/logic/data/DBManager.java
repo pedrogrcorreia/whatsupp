@@ -6,6 +6,9 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.reques
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.sql.*;
@@ -13,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DBManager {
+
+    private final String filesPath = new String("C:/users/pedro/Desktop/whatsupp/server/files/");
+
     Connection con;
     static Statement stmt;
 
@@ -983,6 +989,73 @@ public class DBManager {
         }
     }
 
+    public SharedMessage newFile(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        User toUser = request.getClientRequest().getSelectedUser();
+        Message msg = request.getClientRequest().getSelectedMessage();
+        System.out.println(msg.getFile().getPath());
+        java.io.File f = new java.io.File(msg.getFile().getPath());
+        String fileName = f.getName();
+//        String[] split = msg.getFile().getPath().split("\\\\");
+//        String fileName=null;
+//        for(String s : split){
+//            fileName = s;
+//        }
+        System.out.println(fileName);
+        String query = new String("INSERT INTO messages (user_id_from, user_id_to, sent_time)\n" +
+                "VALUES (" + user.getID() + ", " + toUser.getID() + ", current_timestamp())");
+        try{
+            stmt = con.createStatement();
+            int updated = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            ResultSet rs = stmt.getGeneratedKeys();
+            rs.next();
+            int message_id = rs.getInt(1);
+            stmt.close();
+            rs.close();
+            String insertFile = new String("INSERT INTO files (message_id, file_path)\n" +
+                    "VALUES (" + message_id + ", '" + filesPath+fileName + "')");
+            stmt = con.createStatement();
+            stmt.executeUpdate(insertFile);
+//            SharedMessage msgToServer = new SharedMessage(Strings.NEW_FILE, new String("A new file was sent"));
+            return new SharedMessage(Strings.USER_SEND_FILE_SUCCESS, new String("File sent success"), request.getClientRequest());
+        } catch (SQLException e) {
+            System.out.println("Error registering filename:\n\r\t " + e);
+            return new SharedMessage(Strings.USER_SEND_FILE_FAIL, new String("Failed to regiser the file name"));
+        }finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public String downloadFile(SharedMessage request){
+        Message m = request.getClientRequest().getSelectedMessage();
+        String query = new String("SELECT file_path FROM files WHERE message_id = " + m.getID());
+
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            rs.next();
+            String path = rs.getString("file_path");
+            rs.close();
+            return path;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Friend request already sent:\r\n\t" + e);
+            return null;
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return null;
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
     public static void main(String[] args){
         Server server = null;
         try {
@@ -995,18 +1068,26 @@ public class DBManager {
 
         DBManager db = new DBManager(server);
         User admin = new User("pedro", "pedro correia", 1);
-        Group newGroup = new Group(admin, "queijinho", 10);
-        ClientRequests gRequest = new ClientRequests(admin, newGroup);
+//        Group newGroup = new Group(admin, "queijinho", 10);
+        User toUser = new User("zetolo", "ze tolo", 2);
+        Message m = null;
+        try {
+            m = new Message(admin, toUser, new File(new java.io.File("./text.log").getCanonicalPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        ClientRequests gRequest = new ClientRequests(admin, newGroup);
+        ClientRequests mRequest = new ClientRequests(admin, toUser, m);
         List<GroupRequests> groupRequests = new ArrayList<>();
 //        Groups gRequests2 = new Groups(admin, groupRequests);
-        SharedMessage request = new SharedMessage(Strings.USER_REQUEST_GROUPS, gRequest);
+        SharedMessage request = new SharedMessage(Strings.USER_REQUEST_GROUPS, mRequest);
 //        request = db.getGroups(request);
 //        System.out.println("\t My groups: \t");
 //        for(GroupRequests g :(List<GroupRequests>) request.getClientRequest().getList()){
 //            System.out.println(g.getGroup().getName());
 //        }
-        request = db.deleteGroup(request);
-        System.out.println(request.getMsgType());
+        request = db.newFile(request);
+//        System.out.println(request.getMsgType());
 
     }
 }

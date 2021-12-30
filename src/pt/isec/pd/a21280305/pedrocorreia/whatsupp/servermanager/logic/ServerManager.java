@@ -77,8 +77,15 @@ public class ServerManager {
                     System.out.println("Error registering the server.");
                 }
             } else if (request.getMsgType().equals(Strings.SERVER_PING)) {
-                int tcpPort = Integer.parseInt(request.getMsg());
-                activeServers.pingedServer(myPacket, tcpPort);
+                String ports = request.getMsg();
+                String[] split = ports.split(":");
+                int tcpPort = Integer.parseInt(split[0]);
+                int filesPort = Integer.parseInt(split[1]);
+
+                System.out.println(tcpPort + ":" + filesPort);
+//                int tcpPort = Integer.parseInt(request.getMsg());
+
+                activeServers.pingedServer(myPacket, tcpPort, filesPort);
                 answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
                 answerToRequest(answer, myPacket);
             } else if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {

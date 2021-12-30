@@ -33,13 +33,14 @@ public class ActiveServers extends Thread {
         return isRegistered;
     }
 
-    public void pingedServer(DatagramPacket serverPacket, int tcpPort) {
+    public void pingedServer(DatagramPacket serverPacket, int tcpPort, int filesPort) {
         for (ConnectedServer server : servers) {
             if (server.getServerPacket().getAddress().equals(serverPacket.getAddress())
                     && server.getServerPacket().getPort() == serverPacket.getPort()) {
                 Calendar curTime = GregorianCalendar.getInstance();
                 server.setPingedTime(curTime);
                 server.setListeningTcpPort(tcpPort);
+                server.setFilesTcpPort(filesPort);
                 // System.out.println(server);
             }
         }
@@ -49,18 +50,6 @@ public class ActiveServers extends Thread {
         return servers;
     }
 
-    // public int registerClient() {
-    // if (lastServer == servers.size()) {
-    // lastServer = 0;
-    // }
-    // for (int i = lastServer; i < servers.size(); i++) {
-    // if (!servers.get(i).getSuspended()) {
-    // lastServer++;
-    // return servers.get(i).getListeningTcpPort();
-    // }
-    // }
-    // return -1;
-    // }
 
     public String registerClient() {
         if (lastServer == servers.size()) {
@@ -70,7 +59,7 @@ public class ActiveServers extends Thread {
             if (!servers.get(i).getSuspended()) {
                 lastServer++;
                 return new String(
-                        servers.get(i).getServerPacket().getAddress() + ":" + servers.get(i).getListeningTcpPort());
+                        servers.get(i).getServerPacket().getAddress() + ":" + servers.get(i).getListeningTcpPort()) + ":" + servers.get(i).getFilesTcpSocketPort();
             }
         }
 

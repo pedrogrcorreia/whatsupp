@@ -27,6 +27,10 @@ public class File implements Serializable {
         this.id = message_id;
     }
 
+    public File(String path){
+        this.path = path;
+    }
+
     public Message getMessage() {
         return message;
     }

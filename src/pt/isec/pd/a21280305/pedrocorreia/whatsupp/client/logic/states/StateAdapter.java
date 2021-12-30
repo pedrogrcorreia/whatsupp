@@ -1,6 +1,5 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
@@ -203,6 +202,25 @@ public abstract class StateAdapter implements IState {
         return this;
     }
 
+    /**
+     * Files
+     * @param file
+     */
+
+    @Override
+    public IState sendFile(Message file){
+        return this;
+    }
+
+    @Override
+    public IState uploadFile(Message file) {
+        return this;
+    }
+
+    @Override
+    public IState downloadFile(Message file){
+        return this;
+    }
     /**
      * Back button
      */

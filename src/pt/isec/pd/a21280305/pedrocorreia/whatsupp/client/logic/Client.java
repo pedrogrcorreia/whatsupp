@@ -1,5 +1,6 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
+import java.io.File;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
@@ -170,6 +171,18 @@ public class Client {
 
     public void sendMessageToGroup(Message msg) { setState(state.sendMessageToGroup(msg)); }
 
+    /**
+     * Files
+     * @param file
+     */
+
+    public void sendFile(Message file){
+        setState(state.sendFile(file));
+    }
+
+    public void uploadFile(Message file) { setState(state.uploadFile(file)); }
+
+    public void downloadFile(Message file) { setState(state.downloadFile(file)); }
     /**
      * Back to start state
      */

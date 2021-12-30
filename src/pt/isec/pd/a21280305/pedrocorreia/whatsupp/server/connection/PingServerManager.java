@@ -22,7 +22,7 @@ public class PingServerManager extends Thread {
         while (true) {
 
             server.sendToServerManager(
-                    new SharedMessage(Strings.SERVER_PING, new String(String.valueOf(server.getTcpPort()))));
+                    new SharedMessage(Strings.SERVER_PING, new String(String.valueOf(server.getTcpPort())+":"+String.valueOf(server.getTcpFilesPort()))));
 
             try {
                 Thread.sleep(pingTime);

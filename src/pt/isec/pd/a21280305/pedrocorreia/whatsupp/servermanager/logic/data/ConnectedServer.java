@@ -11,6 +11,7 @@ public class ConnectedServer extends Server {
     private int listeningUdpPort;
     private String serverAddress;
     private int listeningTcpPort;
+    private int filesTcpPort;
     private Calendar pingedTime;
     private boolean isSuspended = false;
     private int timeoutPenalties = 0;
@@ -56,9 +57,13 @@ public class ConnectedServer extends Server {
         return listeningTcpPort;
     }
 
+    public int getFilesTcpSocketPort() { return filesTcpPort; }
+
     public void setListeningTcpPort(int tcpPort) {
         listeningTcpPort = tcpPort;
     }
+
+    public void setFilesTcpPort(int filesTcpPort) { this.filesTcpPort = filesTcpPort; }
 
     public DatagramPacket getServerPacket() {
         return serverPacket;

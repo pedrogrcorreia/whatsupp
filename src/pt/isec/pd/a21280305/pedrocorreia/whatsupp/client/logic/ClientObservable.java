@@ -2,6 +2,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.List;
 
 import javafx.application.Platform;
@@ -210,6 +211,18 @@ public class ClientObservable implements Runnable {
     }
 
     /**
+     * Files
+     *
+     * @param f*/
+
+    public void sendFile(Message f){
+        client.sendFile(f);
+    }
+
+    public void uploadFile(Message file){ client.uploadFile(file); }
+
+    public void downloadFile(Message file){ client.downloadFile(file); }
+    /**
      * Back to start state
      */
 
@@ -370,6 +383,7 @@ public class ClientObservable implements Runnable {
                 case NEW_GROUP_REQUEST -> Platform.runLater(() -> updateStates(Strings.NEW_GROUP_REQUEST));
                 case DELETED_GROUP -> Platform.runLater(() -> updateStates(Strings.DELETED_GROUP));
                 case USER_MANAGE_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_MANAGE_GROUP_SUCCESS));
+                case USER_SEND_FILE_SUCCESS -> uploadFile(notification.getClientRequest().getSelectedMessage());
                 default -> {
                     System.out.println("State: " + getAtualState());
                     notificationMessage = notification.getMsg();

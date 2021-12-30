@@ -81,6 +81,17 @@ public class Message implements Serializable {
         this.file = file;
     }
 
+    public Message(User sender, User receiver, File file){
+        this.sender = sender;
+        this.receiver = receiver;
+        this.file = file;
+    }
+
+    /** DEBUG!!!!!!!!!!!!!! */
+    public Message(int id){
+        this.id = id;
+    }
+
     public User getSender() {
         return sender;
     }

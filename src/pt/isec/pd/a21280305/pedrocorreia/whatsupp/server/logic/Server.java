@@ -1,9 +1,11 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionClient;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionServerManager;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.FileDownload;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.PingServerManager;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 import java.io.*;
@@ -58,6 +60,7 @@ public class Server {
     /** TCP communication */
     ServerSocket tcpSocket;
     Socket nextClient;
+    ServerSocket filesSocket;
 
     /** Thread to communicate with each new client */
     ConnectionClient newClient;
@@ -153,6 +156,10 @@ public class Server {
         try {
             tcpSocket = new ServerSocket(0);
             System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
+            filesSocket = new ServerSocket(0);
+//            Thread fileDownload = new Thread(new FileDownload(this, filesSocket));
+            Thread fileDownload = new Thread(new DownloadFile(new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\server\\\\files\\\\"), filesSocket));
+            fileDownload.start();
             pingServerManager = new Thread(new PingServerManager(this), "Thread to ping Server Manager");
             connectionServerManager = new Thread(new ConnectionServerManager(this),
                     "Thread to receive communication from ServerManager");
@@ -253,6 +260,8 @@ public class Server {
     public int getTcpPort() {
         return tcpSocket.getLocalPort();
     }
+
+    public int getTcpFilesPort() { return filesSocket.getLocalPort(); }
 
     public ServerSocket getTcpSocket() {
         return tcpSocket;

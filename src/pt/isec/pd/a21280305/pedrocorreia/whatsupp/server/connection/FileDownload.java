@@ -9,49 +9,50 @@ import java.net.Socket;
 public class FileDownload extends Thread{
 
     Server server;
-
-    public FileDownload(Server server){
+    Socket nextClient;
+    ServerSocket dSocket;
+    public FileDownload(Server server, ServerSocket socket){
         this.server = server;
+        this.dSocket = socket;
     }
 
     @Override
     public void run() {
+        System.out.println("Thread to receive download started...");
+        while(true) {
+            System.out.println("Waiting for requests...");
 
-        Socket client;
-        try (ServerSocket transfer = new ServerSocket(0)) {
-            while(true){
-                client = transfer.accept();
-                Socket finalClient = client;
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ObjectInputStream oin = (ObjectInputStream) finalClient.getInputStream();
-                            ObjectOutputStream oout = (ObjectOutputStream) finalClient.getOutputStream();
 
-                            FileInputStream requestsFile = new FileInputStream("C:\\Users\\pedro\\Desktop\\whatsupp\\docs\\Statement.pdf\\");
-                            int nbytes = 0;
-                            do{
-                                byte[] fileChunk = new byte[8192];
-                                nbytes = requestsFile.read(fileChunk, 0,8192);
-
-                                if(nbytes > 0){
-                                    oout.writeObject(fileChunk);
-                                    oout.flush();
-                                }
-                                else{
-                                    break;
-                                }
-                            }while(nbytes > 0);
-
-                            requestsFile.close();
-                        } catch(IOException e){}
+            try {
+                nextClient = dSocket.accept();
+                while (!nextClient.isClosed()) {
+                    byte[] fileChunk = new byte[4096];
+                    File localDirectory = new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\files\\\\");
+                    if(!localDirectory.exists()){
+                        System.out.println("A criar diretoria");
+                        localDirectory.mkdir();
                     }
-                };
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                    if(!localDirectory.canWrite()){
+                        System.out.println("No permissions to write to: " + localDirectory + ".");
+                        return;
+                    }
+                    ObjectOutputStream oout = new ObjectOutputStream(nextClient.getOutputStream());
+                    ObjectInputStream oin = new ObjectInputStream(nextClient.getInputStream());
+                    FileOutputStream fout = new FileOutputStream(localDirectory + "\\\\testar.txt");
 
+                    do {
+                        try {
+                            fileChunk = (byte[]) oin.readObject();
+                            fout.write(fileChunk);
+                        } catch (EOFException e) {
+                            break;
+                        }
+                    } while (true);
+                    nextClient.close();
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

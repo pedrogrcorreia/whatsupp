@@ -1,5 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
@@ -48,7 +50,26 @@ public class MessagesState extends StateAdapter {
         getModel().sendMessageToGroup(msg);
         seeMessages(getModel().getGroup());
         return new MessagesState(getModel());
+    }
 
+    @Override
+    public IState sendFile(Message file) {
+        getModel().sendFile(file);
+        seeMessages(getModel().getFriend());
+        return new MessagesState(getModel());
+    }
+
+    @Override
+    public IState uploadFile(Message file) {
+        getModel().uploadFileToServer(file);
+//        seeMessages(getModel().getFriend());
+        return new MessagesState(getModel());
+    }
+
+    @Override
+    public IState downloadFile(Message file){
+        getModel().downloadFile(file);
+        return new MessagesState(getModel());
     }
 
     @Override

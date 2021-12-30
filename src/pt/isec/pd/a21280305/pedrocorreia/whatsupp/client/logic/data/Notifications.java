@@ -1,11 +1,10 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
@@ -31,6 +30,29 @@ public class Notifications extends Data implements Runnable {
             notLog.notify();
         }
     }
+
+//    private static void uploadFileToServer(SharedMessage request){
+//        System.out.println(request.getClientRequest().getSelectedMessage().getFile().getPath());
+//        try {
+//            FileInputStream fileInputStream = new FileInputStream(request.getClientRequest().getSelectedMessage().getFile().getPath());
+//            int nbytes = 0;
+//            byte[] fileChunk = new byte[8192];
+////            do{
+//                nbytes = fileInputStream.read(fileChunk, 0, 4096);
+//
+//                if(nbytes > 0){
+//                    SharedMessage file = new SharedMessage(Strings.UPLOAD_FILE, new String(""));
+//                    Data.oout.writeObject(file);
+//                    Data.oout.flush();
+//                }
+////                else{
+////                    break;
+////                }
+////            } while(nbytes > 0);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public void run() {
@@ -84,6 +106,9 @@ public class Notifications extends Data implements Runnable {
                     }
                     case USER_MANAGE_GROUP_SUCCESS -> {
                         Data.groupMembers = (List<GroupRequests>) response.getClientRequest().getList();
+                        notifyList(response);
+                    }
+                    case USER_SEND_FILE_SUCCESS -> {
                         notifyList(response);
                     }
                     default -> {

@@ -1,23 +1,15 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.BindException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.UploadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.FriendsRequests;
@@ -36,6 +28,7 @@ public class Data {
     protected int serverManagerPort;
     protected String serverAddress;
     protected int serverPort;
+    protected int filesPort;
     protected InetAddress serverManager;
 
     public List<SharedMessage> notLog;
@@ -164,8 +157,10 @@ public class Data {
             String serverAddressReceived = sc.next();
             serverAddress = serverAddressReceived.replace("/", "");
             serverPort = Integer.parseInt(sc.next());
-            // System.out.println("SMA " + serverAddress);
-            // System.out.println("SP " + serverPort);
+            filesPort = Integer.parseInt(sc.next());
+            System.out.println("SMA " + serverAddress);
+            System.out.println("SP " + serverPort);
+            System.out.println("FP " + filesPort);
             socketToServer = new Socket(serverAddress, serverPort);
             oin = new ObjectInputStream(socketToServer.getInputStream());
             oout = new ObjectOutputStream(socketToServer.getOutputStream());
@@ -274,37 +269,6 @@ public class Data {
     }
 
     /**
-     * Messages
-     */
-
-    public boolean seeMessages(User selectedUser) {
-        selectedFriend = selectedUser;
-        ClientRequests cr = new ClientRequests(user, selectedUser, messages);
-        return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
-    }
-
-    public boolean seeMessages(Group group){
-        selectedGroup = group;
-        ClientRequests cr = new ClientRequests(user, group);
-        return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
-    }
-
-    public boolean deleteMessage(Message message) {
-        ClientRequests cr = new ClientRequests(user, message);
-        return cr.sendRequest(oout, Strings.MESSAGE_DELETE);
-    }
-
-    public boolean sendMessage(Message message) {
-        ClientRequests cr = new ClientRequests(user, selectedFriend, message);
-        return cr.sendRequest(oout, Strings.USER_SENT_MESSAGE);
-    }
-
-    public boolean sendMessageToGroup(Message message){
-        ClientRequests cr = new ClientRequests(user, selectedGroup, message);
-        return cr.sendRequest(oout, Strings.USER_SENT_MESSAGE);
-    }
-
-    /**
      * Groups
      */
 
@@ -372,6 +336,67 @@ public class Data {
     public void acceptGroupRequest(User u, Group g){
         ClientRequests cr = new ClientRequests(user, u, g);
         cr.sendRequest(oout, Strings.ADMIN_ACCEPT_GROUP_REQUEST);
+    }
+
+    /**
+     * Messages
+     */
+
+    public boolean seeMessages(User selectedUser) {
+        selectedFriend = selectedUser;
+        ClientRequests cr = new ClientRequests(user, selectedUser, messages);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
+    }
+
+    public boolean seeMessages(Group group){
+        selectedGroup = group;
+        ClientRequests cr = new ClientRequests(user, group);
+        return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
+    }
+
+    public boolean deleteMessage(Message message) {
+        ClientRequests cr = new ClientRequests(user, message);
+        return cr.sendRequest(oout, Strings.MESSAGE_DELETE);
+    }
+
+    public boolean sendMessage(Message message) {
+        ClientRequests cr = new ClientRequests(user, selectedFriend, message);
+        return cr.sendRequest(oout, Strings.USER_SENT_MESSAGE);
+    }
+
+    public boolean sendMessageToGroup(Message message){
+        ClientRequests cr = new ClientRequests(user, selectedGroup, message);
+        return cr.sendRequest(oout, Strings.USER_SENT_MESSAGE);
+    }
+
+    /**
+     * Files
+     * @param file
+     */
+
+    public void sendFile(Message file){
+        ClientRequests cr = new ClientRequests(user, selectedFriend, file);
+        cr.sendRequest(oout, Strings.USER_SEND_FILE);
+    }
+
+    public void uploadFileToServer(Message file){
+        File f = new File(file.getFile().getPath());
+        System.out.println(file.getFile().getPath());
+        Thread u = new Thread(new UploadFile(f, serverAddress, filesPort));
+        u.start();
+    }
+
+    public void downloadFile(Message file){
+        try {
+            ServerSocket s = new ServerSocket(0);
+            Thread d = new Thread(new DownloadFile(new File("C:/users/pedro/Desktop/whatsupp/client/files"), s), "Download thread");
+            d.start();
+            ClientRequests cr = new ClientRequests(user, file, s.getLocalPort());
+            cr.sendRequest(oout, Strings.DOWNLOAD_FILE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return;
     }
 
     /** GETS */

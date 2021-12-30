@@ -1,8 +1,16 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp;
 
+import javafx.application.Application;
+import javafx.stage.Stage;
+
 import java.io.IOException;
 
-public class Test {
+public class Test extends Application {
+
+    @Override
+    public void start(Stage stage) throws Exception {
+
+    }
 
     abstract class foo {
         public foo() {
@@ -17,10 +25,13 @@ public class Test {
     }
 
     public static void main(String[] args) throws IOException {
-        String query = new String("DELETE FROM friends_requests WHERE (requester_user_id = " +
-                1 + " AND friend_user_id = " + 2 + ")" +
-                "OR requester_user_id = " + 2 + " AND friend_user_id = " + 1 + ")");
-        System.out.println(query);
+
+
+
+//        String query = new String("DELETE FROM friends_requests WHERE (requester_user_id = " +
+//                1 + " AND friend_user_id = " + 2 + ")" +
+//                "OR requester_user_id = " + 2 + " AND friend_user_id = " + 1 + ")");
+//        System.out.println(query);
         // ByteArrayOutputStream bout;
         // ObjectOutputStream oout;
         // bout = new ByteArrayOutputStream();

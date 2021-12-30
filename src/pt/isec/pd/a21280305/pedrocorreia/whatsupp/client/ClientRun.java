@@ -8,6 +8,10 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Client;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.File;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.ClientUI;
 
 public class ClientRun extends Application {
@@ -55,6 +59,16 @@ public class ClientRun extends Application {
         // System.out.println(csc.getClass().getSimpleName());
 
         launch(args);
+
+//        Data d = new Data("192.168.1.73", 3000);
+//        d.contactServerManager();
+//        d.login("pedro", "1234");
+//        d.retrieveInfo();
+//        d.uploadFileToServer(new Message(new User(1), new User(2), new File("C:/users/pedro/Desktop/teste2.txt")));
+//        d.downloadFile(new Message(353));
+//        System.out.println("ACABOU");
+//        return;
+
         // Connect to GRDS
         // ByteArrayOutputStream bout;
         // ObjectOutputStream oout;
