@@ -3,6 +3,7 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection;
 import java.io.*;
 import java.net.*;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.UploadFile;
@@ -19,12 +20,21 @@ public class ConnectionClient extends Thread {
     private Server server;
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
+    private ServerSocket fileSocket;
 
     public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin) {
         this.clientSocket = clientSocket;
         this.server = server;
         this.oout = oout;
         this.oin = oin;
+    }
+
+    public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin, ServerSocket fileSocket){
+        this.clientSocket = clientSocket;
+        this.server = server;
+        this.oout = oout;
+        this.oin = oin;
+        this.fileSocket = fileSocket;
     }
 
     public void sendMsgToClient(SharedMessage msg) {
@@ -154,6 +164,8 @@ public class ConnectionClient extends Thread {
                     }
                     case USER_SEND_FILE ->{
                         oout.writeObject(dbManager.newFile(request));
+                        Thread f = new Thread(new DownloadFile(new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\server\\\\files\\\\"), fileSocket));
+                        f.start();
                     }
                     case UPLOAD_FILE -> {
 //                        downloadToLocal(request);

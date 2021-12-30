@@ -158,8 +158,8 @@ public class Server {
             System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
             filesSocket = new ServerSocket(0);
 //            Thread fileDownload = new Thread(new FileDownload(this, filesSocket));
-            Thread fileDownload = new Thread(new DownloadFile(new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\server\\\\files\\\\"), filesSocket));
-            fileDownload.start();
+//            Thread fileDownload = new Thread(new DownloadFile(new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\server\\\\files\\\\"), filesSocket));
+//            fileDownload.start();
             pingServerManager = new Thread(new PingServerManager(this), "Thread to ping Server Manager");
             connectionServerManager = new Thread(new ConnectionServerManager(this),
                     "Thread to receive communication from ServerManager");
@@ -173,7 +173,7 @@ public class Server {
                 // newClient = new ConnectionClient(nextClient, this);
                 oout = new ObjectOutputStream(nextClient.getOutputStream());
                 oin = new ObjectInputStream(nextClient.getInputStream());
-                newClient = new ConnectionClient(nextClient, this, oout, oin);
+                newClient = new ConnectionClient(nextClient, this, oout, oin, filesSocket);
                 clientsConnected.add(newClient);
                 newClient.start();
             }
