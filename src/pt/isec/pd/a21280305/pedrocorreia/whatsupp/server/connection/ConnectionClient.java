@@ -42,7 +42,7 @@ public class ConnectionClient extends Thread {
     public void sendMsgToClient(SharedMessage msg) {
 
         try {
-            if(msg.getMsgType() == Strings.NEW_MESSAGE_GROUP){
+            if(msg.getMsgType() == Strings.NEW_MESSAGE_GROUP || msg.getMsgType() == Strings.DELETE_MESSAGE_GROUP){
                 oout.writeObject(msg);
                 oout.flush();
             }else {

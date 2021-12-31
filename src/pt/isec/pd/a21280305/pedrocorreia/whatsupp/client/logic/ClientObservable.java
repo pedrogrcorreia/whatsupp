@@ -323,27 +323,23 @@ public class ClientObservable implements Runnable {
 //                    notificationMessage = notification.getMsg();
 //                    Platform.runLater(() -> updateNotification());
 //                    break;
+                case MESSAGE_DELETE_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
                 case USER_REQUEST_FRIENDS_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_FAIL));
                 case USER_REQUEST_FRIENDS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_SUCCESS));
                 case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS));
                 case USER_REQUEST_FRIENDS_REQUESTS_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_FAIL));
                 case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS));
                 case USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL));
-                case NEW_FRIEND -> {
+                case NEW_FRIEND_REQUEST, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_CANCEL -> {
                     if (getAtualState() == Situation.SEE_FRIENDS) {
-                        Platform.runLater(() -> propertyChangeSupport
-                                .firePropertyChange(Strings.NEW_FRIEND.name(), null, null));
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
                     } else {
                         notificationMessage = notification.getMsg();
                         Platform.runLater(() -> updateNotification());
                     }
                 }
                 case REMOVED_FRIEND -> {
-                    if (getAtualState() == Situation.MESSAGE) {
-                        System.out.println("estou aqui");
-                        Platform.runLater(() -> updateStates(Strings.REMOVED_FRIEND));
-                    }
-                    if (getAtualState() == Situation.SEE_FRIENDS) {
+                    if (getAtualState() == Situation.MESSAGE || getAtualState() == Situation.SEE_FRIENDS) {
                         Platform.runLater(() -> updateStates(Strings.REMOVED_FRIEND));
                     }
                     notificationMessage = notification.getMsg();
@@ -351,6 +347,7 @@ public class ClientObservable implements Runnable {
                 }
                 case MESSAGE_SENT_SUCCESS -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_SUCCESS));
                 case MESSAGE_SENT_FAIL -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_FAIL));
+                case DELETE_MESSAGE_USER -> Platform.runLater(() -> updateStates(notification.getMsgType()));
                 case USER_REQUEST_MESSAGES_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_SUCCESS));
                 case USER_REQUEST_MESSAGES_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_FAIL));
                 case USER_REQUEST_USER_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_SUCCESS));

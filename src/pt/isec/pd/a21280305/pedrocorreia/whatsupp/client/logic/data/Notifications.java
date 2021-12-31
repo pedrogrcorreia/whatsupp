@@ -69,9 +69,6 @@ public class Notifications extends Data implements Runnable {
                         Data.friends = (List<FriendsRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
-                    case USER_REQUEST_FRIENDS_FAIL, USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> {
-                        notifyList(response);
-                    }
                     case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> {
                         Data.friendsSent = (List<FriendsRequests>) response.getClientRequest().getList();
                         notifyList(response);
@@ -106,9 +103,6 @@ public class Notifications extends Data implements Runnable {
                     }
                     case USER_MANAGE_GROUP_SUCCESS -> {
                         Data.groupMembers = (List<GroupRequests>) response.getClientRequest().getList();
-                        notifyList(response);
-                    }
-                    case USER_SEND_FILE_SUCCESS -> {
                         notifyList(response);
                     }
                     default -> {

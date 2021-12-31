@@ -81,10 +81,6 @@ public class ServerManager {
                 String[] split = ports.split(":");
                 int tcpPort = Integer.parseInt(split[0]);
                 int filesPort = Integer.parseInt(split[1]);
-
-                System.out.println(tcpPort + ":" + filesPort);
-//                int tcpPort = Integer.parseInt(request.getMsg());
-
                 activeServers.pingedServer(myPacket, tcpPort, filesPort);
                 answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
                 answerToRequest(answer, myPacket);
@@ -95,14 +91,6 @@ public class ServerManager {
             } else {
                 answerToAll(request);
             }
-            // } else if (request.getMsgType().equals(Strings.NEW_MESSAGE)) {
-            // // answer = new SharedMessage(Strings.NEW_MESSAGE,
-            // // Strings.NEW_MESSAGE.toString());
-            // // answerToAll(answer);
-            // answerToAll(request);
-            // } else if (request.getMsgType().equals(Strings.NEW_FRIEND)) {
-            // answerToAll(request);
-            // }
         }
     }
 

@@ -157,9 +157,6 @@ public class Server {
             tcpSocket = new ServerSocket(0);
             System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
             filesSocket = new ServerSocket(0);
-//            Thread fileDownload = new Thread(new FileDownload(this, filesSocket));
-//            Thread fileDownload = new Thread(new DownloadFile(new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\server\\\\files\\\\"), filesSocket));
-//            fileDownload.start();
             pingServerManager = new Thread(new PingServerManager(this), "Thread to ping Server Manager");
             connectionServerManager = new Thread(new ConnectionServerManager(this),
                     "Thread to receive communication from ServerManager");
@@ -170,7 +167,6 @@ public class Server {
             while (true) {
                 nextClient = tcpSocket.accept();
                 clients.add(nextClient);
-                // newClient = new ConnectionClient(nextClient, this);
                 oout = new ObjectOutputStream(nextClient.getOutputStream());
                 oin = new ObjectInputStream(nextClient.getInputStream());
                 newClient = new ConnectionClient(nextClient, this, oout, oin, filesSocket);
@@ -183,18 +179,10 @@ public class Server {
         }
     }
 
-    // public void alertClients() {
-    // for (int i = 0; i < clientsConnected.size(); i++) {
-    // // System.out.println("ESTOU AQUI");
-    // // oout.writeObject(new SharedMessage(Strings.USER_FAILED_LOGIN, "teste"));
-    // // oout.flush();
-    // SharedMessage request = new SharedMessage(Strings.NEW_MESSAGE,
-    // Strings.NEW_MESSAGE.toString());
-    // clientsConnected.get(i)
-    // .sendMsgToClient(request);
-
-    // }
-    // }
+    /**
+     * Alert clients of a new notification
+     * @param request - notification type
+     */
 
     public void alertClients(SharedMessage request) {
         for (int i = 0; i < clientsConnected.size(); i++) {
@@ -227,6 +215,22 @@ public class Server {
      * 
      * @return the {@code SharedMessage} that was received.
      */
+
+    public void deleteFile(String fPath) {
+        File dFile = null;
+        try {
+            dFile = new File(new File(fPath).getCanonicalPath());
+            if(dFile.delete()){
+                System.out.println("File deleted successfully");
+            }
+            else{
+                System.out.println("Couldn't delete the requested file");
+            }
+        } catch (IOException e) {
+            System.out.println("Couldn't delete the file:\r\n\t " + e);
+        }
+
+    }
 
     public SharedMessage receiveFromServerManager() {
         try {

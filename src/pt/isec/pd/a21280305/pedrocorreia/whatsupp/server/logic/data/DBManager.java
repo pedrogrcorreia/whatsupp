@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DBManager {
 
-    private final String filesPath = new String("C:/users/pedro/Desktop/whatsupp/server/files/");
+    private final String filesPath = Strings.SERVER_DOWNLOAD_PATH.toString();
 
     Connection con;
     static Statement stmt;
@@ -108,6 +108,8 @@ public class DBManager {
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.USER_REGISTER_FAIL, new String("Problem inserting on table."));
             } else {
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_REGISTERED, new String("A new user has registered."));
+                server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_REGISTER_SUCCESS, new String("User registered successfully."));
             }
         } catch (SQLIntegrityConstraintViolationException e) {
@@ -144,6 +146,8 @@ public class DBManager {
                 if (rs.getString("username").equals(username) && rs.getString("password").equals(password)) {
                     User user = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
                     rs.close();
+                    SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."));
+                    server.sendToServerManager(msgToSend);
                     return new SharedMessage(Strings.USER_SUCCESS_LOGIN, new String("Logged in successfully."),
                             new LoginRegister(user));
                 }
@@ -352,7 +356,7 @@ public class DBManager {
                 return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_FAIL,
                         new String("Problem inserting on table new friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND, new String("Friend request sent..."));
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND_REQUEST, new String("Friend request sent..."), userToAdd.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_SUCCESS, new String("Friend request sent."));
             }
@@ -383,8 +387,8 @@ public class DBManager {
                 return new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST_FAIL,
                         new String("Couldn't accept the friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND,
-                        new String("Friend request accepted..."));
+                SharedMessage msgToSend = new SharedMessage(Strings.FRIEND_REQUEST_ACCEPT,
+                        new String("Your friend request to " + user.getName() + " is accepted"), newFriend.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_ACCEPT_FRIEND_REQUEST_SUCCESS,
                         new String("Friend request accepted successfull."));
@@ -414,8 +418,8 @@ public class DBManager {
                 return new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST_FAIL,
                         new String("Couldn't delete the friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND,
-                        new String("Friend request deleted..."));
+                SharedMessage msgToSend = new SharedMessage(Strings.FRIEND_REQUEST_CANCEL,
+                        new String("User " + user.getName() + " cancel their friend request."), friend.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_CANCEL_FRIEND_REQUEST_SUCCESS,
                         new String("Friend request deleted successfully."));
@@ -444,7 +448,6 @@ public class DBManager {
         try {
             Statement stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
-                System.out.println("HERE");
                 return new SharedMessage(Strings.USER_CANCEL_FRIENDSHIP_FAIL,
                         new String("Couldn't delete the friend request."));
             } else {
@@ -574,16 +577,9 @@ public class DBManager {
         String query;
         int id = (group == null) ? receiver.getID() : group.getID();
         String type = (group == null) ? "user_id_to" : "group_id";
-//        if(group == null) {
             query = new String("INSERT INTO messages (user_id_from, text, sent_time, " + type + ") " +
                 "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
                 + id + ")");
-//        }
-//        else {
-//            query = new String("INSERT INTO messages (user_id_from, text, sent_time, group_id) " +
-//                    "VALUES (" + sender.getID() + ", '" + message.getMsgTxt() + "', current_timestamp(), "
-//                    + group.getID() + ")");
-//        }
         try {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
@@ -591,7 +587,7 @@ public class DBManager {
                         new String("Problem sending message."));
             } else {
                 SharedMessage msgToSend = (group == null) ? new SharedMessage(Strings.NEW_MESSAGE_USER, new String("New message received."), id)
-                        : new SharedMessage(Strings.NEW_MESSAGE_GROUP, new String("New message received on group."), id);
+                        : new SharedMessage(Strings.NEW_MESSAGE_GROUP, new String("New message received on group."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_SENT_SUCCESS, new String("Message sent"));
             }
@@ -810,15 +806,15 @@ public class DBManager {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.USER_QUIT_GROUP_FAIL,
-                        new String("Problem deleting message."));
+                        new String("Couldn't quit the group."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.QUIT_GROUP, new String("Message deleted..."));
+                SharedMessage msgToSend = new SharedMessage(Strings.QUIT_GROUP, new String("User left group."));
                 server.sendToServerManager(msgToSend);
-                return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Message deleted"));
+                return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("User left group."));
             }
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Couldn't delete this message:\r\n\t" + e);
-            return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Couldn't delete this message."));
+            return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Couldn't quit the group."));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("Problem with SQL query."));
@@ -838,7 +834,6 @@ public class DBManager {
         String query = new String("DELETE FROM whatsupp_db.groups WHERE group_id = " + group.getID());
         String nextQuery = new String("DELETE FROM group_requests WHERE group_id = " + group.getID());
         String finalQuery = new String("DELETE FROM messages WHERE group_id = " + group.getID());
-        String exQuery = query + nextQuery + finalQuery;
         try {
             Statement stmt = con.createStatement();
             stmt.addBatch(finalQuery);
@@ -848,7 +843,7 @@ public class DBManager {
             SharedMessage msgToSend = new SharedMessage(Strings.DELETED_GROUP,
                     new String("A friendship is cancelled..."));
             server.sendToServerManager(msgToSend);
-            return new SharedMessage(Strings.USER_DELETE_GROUP_SUCCESS, new String("Friendship deleted"));
+            return new SharedMessage(Strings.USER_DELETE_GROUP_SUCCESS, new String("Group deleted"));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_DELETE_GROUP_FAIL, new String("Problem with SQL query."));
@@ -912,15 +907,15 @@ public class DBManager {
             rs.close();
             stmt = con.createStatement();
             if(stmt.executeUpdate(query) < 1){
-                return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Problem inserting new group."));
+                return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Couldn't change the group's name."));
             }else{
-                SharedMessage msgToSend = new SharedMessage(Strings.CHANGE_NAME, new String("New group created on the server."));
+                SharedMessage msgToSend = new SharedMessage(Strings.CHANGE_NAME, new String("A group name was changed."));
                 server.sendToServerManager(msgToSend);
-                return new SharedMessage(Strings.USER_CHANGE_GROUP_SUCCESS, new String("Group created successfully."));
+                return new SharedMessage(Strings.USER_CHANGE_GROUP_SUCCESS, new String("Group changed name."));
             }
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Couldn't delete this message:\r\n\t" + e);
-            return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Couldn't delete this message."));
+            return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Couldn't change the group's name."));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Problem with SQL query."));
@@ -940,13 +935,13 @@ public class DBManager {
                 return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL,
                         new String("Problem inserting on table new friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_GROUP_REQUEST, new String("Friend request sent..."));
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_GROUP_REQUEST, new String("New request to join a group."));
                 server.sendToServerManager(msgToSend);
-                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Friend request sent."));
+                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Request to join a group sent."));
             }
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Friend request already sent:\r\n\t" + e);
-            return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL, new String("Friend request already sent."));
+            return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL, new String("Group request already sent."));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL, new String("Problem with SQL query."));
@@ -971,15 +966,15 @@ public class DBManager {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL,
-                        new String("Problem inserting on table new friend request."));
+                        new String("Couldn't accept the friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.ACCEPTED_GROUP_REQUEST, new String("Friend request sent..."));
+                SharedMessage msgToSend = new SharedMessage(Strings.ACCEPTED_GROUP_REQUEST, new String("Group request accepted."));
                 server.sendToServerManager(msgToSend);
-                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Friend request sent."));
+                return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Group request accepted"));
             }
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Friend request already sent:\r\n\t" + e);
-            return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL, new String("Friend request already sent."));
+            return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL, new String("Couldn't accept the friend request."));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL, new String("Problem with SQL query."));
@@ -999,14 +994,12 @@ public class DBManager {
         System.out.println(msg.getFile().getPath());
         java.io.File f = new java.io.File(msg.getFile().getPath());
         String fileName = f.getName();
-//        String[] split = msg.getFile().getPath().split("\\\\");
-//        String fileName=null;
-//        for(String s : split){
-//            fileName = s;
-//        }
         System.out.println(fileName);
         String query = new String("INSERT INTO messages (user_id_from, user_id_to, sent_time)\n" +
                 "VALUES (" + user.getID() + ", " + toUser.getID() + ", current_timestamp())");
+
+        // TODO group or user conv
+
         try{
             stmt = con.createStatement();
             int updated = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
@@ -1019,11 +1012,12 @@ public class DBManager {
                     "VALUES (" + message_id + ", '" + filesPath+fileName + "')");
             stmt = con.createStatement();
             stmt.executeUpdate(insertFile);
-//            SharedMessage msgToServer = new SharedMessage(Strings.NEW_FILE, new String("A new file was sent"));
+            SharedMessage msgToServer = new SharedMessage(Strings.NEW_FILE_SENT_USER, new String("A new file was sent"), toUser.getID());
+            server.sendToServerManager(msgToServer);
             return new SharedMessage(Strings.USER_SEND_FILE_SUCCESS, new String("File sent success"), request.getClientRequest());
         } catch (SQLException e) {
             System.out.println("Error registering filename:\n\r\t " + e);
-            return new SharedMessage(Strings.USER_SEND_FILE_FAIL, new String("Failed to regiser the file name"));
+            return new SharedMessage(Strings.USER_SEND_FILE_FAIL, new String("Failed to register the file name"));
         }finally {
             try {
                 stmt.close();
@@ -1050,6 +1044,44 @@ public class DBManager {
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return null;
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage deleteFile(SharedMessage request){
+        Message m = request.getClientRequest().getSelectedMessage();
+        String filePath = null;
+
+        String query = new String("SELECT file_path FROM files WHERE message_id = " + m.getID());
+        String deleteQueryFiles = new String("DELETE FROM files WHERE message_id = " + m.getID());
+        String deleteQueryMessages = new String("DELETE FROM messages WHERE message_id = " + m.getID());
+
+        // TODO group or user conv
+
+        try {
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                filePath = new String(rs.getString("file_path"));
+            }
+            rs.close();
+            stmt.close();
+            stmt = con.createStatement();
+            stmt.addBatch(deleteQueryFiles);
+            stmt.addBatch(deleteQueryMessages);
+            stmt.executeBatch();
+            SharedMessage msgToSend = new SharedMessage(Strings.FILE_REMOVED_USER,
+                    new String("File removed."), m.getReceiver().getID(), new String(filePath));
+            server.sendToServerManager(msgToSend);
+            return new SharedMessage(Strings.USER_DELETE_FILE_SUCCESS, new String("Group deleted"));
+        } catch (SQLException e) {
+            System.out.println("SQLException problem:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_DELETE_FILE_FAIL, new String("Problem with SQL query."));
         } finally {
             try {
                 stmt.close();

@@ -1,5 +1,6 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp;
 
+import java.io.File;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -12,6 +13,7 @@ public class SharedMessage implements Serializable {
     private String msg;
     private ClientRequests cr;
     private int id;
+    private String filePath;
 
     public SharedMessage(Strings msgType, String msg) {
         this.msgType = msgType;
@@ -35,6 +37,13 @@ public class SharedMessage implements Serializable {
         this.id = id;
     }
 
+    public SharedMessage(Strings msgType, String msg, int id, String fPath){
+        this.msgType = msgType;
+        this.msg = msg;
+        this.id = id;
+        this.filePath = fPath;
+    }
+
 
     public Strings getMsgType() {
         return msgType;
@@ -53,6 +62,8 @@ public class SharedMessage implements Serializable {
     }
 
     public int getID(){ return id; }
+
+    public String getFilePath(){ return filePath; }
 
     @Override
     public String toString() {

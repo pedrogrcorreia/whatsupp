@@ -84,7 +84,9 @@ public class SeeFriendsStatePane extends GridPane {
                 e -> updateFriendsRequests());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS.name(),
                 e -> updateFriendsRequestsPending());
-        clientObservable.addPropertyChangeListener(Strings.NEW_FRIEND.name(), e -> updateNewFriend());
+        clientObservable.addPropertyChangeListener(Strings.NEW_FRIEND_REQUEST.name(), e -> updateNewFriend());
+        clientObservable.addPropertyChangeListener(Strings.FRIEND_REQUEST_ACCEPT.name(), e -> updateNewFriend());
+        clientObservable.addPropertyChangeListener(Strings.FRIEND_REQUEST_CANCEL.name(), e -> updateNewFriend());
         clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> {
             if(state == PaneState.FRIENDS){
                 clientObservable.seeFriends();
@@ -224,9 +226,6 @@ public class SeeFriendsStatePane extends GridPane {
             case REQUESTS -> clientObservable.seeFriendsRequests();
             case PENDING -> clientObservable.seeFriendsRequestsPending();
         }
-        // clientObservable.seeFriendsRequests();
-        // clientObservable.getFriendsRequests();
-        // clientObservable.getFriendsRequestsPending();
     }
 
     private void updateFail() {

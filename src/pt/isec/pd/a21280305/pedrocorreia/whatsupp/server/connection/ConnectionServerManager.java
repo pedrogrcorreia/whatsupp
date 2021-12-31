@@ -19,23 +19,15 @@ public class ConnectionServerManager extends Thread {
             receivedRequest = server.receiveFromServerManager();
             System.out.println("Request from ServerManager: " + receivedRequest.getMsgType().name());
             switch(receivedRequest.getMsgType()){
-                case NEW_MESSAGE_USER, NEW_MESSAGE_GROUP, NEW_FRIEND, REMOVED_FRIEND, NEW_GROUP,
-                        QUIT_GROUP, CHANGE_NAME, NEW_GROUP_REQUEST,
-                        ACCEPTED_GROUP_REQUEST,
-                        DELETED_GROUP -> server.alertClients(receivedRequest);
+                case SERVER_PING, SERVER_REGISTER_FAIL, SERVER_REGISTER_SUCCESS -> {}
+                case FILE_REMOVED_USER, FILE_REMOVED_GROUP -> {
+                    server.alertClients(receivedRequest);
+                    server.deleteFile(receivedRequest.getFilePath());
+                }
+                default -> {
+                    server.alertClients(receivedRequest);
+                }
             }
-//            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_MESSAGE")) {
-//                server.alertClients(receivedRequest);
-//            }
-//            if (receivedRequest.getMsgType().name().equalsIgnoreCase("NEW_FRIEND")) {
-//                server.alertClients(receivedRequest);
-//            }
-//            if (receivedRequest.getMsgType().name().equalsIgnoreCase("REMOVED_FRIEND")) {
-//                server.alertClients(receivedRequest);
-//            }
-//            if(receivedRequest.getMsgType().name().equalsIgnoreCase(("NEW_GROUP"))){
-//                server.alertClients(receivedRequest);
-//            }
         }
     }
 

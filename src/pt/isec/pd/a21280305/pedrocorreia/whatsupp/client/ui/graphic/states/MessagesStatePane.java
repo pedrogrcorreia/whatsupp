@@ -116,8 +116,15 @@ public class MessagesStatePane extends BorderPane {
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(), e -> updateSuccess());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_FAIL.name(), e -> updateFail());
         clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_USER.name(), e -> updateNewMessageUser());
+        clientObservable.addPropertyChangeListener(Strings.NEW_FILE_SENT_USER.name(), e -> updateNewMessageUser());
+        clientObservable.addPropertyChangeListener(Strings.FILE_REMOVED_USER.name(), e -> updateNewMessageUser());
+        clientObservable.addPropertyChangeListener(Strings.NEW_FILE_SENT_GROUP.name(), e -> updateNewMessageGroup());
+        clientObservable.addPropertyChangeListener(Strings.FILE_REMOVED_GROUP.toString(), e -> updateNewMessageGroup());
         clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_GROUP.name(), e -> updateNewMessageGroup());
         clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
+        clientObservable.addPropertyChangeListener(Strings.DELETE_MESSAGE_USER.name(), e -> updateNewMessageUser());
+        clientObservable.addPropertyChangeListener(Strings.DELETE_MESSAGE_GROUP.name(), e -> updateNewMessageGroup());
+        clientObservable.addPropertyChangeListener(Strings.MESSAGE_DELETE_SUCCESS.name(), e -> updateNewMessageUser());
     }
 
     private void registerListener(){

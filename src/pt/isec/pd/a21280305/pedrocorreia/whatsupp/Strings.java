@@ -6,25 +6,42 @@ import java.io.ObjectOutputStream;
 
 public enum Strings {
     JDBC_DRIVE("com.mysql.cj.jdbc.Driver"),
+    SERVER_DOWNLOAD_PATH("./server/download"),
+    SERVER_MANAGER_DOWNLOAD_PATH("./server manager/download"),
 
     /** Server <-> Server Manager */
+
 
     SERVER_REGISTER_REQUEST("Request to register a server"),
     SERVER_REGISTER_SUCCESS("Registered the server successfully"),
     SERVER_REGISTER_FAIL("Failed to register the server"),
     SERVER_PING("Server pinging"),
-    NEW_MESSAGE_USER("A new message has been sent to the system"),
+
+    /** Notifications to all users */
+
     NEW_MESSAGE_GROUP("A new message has been sent to the system on a group"),
-    DELETE_MESSAGE_USER("A new message was deleted"),
     DELETE_MESSAGE_GROUP("A new message was deleted on a group"),
-    NEW_FRIEND("A new friend request has been updated on the system"),
-    REMOVED_FRIEND("A friendship has been cancelled"),
     NEW_GROUP("A new group was created"),
     QUIT_GROUP("A user quit a group"),
     CHANGE_NAME("Group changed name"),
     NEW_GROUP_REQUEST("A new group request has been done"),
     ACCEPTED_GROUP_REQUEST("A new group request has been accepted"),
     DELETED_GROUP("A group is deleted"),
+    NEW_USER_REGISTERED("User register"),
+    NEW_USER_LOGIN("User login"),
+
+    /** Notifications by user id */
+    NEW_MESSAGE_USER("A new message has been sent to the system"),
+    DELETE_MESSAGE_USER("A new message was deleted"),
+    NEW_FRIEND_REQUEST("A new friend request has been updated on the system"),
+    FRIEND_REQUEST_ACCEPT(""),
+    FRIEND_REQUEST_CANCEL(""),
+    REMOVED_FRIEND("A friendship has been cancelled"),
+    NEW_FILE_SENT_USER(""),
+    NEW_FILE_SENT_GROUP(""),
+    FILE_REMOVED_USER(""),
+    FILE_REMOVED_GROUP(""),
+
 
     /** Client <-> Server Manager */
 
@@ -155,6 +172,9 @@ public enum Strings {
     USER_SEND_FILE("User sent a new file"),
     USER_SEND_FILE_SUCCESS("Success"),
     USER_SEND_FILE_FAIL("Fail"),
+    USER_DELETE_FILE("Delete a file"),
+    USER_DELETE_FILE_SUCCESS("Success"),
+    USER_DELETE_FILE_FAIL("Fail"),
     UPLOAD_FILE("File upload"),
     UPLOAD_SUCCESS("Success"),
     UPLOAD_FAIL("Fail"),
