@@ -8,11 +8,24 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 
+import java.io.File;
+
 public class MessagesState extends StateAdapter {
 
     public MessagesState(Data model) {
         super(model);
     }
+
+    @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new MessagesState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
 
     @Override
     public IState seeMessages(User user) {
@@ -60,6 +73,13 @@ public class MessagesState extends StateAdapter {
     }
 
     @Override
+    public IState sendFileToGroup(Message file) {
+        getModel().sendFileToGroup(file);
+        seeMessages(getModel().getGroup());
+        return new MessagesState(getModel());
+    }
+
+    @Override
     public IState uploadFile(Message file) {
         getModel().uploadFileToServer(file);
 //        seeMessages(getModel().getFriend());
@@ -67,8 +87,14 @@ public class MessagesState extends StateAdapter {
     }
 
     @Override
-    public IState downloadFile(Message file){
-        getModel().downloadFile(file);
+    public IState downloadFile(Message file, File path){
+        getModel().downloadFile(file, path);
+        return new MessagesState(getModel());
+    }
+
+    @Override
+    public IState deleteFile(Message file) {
+        getModel().deleteFile(file);
         return new MessagesState(getModel());
     }
 

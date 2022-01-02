@@ -11,6 +11,16 @@ public class SeeFriendsState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new SeeFriendsState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+    @Override
     public IState seeFriends() {
         getModel().seeFriends();
         return new SeeFriendsState(getModel());

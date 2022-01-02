@@ -90,7 +90,6 @@ public class Data {
     }
 
     public boolean contactServerManager() {
-
         try {
             serverManager = InetAddress.getByName(serverManagerAddress);
 
@@ -167,7 +166,7 @@ public class Data {
 
             // notIn = new ObjectInputStream(socketToServer.getInputStream());
             // notOut = new ObjectOutputStream(socketToServer.getOutputStream());
-            not = new Notifications(oin, oout, notLog);
+            not = new Notifications(serverManagerAddress, serverManagerPort, oin, oout, notLog);
 
             synchronized (notLog) {
                 notLog.add(new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
@@ -184,9 +183,11 @@ public class Data {
             return false;
         } catch (BindException e) {
             System.out.println("No servers available:\r\n\t" + e);
+            contactServerManager();
             return false;
         } catch (IOException e) {
             System.out.println("Error on socket:\r\n\t" + e);
+            contactServerManager();
             return false;
         }
     }
@@ -225,6 +226,11 @@ public class Data {
         selectedFriend = new User(username);
         ClientRequests cr = new ClientRequests(user, selectedFriend);
         return cr.sendRequest(oout, Strings.USER_REQUEST_USER);
+    }
+
+    public void getAllUsers(){
+        ClientRequests cr = new ClientRequests(user);
+        cr.sendRequest(oout, Strings.USER_REQUEST_ALL_USERS);
     }
 
     /**
@@ -344,12 +350,14 @@ public class Data {
 
     public boolean seeMessages(User selectedUser) {
         selectedFriend = selectedUser;
+        selectedGroup = null;
         ClientRequests cr = new ClientRequests(user, selectedUser, messages);
         return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
     }
 
     public boolean seeMessages(Group group){
         selectedGroup = group;
+        selectedFriend = null;
         ClientRequests cr = new ClientRequests(user, group);
         return cr.sendRequest(oout, Strings.USER_REQUEST_MESSAGES);
     }
@@ -375,7 +383,14 @@ public class Data {
      */
 
     public void sendFile(Message file){
+        selectedGroup = null;
         ClientRequests cr = new ClientRequests(user, selectedFriend, file);
+        cr.sendRequest(oout, Strings.USER_SEND_FILE);
+    }
+
+    public void sendFileToGroup(Message file){
+        selectedFriend = null;
+        ClientRequests cr = new ClientRequests(user, selectedGroup, file);
         cr.sendRequest(oout, Strings.USER_SEND_FILE);
     }
 
@@ -386,10 +401,10 @@ public class Data {
         u.start();
     }
 
-    public void downloadFile(Message file){
+    public void downloadFile(Message file, File path){
         try {
             ServerSocket s = new ServerSocket(0);
-            Thread d = new Thread(new DownloadFile(new File("C:/users/pedro/Desktop/whatsupp/client/files"), s), "Download thread");
+            Thread d = new Thread(new DownloadFile(path, s), "Download thread");
             d.start();
             ClientRequests cr = new ClientRequests(user, file, s.getLocalPort());
             cr.sendRequest(oout, Strings.DOWNLOAD_FILE);
@@ -397,6 +412,11 @@ public class Data {
             e.printStackTrace();
         }
         return;
+    }
+
+    public void deleteFile(Message file){
+        ClientRequests cr = new ClientRequests(user, file);
+        cr.sendRequest(oout, Strings.USER_DELETE_FILE);
     }
 
     /** GETS */

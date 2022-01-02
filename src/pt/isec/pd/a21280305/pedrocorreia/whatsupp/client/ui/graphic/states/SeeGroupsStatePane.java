@@ -4,8 +4,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
@@ -16,11 +19,19 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 import java.util.List;
 import java.util.Optional;
 
-public class SeeGroupsStatePane extends GridPane {
+public class SeeGroupsStatePane extends BorderPane {
 
     private ClientObservable clientObservable;
 
     private Label groups;
+
+    private ScrollPane scrollPane;
+    private GridPane gridPane;
+    private HBox title;
+
+    Background btBkg = new Background(new BackgroundFill(Color.rgb(180, 180, 180), new CornerRadii(10), Insets.EMPTY));
+    Font lblFont = new Font(20);
+    Font btnFont = new Font(15);
 
     public SeeGroupsStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -30,11 +41,22 @@ public class SeeGroupsStatePane extends GridPane {
     }
 
     private void createWindow() {
-        setAlignment(Pos.CENTER);
-        setHgap(10);
-        setVgap(10);
+
+        gridPane = new GridPane();
+
+        scrollPane = new ScrollPane();
+
         setPadding(new Insets(25, 25, 25, 25));
-        groups = new Label("Groups list");
+
+        title = new HBox(10);
+        groups = new Label("Groups");
+        groups.setFont(lblFont);
+        title.setAlignment(Pos.TOP_CENTER);
+        title.getChildren().add(groups);
+
+        setTop(title);
+        scrollPane.setContent(gridPane);
+        setCenter(scrollPane);
     }
 
     private void registerObserver() {
@@ -53,51 +75,76 @@ public class SeeGroupsStatePane extends GridPane {
 
     private void updateListMyGroups() {
         getChildren().clear();
-        add(groups, 0, 1);
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
+
         List<GroupRequests> myGroups = clientObservable.getMyGroups();
         if(myGroups.size() == 0){
             Label noGroups = new Label("No groups to display!");
-            add(noGroups, 1, 1);
+            gridPane.add(noGroups, 0, 1);
             return;
         }
+
         for(int i = 0; i < myGroups.size(); i++){
             Label group;
             Group g = myGroups.get(i).getGroup();
             group = new Label(g.getName());
-            add(group, 1, i+1);
+            group.setFont(lblFont);
+            gridPane.add(group, 0, i+1);
 
-            Button seeGroupMessages = new Button("See messages");
-            add(seeGroupMessages, 2, i+1);
+            Button seeGroupMessages = new Button("Messages");
+            seeGroupMessages.setBackground(btBkg);
+            seeGroupMessages.setFont(btnFont);
+            gridPane.add(seeGroupMessages, 1, i+1);
 
-            Button quitGroup = new Button("Quit group");
-            add(quitGroup, 3, i +1);
+            Button quitGroup = new Button("Quit");
+            quitGroup.setBackground(btBkg);
+            quitGroup.setFont(btnFont);
+            gridPane.add(quitGroup, 2, i +1);
 
             seeGroupMessages.setOnAction(e -> clientObservable.seeMessages(g));
             quitGroup.setOnAction(e -> clientObservable.quitGroup(g));
         }
+
+        activateWindow();
     }
 
     private void updateListAdminGroups() {
         getChildren().clear();
-        add(groups, 0, 1);
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
+
         List<Group> myGroups = clientObservable.getManageGroups();
         if(myGroups.size() == 0){
             Label noGroups = new Label("No groups to display!");
-            add(noGroups, 1, 1);
+            gridPane.add(noGroups, 0, 1);
             return;
         }
         for(int i = 0; i < myGroups.size(); i++) {
             Label group;
             Group g = myGroups.get(i);
             group = new Label(g.getName());
-            add(group, 1, i + 1);
+            group.setFont(lblFont);
+            gridPane.add(group, 0, i + 1);
 
-            Button deleteGroup = new Button("Delete group");
-            add(deleteGroup, 2, i + 1);
-            Button manageMembers = new Button("Manage members");
-            add(manageMembers, 3, i + 1);
-            Button changeName = new Button("Change group name");
-            add(changeName, 4, i + 1);
+            Button deleteGroup = new Button("Delete");
+            deleteGroup.setBackground(btBkg);
+            deleteGroup.setFont(btnFont);
+            gridPane.add(deleteGroup, 1, i + 1);
+
+            Button manageMembers = new Button("Manage");
+            manageMembers.setBackground(btBkg);
+            manageMembers.setFont(btnFont);
+            gridPane.add(manageMembers, 2, i + 1);
+
+            Button changeName = new Button("Change name");
+            changeName.setBackground(btBkg);
+            changeName.setFont(btnFont);
+            gridPane.add(changeName, 3, i + 1);
 
             deleteGroup.setOnAction(e -> clientObservable.deleteGroup(g));
 
@@ -116,65 +163,85 @@ public class SeeGroupsStatePane extends GridPane {
                 }
             });
         }
+
+        activateWindow();
     }
 
     private void updateListAvailableGroups() {
         getChildren().clear();
-        add(groups, 0, 1);
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
+
         List<Group> myGroups = clientObservable.getAvailableGroups();
         if(myGroups.size() == 0){
             Label noGroups = new Label("No groups to display!");
-            add(noGroups, 1, 1);
+            gridPane.add(noGroups, 0, 1);
             return;
         }
         for(int i = 0; i < myGroups.size(); i++) {
             Label group;
             Group g = myGroups.get(i);
             group = new Label(g.getName());
-            add(group, 1, i + 1);
+            group.setFont(lblFont);
+            gridPane.add(group, 0, i + 1);
 
-            Button sendRequest = new Button("Send request");
-            add(sendRequest, 2, i+1);
+            Button sendRequest = new Button("Enter");
+            sendRequest.setBackground(btBkg);
+            sendRequest.setFont(btnFont);
+            gridPane.add(sendRequest, 1, i+1);
 
             sendRequest.setOnAction(e -> clientObservable.sendGroupRequest(g));
         }
+
+        activateWindow();
     }
 
     private void updateListPendingGroups(){
         getChildren().clear();
-        add(groups, 0, 1);
-        System.out.println("Groups: ");
-        List<GroupRequests> myGroups = clientObservable.getPendingGroups();
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
 
+        List<GroupRequests> myGroups = clientObservable.getPendingGroups();
 
         if(myGroups.size() == 0){
             Label noGroups = new Label("No groups to display!");
-            add(noGroups, 1, 1);
+            gridPane.add(noGroups, 0, 1);
             return;
         }
         for(int i = 0; i < myGroups.size(); i++) {
             Label group;
             Group g = myGroups.get(i).getGroup();
             group = new Label(g.getName());
-            add(group, 1, i + 1);
+            group.setFont(lblFont);
+            gridPane.add(group, 0, i + 1);
 
             Button cancelRequest = new Button("Cancel request");
-            add(cancelRequest, 2, i+1);
+            cancelRequest.setBackground(btBkg);
+            cancelRequest.setFont(btnFont);
+            gridPane.add(cancelRequest, 1, i+1);
 
             cancelRequest.setOnAction(e -> clientObservable.cancelGroupRequest(g));
         }
+
+        activateWindow();
     }
 
     private void updateMembers(){
         getChildren().clear();
-        add(groups, 0, 1);
-        System.out.println("Groups: ");
-        List<GroupRequests> myGroups = clientObservable.getGroupMembers();
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
 
+        List<GroupRequests> myGroups = clientObservable.getGroupMembers();
 
         if(myGroups.size() == 0){
             Label noGroups = new Label("No members to display!");
-            add(noGroups, 1, 1);
+            gridPane.add(noGroups, 0, 1);
             return;
         }
         for(int i = 0; i < myGroups.size(); i++) {
@@ -182,19 +249,33 @@ public class SeeGroupsStatePane extends GridPane {
             Group g = myGroups.get(i).getGroup();
             User u = myGroups.get(i).getRequester();
             user = new Label(u.getName());
-            add(user, 1, i + 1);
+            user.setFont(lblFont);
+            gridPane.add(user, 0, i + 1);
 
             Button action = new Button();
             if(myGroups.get(i).getStatus() == 1){
-                action.setText("Delete from group");
+                action.setText("Delete");
+                action.setBackground(btBkg);
+                action.setFont(btnFont);
                 action.setOnAction(e -> clientObservable.quitGroup(u, g));
             }
             else{
+                action.setBackground(btBkg);
+                action.setFont(btnFont);
                 action.setText("Accept request");
+                action.setOnAction(e -> clientObservable.acceptGroupRequest(u, g));
             }
-            add(action, 2, i+1);
+            gridPane.add(action, 1, i+1);
 
-            action.setOnAction(e -> clientObservable.acceptGroupRequest(u, g));
+            activateWindow();
         }
+    }
+
+    private void activateWindow(){
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setContent(gridPane);
+        setTop(title);
+        setCenter(scrollPane);
     }
 }

@@ -9,6 +9,17 @@ public class LoginState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new LoginState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+
+    @Override
     public IState login(String username, String password) {
         if (getModel().login(username, password)) {
             getModel().retrieveInfo();

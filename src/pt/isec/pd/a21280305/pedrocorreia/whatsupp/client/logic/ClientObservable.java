@@ -9,16 +9,17 @@ import javafx.application.Platform;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.*;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states.State;
 
 public class ClientObservable implements Runnable {
+
     private Client client;
     private final PropertyChangeSupport propertyChangeSupport;
 
     private SharedMessage notification = null;
     private String notificationMessage = "";
 
-    // MELHORAR
-    public boolean messagesTo = false;
+    private State state;
 
     public ClientObservable(Client client) {
         this.client = client;
@@ -39,6 +40,8 @@ public class ClientObservable implements Runnable {
     }
 
     public void updateStates(Strings msg){ propertyChangeSupport.firePropertyChange(msg.name(), null, null);}
+
+    public void updateStates(State msg){ propertyChangeSupport.firePropertyChange(msg.name(), null, null);}
 
     /**
      * Contact server manager
@@ -81,6 +84,11 @@ public class ClientObservable implements Runnable {
         forceUpdate();
     }
 
+    public void getAllUsers() {
+        client.getAllUsers();
+        forceUpdate();
+    }
+
     public void searchUser(String username) {
         client.searchUser(username);
     }
@@ -88,16 +96,19 @@ public class ClientObservable implements Runnable {
     /** Friends */
 
     public void seeFriends() {
+        state = State.FRIENDS;
         client.seeFriends();
         forceUpdate();
     }
 
     public void seeFriendsRequests() {
+        state = State.REQUESTS;
         client.seeFriendsRequests();
         forceUpdate();
     }
 
     public void seeFriendsRequestsPending() {
+        state = State.PENDING;
         client.seeFriendsRequestsPending();
         forceUpdate();
     }
@@ -123,6 +134,7 @@ public class ClientObservable implements Runnable {
      */
 
     public void seeGroups() {
+        state = State.GROUP;
         client.seeGroups();
         forceUpdate();
     }
@@ -138,16 +150,19 @@ public class ClientObservable implements Runnable {
     }
 
     public void seeAvailableGroups() {
+        state = State.AVAILABLE;
         client.seeAvailableGroups();
         forceUpdate();
     }
 
     public void seePendingGroups(){
+        state = State.PENDING;
         client.seePendingGroups();
         forceUpdate();
     }
 
     public void seeManageGroups(){
+        state = State.MANAGE;
         client.seeManageGroups();
         forceUpdate();
     }
@@ -186,12 +201,13 @@ public class ClientObservable implements Runnable {
 
     public void seeMessages(User user) {
         client.seeMessages(user);
+        state = State.USER;
         forceUpdate();
     }
 
     public void seeMessages(Group group){
         client.seeMessages(group);
-        messagesTo = true;
+        state = State.GROUP;
         forceUpdate();
     }
 
@@ -219,9 +235,14 @@ public class ClientObservable implements Runnable {
         client.sendFile(f);
     }
 
+    public void sendFileToGroup(Message f){ client.sendFileToGroup(f);}
+
     public void uploadFile(Message file){ client.uploadFile(file); }
 
-    public void downloadFile(Message file){ client.downloadFile(file); }
+    public void downloadFile(Message file, File path){ client.downloadFile(file, path); }
+
+    public void deleteFile(Message file){ client.deleteFile(file); }
+
     /**
      * Back to start state
      */
@@ -293,6 +314,8 @@ public class ClientObservable implements Runnable {
 
     public List<GroupRequests> getGroupMembers() { return client.getGroupMembers(); }
 
+    public State getState(){ return state; }
+
     /**
      * Thread to check for notifications
      * Only call update when a notification is received.
@@ -303,33 +326,14 @@ public class ClientObservable implements Runnable {
         while (true) {
             notification = client.getNotification();
             switch (notification.getMsgType()) {
-//                case CLIENT_REQUEST_SERVER:
-//                    notificationMessage = notification.getMsg();
-//                    Platform.runLater(() -> updateNotification());
-//                    break;
-//                case USER_FAILED_LOGIN:
-//                    notificationMessage = notification.getMsg();
-//                    Platform.runLater(() -> updateNotification());
-//                    break;
-//                case USER_SUCCESS_LOGIN:
-//                    notificationMessage = notification.getMsg();
-//                    Platform.runLater(() -> updateNotification());
-//                    break;
-//                case USER_REGISTER_FAIL:
-//                    notificationMessage = notification.getMsg();
-//                    Platform.runLater(() -> updateNotification());
-//                    break;
-//                case USER_REGISTER_SUCCESS:
-//                    notificationMessage = notification.getMsg();
-//                    Platform.runLater(() -> updateNotification());
-//                    break;
                 case MESSAGE_DELETE_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
                 case USER_REQUEST_FRIENDS_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_FAIL));
-                case USER_REQUEST_FRIENDS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_SUCCESS));
-                case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS));
-                case USER_REQUEST_FRIENDS_REQUESTS_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_FAIL));
-                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS));
-                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL));
+                case USER_REQUEST_FRIENDS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case USER_REQUEST_FRIENDS_REQUESTS_FAIL -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
                 case NEW_FRIEND_REQUEST, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_CANCEL -> {
                     if (getAtualState() == Situation.SEE_FRIENDS) {
                         Platform.runLater(() -> updateStates(notification.getMsgType()));
@@ -345,42 +349,43 @@ public class ClientObservable implements Runnable {
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());
                 }
-                case MESSAGE_SENT_SUCCESS -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_SUCCESS));
+//                case MESSAGE_SENT_SUCCESS -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_SUCCESS));
                 case MESSAGE_SENT_FAIL -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_FAIL));
                 case DELETE_MESSAGE_USER -> Platform.runLater(() -> updateStates(notification.getMsgType()));
                 case USER_REQUEST_MESSAGES_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_SUCCESS));
                 case USER_REQUEST_MESSAGES_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_FAIL));
                 case USER_REQUEST_USER_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_SUCCESS));
                 case USER_REQUEST_USER_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_FAIL));
-                case NEW_MESSAGE_USER -> {
-                    if (getAtualState() == Situation.MESSAGE) {
-                        Platform.runLater(() -> propertyChangeSupport
-                                .firePropertyChange(Strings.NEW_MESSAGE_USER.name(), null, null));
-                    } else {
-                        notificationMessage = notification.getMsg();
-                        Platform.runLater(() -> updateNotification());
-                    }
-                }
-                case NEW_MESSAGE_GROUP -> {
-                    if (getAtualState() == Situation.MESSAGE) {
-                        Platform.runLater(() -> propertyChangeSupport
-                                .firePropertyChange(Strings.NEW_MESSAGE_GROUP.name(), null, null));
-                    } else {
-                        notificationMessage = notification.getMsg();
-                        Platform.runLater(() -> updateNotification());
-                    }
-                }
+//                case NEW_MESSAGE_USER -> {
+//                    if (getAtualState() == Situation.MESSAGE) {
+//                        Platform.runLater(() -> propertyChangeSupport
+//                                .firePropertyChange(Strings.NEW_MESSAGE_USER.name(), null, null));
+//                    } else {
+//                        notificationMessage = notification.getMsg();
+//                        Platform.runLater(() -> updateNotification());
+//                    }
+//                }
+//                case NEW_MESSAGE_GROUP -> {
+//                    if (getAtualState() == Situation.MESSAGE) {
+//                        Platform.runLater(() -> propertyChangeSupport
+//                                .firePropertyChange(Strings.NEW_MESSAGE_GROUP.name(), null, null));
+//                    } else {
+//                        System.out.println("Enviar notificatção");
+//                        notificationMessage = notification.getMsg();
+//                        Platform.runLater(() -> updateNotification());
+//                    }
+//                }
                 case REQUEST_NEW_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.REQUEST_NEW_GROUP_SUCCESS));
                 case REQUEST_NEW_GROUP_FAIL -> Platform.runLater(() -> updateStates(Strings.REQUEST_NEW_GROUP_FAIL));
-                case NEW_GROUP -> {
-                    if (getAtualState() != Situation.CREATE_GROUP) {
-                        notificationMessage = notification.getMsg();
-                        Platform.runLater(() -> updateNotification());
-                    }
-                    if (getAtualState() == Situation.SEE_GROUPS) {
-
-                    }
-                }
+//                case NEW_GROUP -> {
+//                    if (getAtualState() != Situation.CREATE_GROUP) {
+//                        notificationMessage = notification.getMsg();
+//                        Platform.runLater(() -> updateNotification());
+//                    }
+//                    if (getAtualState() == Situation.SEE_GROUPS) {
+//
+//                    }
+//                }
                 case USER_REQUEST_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_GROUPS_SUCCESS));
                 case USER_REQUEST_PENDING_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_PENDING_GROUPS_SUCCESS));
                 case USER_REQUEST_AVAILABLE_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_AVAILABLE_GROUPS_SUCCESS));
@@ -389,6 +394,7 @@ public class ClientObservable implements Runnable {
                 case DELETED_GROUP -> Platform.runLater(() -> updateStates(Strings.DELETED_GROUP));
                 case USER_MANAGE_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_MANAGE_GROUP_SUCCESS));
                 case USER_SEND_FILE_SUCCESS -> uploadFile(notification.getClientRequest().getSelectedMessage());
+                case LOST_CONNECTION -> Platform.runLater(() -> contactServerManager());
                 default -> {
                     System.out.println("State: " + getAtualState());
                     notificationMessage = notification.getMsg();
@@ -397,5 +403,6 @@ public class ClientObservable implements Runnable {
             }
         }
     }
+
 
 }

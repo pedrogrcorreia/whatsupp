@@ -8,6 +8,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.MessagesState;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.UserState;
 
 public class Client {
     private Data model;
@@ -15,6 +17,8 @@ public class Client {
 
     public Client(String serverManagerAddress, int serverManagerPort) {
         model = new Data(serverManagerAddress, serverManagerPort);
+//        state = new MessagesState(model);
+//        state = new UserState(model);
         state = new ContactServerManagerState(model);
     }
 
@@ -65,6 +69,10 @@ public class Client {
 
     public void searchUser(String username) {
         setState(state.searchUser(username));
+    }
+
+    public void getAllUsers() {
+        setState(state.getAllUsers());
     }
 
     /**
@@ -180,9 +188,13 @@ public class Client {
         setState(state.sendFile(file));
     }
 
+    public void sendFileToGroup(Message file){ setState(state.sendFileToGroup(file));}
+
     public void uploadFile(Message file) { setState(state.uploadFile(file)); }
 
-    public void downloadFile(Message file) { setState(state.downloadFile(file)); }
+    public void downloadFile(Message file, File path) { setState(state.downloadFile(file, path)); }
+
+    public void deleteFile(Message file){ setState(state.deleteFile(file)); }
     /**
      * Back to start state
      */

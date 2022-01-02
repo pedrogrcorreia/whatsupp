@@ -12,16 +12,15 @@ public class ServerRun {
 
         Server server = null;
 
-        if (args.length == 2) {
-            // TODO MULTICAST SEARCH
-            System.out.println("Not implemented yet.");
+        if (args.length == 1) {
+            server = new Server(args[0]);
         } else if (args.length == 3) {
             server = new Server(args[0], InetAddress.getByName(args[1]), Integer.parseInt(args[2]));
         } else {
             System.out.println("Syntax: java ServerRun <dbAddress> <ServerManagerAddress>* <ServerManagerPort>*");
             return;
         }
-        server.startServer();
+//        server.startServer();
         // server.registerServer();
     }
 

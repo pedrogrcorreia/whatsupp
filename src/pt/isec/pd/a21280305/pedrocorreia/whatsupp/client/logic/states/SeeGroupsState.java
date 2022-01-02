@@ -13,6 +13,16 @@ public class SeeGroupsState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new SeeGroupsState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+    @Override
     public IState seeGroups() {
         getModel().seeGroups();
         return new SeeGroupsState(getModel());

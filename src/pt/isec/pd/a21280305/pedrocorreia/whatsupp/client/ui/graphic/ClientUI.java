@@ -69,10 +69,11 @@ public class ClientUI extends BorderPane {
         txtN = new Label("Notifications: ");
         notificationPanel.setPrefWidth(100);
         notificationPanel.getChildren().add(txtN);
+        notificationPanel.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 
         notificationPanelScroll.setContent(notificationPanel);
         contactServerManagerPane = new ContactServerManagerPane(clientObservable);
-        setCenter(contactServerManagerPane);
+//        setCenter(contactServerManagerPane);
         initialStatePane = new InitialStatePane(clientObservable);
         loginStatePane = new LoginStatePane(clientObservable);
         registerStatePane = new RegisterStatePane(clientObservable);

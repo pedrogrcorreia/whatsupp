@@ -1,6 +1,8 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
@@ -15,10 +17,9 @@ public class Notifications extends Data implements Runnable {
     ObjectInputStream oin;
     ObjectOutputStream oout;
     List<SharedMessage> notLog;
-    List<String> friends;
 
-    public Notifications(ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> notLog) {
-        super();
+    public Notifications(String serverManagerAddress, int serverManagerPort, ObjectInputStream oin, ObjectOutputStream oout, List<SharedMessage> notLog) {
+        super(serverManagerAddress, serverManagerPort);
         this.oin = oin;
         this.oout = oout;
         this.notLog = notLog;
@@ -111,6 +112,10 @@ public class Notifications extends Data implements Runnable {
                 }
             } catch (ClassNotFoundException e) {
                 System.out.println("Couldn't load the message:\r\n\t" + e);
+            }catch(SocketException e){
+                notifyList(new SharedMessage(Strings.LOST_CONNECTION, new String("Lost connection with server...")));
+//                contactServerManager();
+                return;
             } catch (IOException e) {
                 System.out.println("IOException:\r\n\t" + e);
                 e.printStackTrace();

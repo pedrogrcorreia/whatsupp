@@ -63,7 +63,8 @@ public class ActiveServers extends Thread {
             }
         }
 
-        return new String("0.0.0.0:0000");
+//        return new String("0.0.0.0:0000:0000");
+        return null;
     }
 
     @Override

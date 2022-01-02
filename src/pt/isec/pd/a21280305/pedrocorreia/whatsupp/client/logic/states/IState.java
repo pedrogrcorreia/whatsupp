@@ -5,6 +5,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Message;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 
+import java.io.File;
+
 public interface IState {
 
     /**
@@ -33,6 +35,8 @@ public interface IState {
     IState searchUsers();
 
     IState searchUser(String username);
+
+    IState getAllUsers();
 
     /**
      * Friends
@@ -105,9 +109,14 @@ public interface IState {
 
     IState sendFile(Message file);
 
+    IState sendFileToGroup(Message file);
+
     IState uploadFile(Message file);
 
-    IState downloadFile(Message file);
+    IState downloadFile(Message file, File path);
+
+    IState deleteFile(Message file);
+
     /**
      * Back button
      */

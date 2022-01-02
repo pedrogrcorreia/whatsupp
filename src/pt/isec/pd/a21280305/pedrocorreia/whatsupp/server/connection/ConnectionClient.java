@@ -2,11 +2,15 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.UploadFile;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
@@ -22,6 +26,8 @@ public class ConnectionClient extends Thread {
     private ObjectInputStream oin;
     private ServerSocket fileSocket;
     User user = new User();
+    List<GroupRequests> gr = new ArrayList<>();
+
 
 
     public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin) {
@@ -41,29 +47,58 @@ public class ConnectionClient extends Thread {
 
     public void sendMsgToClient(SharedMessage msg) {
 
-        try {
-            if(msg.getMsgType() == Strings.NEW_MESSAGE_GROUP || msg.getMsgType() == Strings.DELETE_MESSAGE_GROUP){
-                oout.writeObject(msg);
-                oout.flush();
-            }else {
-                if (msg.getID() == user.getID()) {
-                    oout.writeObject(msg);
-                    oout.flush();
+//        try {
+//            if(msg.getMsgType() == Strings.NEW_MESSAGE_GROUP || msg.getMsgType() == Strings.DELETE_MESSAGE_GROUP){
+//                oout.writeObject(msg);
+//                oout.flush();
+//            }else {
+//                if (msg.getID() == user.getID()) {
+//                    oout.writeObject(msg);
+//                    oout.flush();
+//                }
+//            }
+            switch(msg.getMsgType()){
+                case NEW_MESSAGE_GROUP, DELETE_MESSAGE_GROUP ->  sendMsgToClientByGroup(msg);
+                case NEW_USER_LOGIN, NEW_USER_REGISTERED -> {
+                    if (msg.getID() != user.getID()){
+                        try {
+                            oout.writeObject(msg);
+                            oout.flush();
+                        } catch (IOException e) {
+                            System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
+                        }
+                    }
                 }
+                default -> sendMsgToClientByID(msg);
             }
-        } catch (IOException e) {
-            System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
-        }
+//        } catch (IOException e) {
+//            System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
+//        }
     }
 
-    public void downloadToLocal(SharedMessage request){
-        try{
-            FileOutputStream localFileOutputStream = new FileOutputStream(request.getClientRequest().getSelectedMessage().getFile().getPath()); // nao existe
-//                SharedMessage request = (SharedMessage) oin.readObject();
-//            localFileOutputStream.write(request.getFileChunk());
-            System.out.println("IM HERE");
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void sendMsgToClientByID(SharedMessage msg){
+        if(msg.getID() == user.getID()){
+            try{
+                oout.writeObject(msg);
+                oout.flush();
+            }catch(IOException e){
+                System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
+            }
+        }
+
+    }
+
+    public void sendMsgToClientByGroup(SharedMessage msg){
+        for(GroupRequests groupRequests : gr){
+            Group g = groupRequests.getGroup();
+            if(msg.getID() == g.getID()){
+                try {
+                    oout.writeObject(msg);
+                    oout.flush();
+                } catch(IOException e){
+                    System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
+                }
+            }
         }
     }
 
@@ -94,7 +129,11 @@ public class ConnectionClient extends Thread {
                             user = response.getClientRequest().getUser();
                             System.out.println("The user on this server is " + user);
                             dbManager.setStatus(user, 1);
+                            request = dbManager.getGroups(response);
+                            gr = (List<GroupRequests>) request.getClientRequest().getList();
                         }
+                        SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."), user.getID());
+                        server.sendToServerManager(msgToSend);
                         oout.writeObject(response);
                     }
                     case USER_REQUEST_REGISTER -> {
@@ -104,6 +143,7 @@ public class ConnectionClient extends Thread {
                     case USER_REQUEST_USER -> {
                         oout.writeObject(dbManager.getUser(request));
                     }
+                    case USER_REQUEST_ALL_USERS -> oout.writeObject(dbManager.getAllUsers(request));
                     /** Friends requests */
                     case USER_REQUEST_FRIENDS -> {
                         oout.writeObject(dbManager.getFriends(request));
@@ -141,8 +181,10 @@ public class ConnectionClient extends Thread {
                         oout.writeObject(dbManager.createNewGroup(request));
                     }
                     case USER_REQUEST_GROUPS -> {
-                        System.out.println("Pedido recebido");
-                        oout.writeObject(dbManager.getGroups(request));
+//                        oout.writeObject(dbManager.getGroups(request));
+                        request = dbManager.getGroups(request);
+                        gr = (List<GroupRequests>) request.getClientRequest().getList();
+                        oout.writeObject(request);
                     }
                     case USER_REQUEST_PENDING_GROUPS -> {
                         oout.writeObject(dbManager.getGroupsPending(request));
@@ -171,15 +213,11 @@ public class ConnectionClient extends Thread {
                     case ADMIN_ACCEPT_GROUP_REQUEST -> {
                         oout.writeObject(dbManager.acceptGroupRequest(request));
                     }
+                    /** Files */
                     case USER_SEND_FILE ->{
                         oout.writeObject(dbManager.newFile(request));
-                        Thread f = new Thread(new DownloadFile(new File("C:\\\\Users\\\\pedro\\\\Desktop\\\\whatsupp\\\\server\\\\files\\\\"), fileSocket));
+                        Thread f = new Thread(new DownloadFile(new File(Strings.SERVER_DOWNLOAD_PATH.toString()), fileSocket));
                         f.start();
-                    }
-                    case UPLOAD_FILE -> {
-//                        downloadToLocal(request);
-//                        oout.writeObject(dbManager.uploadFile(request));
-//                        System.out.println("TA TUDO");
                     }
                     case DOWNLOAD_FILE -> {
                         String path = dbManager.downloadFile(request);
@@ -189,6 +227,7 @@ public class ConnectionClient extends Thread {
                         Thread u = new Thread(new UploadFile(f, clientSocket.getLocalAddress().getHostAddress(), request.getClientRequest().getPort()));
                         u.start();
                     }
+                    case USER_DELETE_FILE -> oout.writeObject(dbManager.deleteFile(request));
                     default -> {
                         System.out.println("\t\nDEFAULT\n\t");
                     }

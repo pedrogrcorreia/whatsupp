@@ -5,6 +5,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 
+import java.io.File;
+
 public abstract class StateAdapter implements IState {
     private final Data model;
 
@@ -59,6 +61,11 @@ public abstract class StateAdapter implements IState {
 
     @Override
     public IState searchUser(String username) {
+        return this;
+    }
+
+    @Override
+    public IState getAllUsers() {
         return this;
     }
 
@@ -213,14 +220,25 @@ public abstract class StateAdapter implements IState {
     }
 
     @Override
+    public IState sendFileToGroup(Message file) {
+        return this;
+    }
+
+    @Override
     public IState uploadFile(Message file) {
         return this;
     }
 
     @Override
-    public IState downloadFile(Message file){
+    public IState downloadFile(Message file, File path){
         return this;
     }
+
+    @Override
+    public IState deleteFile(Message file) {
+        return this;
+    }
+
     /**
      * Back button
      */

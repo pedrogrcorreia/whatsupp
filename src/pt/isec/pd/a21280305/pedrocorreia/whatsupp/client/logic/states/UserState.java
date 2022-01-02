@@ -11,8 +11,24 @@ public class UserState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new UserState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+    @Override
     public IState searchUsers() {
         return new SearchUsersState(getModel());
+    }
+
+    @Override
+    public IState getAllUsers() {
+        getModel().getAllUsers();
+        return new SeeFriendsState(getModel());
     }
 
     @Override

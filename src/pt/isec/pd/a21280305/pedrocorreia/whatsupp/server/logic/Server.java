@@ -1,11 +1,9 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic;
 
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionClient;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.ConnectionServerManager;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.FileDownload;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.connection.PingServerManager;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.data.DBManager;
 import java.io.*;
@@ -25,6 +23,7 @@ public class Server {
 
     static final int MAX_SIZE = 8192;
     static final int TIMEOUT = 10 * 1000; // 10 seconds timeout
+    static int i = 0;
 
     // Server variables
     InetAddress serverManagerAddress;
@@ -103,7 +102,7 @@ public class Server {
     public Server(String dbAddress) throws UnknownHostException, SocketException {
         this.dbAddress = dbAddress;
         this.serverAddress = InetAddress.getLocalHost().getHostAddress();
-//        registerServer();
+        registerServerMulticast();
     }
 
     /**
@@ -127,21 +126,78 @@ public class Server {
      */
 
     private void registerServer() {
+        System.out.println("Contacting Server Manager");
+        i++;
         try {
             mySocket = new DatagramSocket();
-            // serverPort = mySocket.getPort();
-            // TODO set socket timeout?
-            sendToServerManager(new SharedMessage(Strings.SERVER_REGISTER_REQUEST,
-                    "Server wants to register to this Server Manager."));
-            receivedFromServerManager = receiveFromServerManager();
-            System.out.println(receivedFromServerManager.getMsg());
-            if (!receivedFromServerManager.getMsgType().equals(Strings.SERVER_REGISTER_SUCCESS)) {
+            mySocket.setSoTimeout(3000);
+
+            SharedMessage msgToSend = new SharedMessage(Strings.SERVER_REGISTER_REQUEST, new String(""));
+            bout = new ByteArrayOutputStream();
+            oout = new ObjectOutputStream(bout);
+            oout.writeUnshared(msgToSend);
+
+            myPacket = new DatagramPacket(bout.toByteArray(), bout.size(), serverManagerAddress, serverManagerPort);
+            mySocket.send(myPacket);
+
+            myPacket = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
+            mySocket.receive(myPacket);
+
+            // Desserialize object
+            bin = new ByteArrayInputStream(myPacket.getData());
+            oin = new ObjectInputStream(bin);
+            responseFromServerManager = (SharedMessage) oin.readObject();
+
+            System.out.println(responseFromServerManager.getMsg());
+            if (!responseFromServerManager.getMsgType().equals(Strings.SERVER_REGISTER_SUCCESS)) {
                 return;
             } else {
                 runServer();
             }
-        } catch (SocketException e) {
-            System.out.println("Error connecting the socket:\r\n\t" + e);
+        } catch (SocketException | SocketTimeoutException e){
+            System.out.println("Server Manager not responding...\nAttempt " + i);
+            registerServer();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void registerServerMulticast() {
+        System.out.println("Contacting Server Manager");
+        i++;
+        try {
+            serverManagerAddress = InetAddress.getByName("230.30.30.30");
+            serverManagerPort = 3030;
+            mySocket = new DatagramSocket();
+            mySocket.setSoTimeout(3000);
+
+            SharedMessage msgToSend = new SharedMessage(Strings.SERVER_REGISTER_REQUEST, new String(""));
+            bout = new ByteArrayOutputStream();
+            oout = new ObjectOutputStream(bout);
+            oout.writeUnshared(msgToSend);
+
+            myPacket = new DatagramPacket(bout.toByteArray(), bout.size(), serverManagerAddress, serverManagerPort);
+            mySocket.send(myPacket);
+
+            myPacket = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
+            mySocket.receive(myPacket);
+
+            // Desserialize object
+            bin = new ByteArrayInputStream(myPacket.getData());
+            oin = new ObjectInputStream(bin);
+            responseFromServerManager = (SharedMessage) oin.readObject();
+
+            System.out.println(responseFromServerManager.getMsg());
+            if (!responseFromServerManager.getMsgType().equals(Strings.SERVER_REGISTER_SUCCESS)) {
+                return;
+            } else {
+                runServer();
+            }
+        } catch (SocketException | SocketTimeoutException e){
+            System.out.println("[Multicast] Server Manager not responding...\nAttempt " + i);
+            registerServerMulticast();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
@@ -154,6 +210,7 @@ public class Server {
 
     private void runServer() {
         try {
+            mySocket.setSoTimeout(0);
             tcpSocket = new ServerSocket(0);
             System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
             filesSocket = new ServerSocket(0);

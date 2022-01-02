@@ -11,7 +11,6 @@ public enum Strings {
 
     /** Server <-> Server Manager */
 
-
     SERVER_REGISTER_REQUEST("Request to register a server"),
     SERVER_REGISTER_SUCCESS("Registered the server successfully"),
     SERVER_REGISTER_FAIL("Failed to register the server"),
@@ -48,6 +47,8 @@ public enum Strings {
     CLIENT_REQUEST_SERVER("Client is requesting a server"),
 
     /** Client <-> Server */
+
+    LOST_CONNECTION(""),
 
     /** Set users status */
     SET_USER_ONLINE("User is online"),
@@ -92,6 +93,9 @@ public enum Strings {
     USER_REQUEST_USER("Get another user info"),
     USER_REQUEST_USER_SUCCESS("Retrieved an User object"),
     USER_REQUEST_USER_FAIL("Couldn't retreive the User"),
+    USER_REQUEST_ALL_USERS("Get all users"),
+    USER_REQUEST_ALL_USERS_SUCCESS("Success"),
+    USER_REQUEST_ALL_USERS_FAIL("Fail"),
 
     /**
      * All info

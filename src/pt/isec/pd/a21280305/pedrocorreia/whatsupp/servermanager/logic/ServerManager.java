@@ -1,9 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic;
 
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.List;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
@@ -11,7 +9,7 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ActiveServers;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ConnectedServer;
 
-public class ServerManager {
+public class ServerManager implements Runnable{
 
     static final int MAX_SIZE = 8192;
 
@@ -19,14 +17,19 @@ public class ServerManager {
 
     int listeningPort;
 
+    MulticastSocket multiSocket = null;
     DatagramSocket mySocket = null;
     DatagramPacket myPacket;
 
     ByteArrayInputStream bin;
+    ByteArrayInputStream mbin;
     ObjectInputStream oin;
+    ObjectInputStream moin;
 
     ByteArrayOutputStream bout;
+    ByteArrayOutputStream mbout;
     ObjectOutputStream oout;
+    ObjectOutputStream moout;
 
     // To communicate with requests
     SharedMessage request;
@@ -46,11 +49,18 @@ public class ServerManager {
 
     public void startServerManager() {
         try {
+            multiSocket = new MulticastSocket(3030);
+            InetAddress group = InetAddress.getByName("230.30.30.30");
+            multiSocket.joinGroup(group);
+            Thread t = new Thread(this);
+            t.start();
             mySocket = new DatagramSocket(listeningPort);
             System.out.println("Server Manager initialized at port " + mySocket.getLocalPort());
             runServerManager();
         } catch (SocketException e) {
             System.out.println("Error at UDP socket: \r\n\t" + e);
+        } catch (IOException e) {
+            System.out.println("Error at Multicast socket:\r\n\t" + e);
         }
     }
 
@@ -85,9 +95,12 @@ public class ServerManager {
                 answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
                 answerToRequest(answer, myPacket);
             } else if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
-                answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
-                        activeServers.registerClient());
-                answerToRequest(answer, myPacket);
+                String serverCoord = activeServers.registerClient();
+                if(serverCoord != null) {
+                    answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
+                            serverCoord);
+                    answerToRequest(answer, myPacket);
+                }
             } else {
                 answerToAll(request);
             }
@@ -113,6 +126,7 @@ public class ServerManager {
      * 
      * @return {@code SharedMessage} that was received.
      */
+
 
     private SharedMessage receiveRequests() {
         try {
@@ -174,25 +188,77 @@ public class ServerManager {
         }
     }
 
-    //
-    // TO-DO
-    // 1. Create method to send message to all servers
-    // 2. Create method to send message to all servers except one.
-    //
+    @Override
+    public void run() {
+        DatagramPacket myPacket;
+        System.out.println("Multicast thread started at port 3030");
+        while(true) {
+            try {
+                SharedMessage newRequest;
+                myPacket = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
+                multiSocket.receive(myPacket);
 
-    // private void echoToServer(String msgToSend, DatagramPacket serverPacket)
-    // throws IOException{
-    // serverPacket.setData(msgToSend.getBytes());
-    // serverPacket.setLength(msgToSend.length());
-    // mySocket.send(serverPacket);
-    // }
+                mbin = new ByteArrayInputStream(myPacket.getData(), 0, myPacket.getLength());
+                moin = new ObjectInputStream(mbin);
 
-    // private void echoToAllServers(String msgToSend) throws IOException {
+                newRequest = (SharedMessage) moin.readObject();
+                System.out.println("Request: " + newRequest.getMsgType().name() + " from " + myPacket.getPort());
+                if (newRequest.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
+                    try {
+                        if (!registerServers(myPacket)) {
+                            answer = new SharedMessage(Strings.SERVER_REGISTER_SUCCESS,
+                                    new String("Registered successfully."));
+                        } else {
+                            answer = new SharedMessage(Strings.SERVER_REGISTER_FAIL,
+                                    new String("Couldn't register the server."));
+                        }
+                        mbout = new ByteArrayOutputStream();
+                        moout = new ObjectOutputStream(mbout);
+                        moout.writeUnshared(answer);
 
-    // // for(DatagramPacket activeServersPacket : activeServersPackets){
-    // // activeServersPacket.setData(msgToSend.getBytes());
-    // // activeServersPacket.setLength(msgToSend.length());
-    // // mySocket.send(activeServersPacket);
-    // // }
-    // }
+                        myPacket.setData(mbout.toByteArray());
+                        myPacket.setLength(mbout.size());
+                        multiSocket.send(myPacket);
+                    } catch (IOException | ClassNotFoundException e) {
+                        System.out.println("Error registering the server.");
+                    }
+                } else if (newRequest.getMsgType().equals(Strings.SERVER_PING)) {
+                    String ports = newRequest.getMsg();
+                    String[] split = ports.split(":");
+                    int tcpPort = Integer.parseInt(split[0]);
+                    int filesPort = Integer.parseInt(split[1]);
+                    activeServers.pingedServer(myPacket, tcpPort, filesPort);
+                    answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
+                    mbout = new ByteArrayOutputStream();
+                    moout = new ObjectOutputStream(mbout);
+                    moout.writeUnshared(answer);
+
+                    myPacket.setData(mbout.toByteArray());
+                    myPacket.setLength(mbout.size());
+                    multiSocket.send(myPacket);
+                } else{
+                    List<ConnectedServer> cs = activeServers.getServers();
+                    for (int i = 0; i < cs.size(); i++) {
+                        try {
+                            bout = new ByteArrayOutputStream();
+                            oout = new ObjectOutputStream(bout);
+                            oout.writeUnshared(newRequest);
+                            DatagramPacket serverPacket;
+                            serverPacket = cs.get(i).getServerPacket();
+                            serverPacket.setData(bout.toByteArray());
+                            serverPacket.setLength(bout.size());
+                            mySocket.send(serverPacket);
+                        } catch (IOException e) {
+                            System.out.println("Error writing object:\r\n\t" + e);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("Error receiving request: \r\n\t" + e);
+            } catch (ClassNotFoundException e) {
+                System.out.println("Object sent is invalid: \r\n\t" + e);
+            }
+        }
+    }
+
 }

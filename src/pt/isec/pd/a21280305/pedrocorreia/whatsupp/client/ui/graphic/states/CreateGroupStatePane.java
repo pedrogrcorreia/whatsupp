@@ -5,8 +5,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
@@ -28,22 +32,32 @@ public class CreateGroupStatePane extends GridPane {
     }
 
     private void createWindow(){
+        Background btBkg = new Background(new BackgroundFill(Color.rgb(180, 180, 180), new CornerRadii(10), Insets.EMPTY));
+        Font lblFont = new Font(20);
+        Font btnFont = new Font(15);
+
         setAlignment(Pos.CENTER);
         setHgap(10);
         setVgap(10);
         setPadding(new Insets(25, 25, 25, 25));
 
         name = new Label("Enter group name");
+        name.setFont(lblFont);
         add(name, 0, 1);
 
         groupName = new TextField();
         add(groupName, 1, 1);
 
         submit = new Button("Submit");
+        submit.setBackground(btBkg);
+        submit.setFont(btnFont);
         add(submit, 0, 2);
 
         successText = new Label("");
         failedText = new Label("");
+
+        successText.setFont(lblFont);
+        failedText.setFont(lblFont);
 
         add(successText, 0, 3);
         add(failedText, 0, 3);

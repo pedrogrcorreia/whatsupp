@@ -146,8 +146,8 @@ public class DBManager {
                 if (rs.getString("username").equals(username) && rs.getString("password").equals(password)) {
                     User user = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
                     rs.close();
-                    SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."));
-                    server.sendToServerManager(msgToSend);
+//                    SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."), user.getID());
+//                    server.sendToServerManager(msgToSend);
                     return new SharedMessage(Strings.USER_SUCCESS_LOGIN, new String("Logged in successfully."),
                             new LoginRegister(user));
                 }
@@ -160,6 +160,34 @@ public class DBManager {
         } catch (SQLException e) {
             System.out.println("[login] Error querying the database:\r\n\t" + e);
             return new SharedMessage(Strings.USER_FAILED_LOGIN, new String("Error at database."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage getAllUsers(SharedMessage request){
+        User user = request.getClientRequest().getUser();
+        String query = new String("SELECT username, name, user_id, status " +
+                "FROM users where user_id != " + user.getID());
+        List<User> users = new ArrayList<>();
+        try{
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                User nUser = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
+                users.add(nUser);
+            }
+            rs.close();
+            return new SharedMessage(Strings.USER_REQUEST_ALL_USERS_SUCCESS, new String("List of all users"), new ClientRequests(user, users));
+        } catch (SQLException e) {
+            System.out.println("[getUser] Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_REQUEST_ALL_USERS_FAIL,
+                    Strings.USER_REQUEST_ALL_USERS_FAIL.toString(),
+                    request.getClientRequest());
         } finally {
             try {
                 stmt.close();
@@ -556,7 +584,7 @@ public class DBManager {
                         new String("Problem deleting message."));
             } else {
                 SharedMessage msgToSend = (message.getGroup() == null) ? new SharedMessage(Strings.DELETE_MESSAGE_USER, new String("Message delete by a friend."), message.getReceiver().getID()) :
-                        new SharedMessage(Strings.DELETE_MESSAGE_GROUP, new String("Message deleted on group."));
+                        new SharedMessage(Strings.DELETE_MESSAGE_GROUP, new String("Message deleted on group."), message.getGroup().getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_DELETE_SUCCESS, new String("Message deleted"));
             }
@@ -587,7 +615,7 @@ public class DBManager {
                         new String("Problem sending message."));
             } else {
                 SharedMessage msgToSend = (group == null) ? new SharedMessage(Strings.NEW_MESSAGE_USER, new String("New message received."), id)
-                        : new SharedMessage(Strings.NEW_MESSAGE_GROUP, new String("New message received on group."));
+                        : new SharedMessage(Strings.NEW_MESSAGE_GROUP, new String("New message received on group."), id);
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.MESSAGE_SENT_SUCCESS, new String("Message sent"));
             }
@@ -684,7 +712,7 @@ public class DBManager {
             return new SharedMessage(Strings.USER_REQUEST_GROUPS_FAIL, new String("Error on database."));
         } catch (NullPointerException e) {
             System.out.println("[getMessages] Error:\r\n\t" + e);
-            return new SharedMessage(Strings.USER_REQUEST_MESSAGES_FAIL, new String("ERRO QUE NAO SEI"));
+            return new SharedMessage(Strings.USER_REQUEST_GROUPS_FAIL, new String("NullPointException"));
         }finally {
             try {
                 stmt.close();
@@ -802,12 +830,16 @@ public class DBManager {
         Group group = request.getClientRequest().getGroup();
         String query = new String("DELETE FROM group_requests WHERE requester_user_id = " +
                 user.getID() + " and group_id = " + group.getID());
+        String deleteUserMessages = new String("DELETE FROM messages WHERE user_id_from = " + user.getID() + " AND group_id = " + group.getID());
         try {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.USER_QUIT_GROUP_FAIL,
                         new String("Couldn't quit the group."));
             } else {
+                stmt.close();
+                stmt = con.createStatement();
+                stmt.executeUpdate(deleteUserMessages);
                 SharedMessage msgToSend = new SharedMessage(Strings.QUIT_GROUP, new String("User left group."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("User left group."));
@@ -988,17 +1020,21 @@ public class DBManager {
     }
 
     public SharedMessage newFile(SharedMessage request){
-        User user = request.getClientRequest().getUser();
-        User toUser = request.getClientRequest().getSelectedUser();
-        Message msg = request.getClientRequest().getSelectedMessage();
-        System.out.println(msg.getFile().getPath());
-        java.io.File f = new java.io.File(msg.getFile().getPath());
+        User sender = request.getClientRequest().getUser();
+        User receiver = request.getClientRequest().getSelectedUser();
+        Group group = request.getClientRequest().getGroup();
+        Message message = request.getClientRequest().getSelectedMessage();
+        System.out.println(message.getFile().getPath());
+        java.io.File f = new java.io.File(message.getFile().getPath());
         String fileName = f.getName();
         System.out.println(fileName);
-        String query = new String("INSERT INTO messages (user_id_from, user_id_to, sent_time)\n" +
-                "VALUES (" + user.getID() + ", " + toUser.getID() + ", current_timestamp())");
+        String query;
 
-        // TODO group or user conv
+        int id = (group == null) ? receiver.getID() : group.getID();
+        String type = (group == null) ? "user_id_to" : "group_id";
+        query = new String("INSERT INTO messages (user_id_from, sent_time, " + type + ") " +
+                "VALUES (" + sender.getID() + ", current_timestamp(), "
+                + id + ")");
 
         try{
             stmt = con.createStatement();
@@ -1012,7 +1048,8 @@ public class DBManager {
                     "VALUES (" + message_id + ", '" + filesPath+fileName + "')");
             stmt = con.createStatement();
             stmt.executeUpdate(insertFile);
-            SharedMessage msgToServer = new SharedMessage(Strings.NEW_FILE_SENT_USER, new String("A new file was sent"), toUser.getID());
+            SharedMessage msgToServer = (group == null) ? new SharedMessage(Strings.NEW_FILE_SENT_USER, new String("A new file was sent"), receiver.getID()) :
+                    new SharedMessage(Strings.NEW_FILE_SENT_GROUP, new String("A new file was sent to a group"), group.getID());
             server.sendToServerManager(msgToServer);
             return new SharedMessage(Strings.USER_SEND_FILE_SUCCESS, new String("File sent success"), request.getClientRequest());
         } catch (SQLException e) {
@@ -1061,6 +1098,8 @@ public class DBManager {
         String deleteQueryFiles = new String("DELETE FROM files WHERE message_id = " + m.getID());
         String deleteQueryMessages = new String("DELETE FROM messages WHERE message_id = " + m.getID());
 
+        int id = (m.getGroup() == null) ? m.getReceiver().getID() : m.getGroup().getID();
+
         // TODO group or user conv
 
         try {
@@ -1075,10 +1114,11 @@ public class DBManager {
             stmt.addBatch(deleteQueryFiles);
             stmt.addBatch(deleteQueryMessages);
             stmt.executeBatch();
-            SharedMessage msgToSend = new SharedMessage(Strings.FILE_REMOVED_USER,
-                    new String("File removed."), m.getReceiver().getID(), new String(filePath));
+            SharedMessage msgToSend = (m.getGroup() == null) ? new SharedMessage(Strings.FILE_REMOVED_USER,
+                    new String("File removed on a conversation."), id, new String(filePath)) :
+                    new SharedMessage(Strings.FILE_REMOVED_GROUP, new String("File removed on a group."), id, new String(filePath));
             server.sendToServerManager(msgToSend);
-            return new SharedMessage(Strings.USER_DELETE_FILE_SUCCESS, new String("Group deleted"));
+            return new SharedMessage(Strings.USER_DELETE_FILE_SUCCESS, new String("File deleted"));
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
             return new SharedMessage(Strings.USER_DELETE_FILE_FAIL, new String("Problem with SQL query."));

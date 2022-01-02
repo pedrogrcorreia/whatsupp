@@ -35,6 +35,10 @@ public class GroupRequests implements Serializable {
         this.group = group;
     }
 
+    public GroupRequests() {
+
+    }
+
     public User getRequester(){
         return requester;
     }

@@ -4,12 +4,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 
-public class UserStatePane extends GridPane {
+public class UserStatePane extends BorderPane {
     private ClientObservable clientObservable;
     private Label welcome;
+    private Button listAllUsers;
     private Button searchUsers;
     private Button seeFriends;
     private Button seeFriendsRequests;
@@ -31,41 +36,105 @@ public class UserStatePane extends GridPane {
     }
 
     public void createView() {
-        setAlignment(Pos.CENTER);
-        setHgap(10);
-        setVgap(10);
+        Background btBkg = new Background(new BackgroundFill(Color.rgb(180, 180, 180), new CornerRadii(10), Insets.EMPTY));
+        Font lblFont = new Font(20);
+        Font btnFont = new Font(15);
+
         setPadding(new Insets(25, 25, 25, 25));
 
+        HBox wlc = new HBox(10);
         welcome = new Label();
-        add(welcome, 0, 1);
+        welcome.setFont(new Font(25));
+        wlc.setAlignment(Pos.TOP_CENTER);
+        wlc.getChildren().add(welcome);
 
-        searchUsers = new Button("Search Users");
-        add(searchUsers, 0, 2);
+        VBox btns = new VBox(30);
 
-        seeFriends = new Button("See friends");
-        add(seeFriends, 0, 3);
+        VBox u = new VBox(10);
+        u.setAlignment(Pos.BOTTOM_CENTER);
 
-        seeFriendsRequests = new Button("Friends requests sent");
-        add(seeFriendsRequests, 1, 3);
+        Label users = new Label("USERS");
+        users.setFont(lblFont);
+        searchUsers = new Button("Search");
+        searchUsers.setBackground(btBkg);
+        searchUsers.setPrefWidth(100);
+        searchUsers.setFont(btnFont);
 
-        seeFriendsRequestsPending = new Button("Friends requests pending");
-        add(seeFriendsRequestsPending, 2, 3);
+        listAllUsers = new Button("All");
+        listAllUsers.setBackground(btBkg);
+        listAllUsers.setPrefWidth(100);
+        listAllUsers.setFont(btnFont);
+
+        u.getChildren().addAll(users, searchUsers, listAllUsers);
+
+        VBox f = new VBox(10);
+        f.setAlignment(Pos.BOTTOM_CENTER);
+
+        Label friends = new Label("FRIENDS");
+        friends.setFont(lblFont);
+
+        seeFriends = new Button("Your friends");
+        seeFriends.setBackground(btBkg);
+        seeFriends.setPrefWidth(100);
+        seeFriends.setFont(btnFont);
+
+        seeFriendsRequests = new Button("Requests sent");
+        seeFriendsRequests.setBackground(btBkg);
+        seeFriendsRequests.setPrefWidth(100);
+        seeFriendsRequests.setWrapText(true);
+        seeFriendsRequests.setFont(btnFont);
+        seeFriendsRequests.setTextAlignment(TextAlignment.CENTER);
+
+        seeFriendsRequestsPending = new Button("Requests pending");
+        seeFriendsRequestsPending.setBackground(btBkg);
+        seeFriendsRequestsPending.setPrefWidth(100);
+        seeFriendsRequestsPending.setWrapText(true);
+        seeFriendsRequestsPending.setFont(btnFont);
+        seeFriendsRequestsPending.setTextAlignment(TextAlignment.CENTER);
+
+        f.getChildren().addAll(friends, seeFriends, seeFriendsRequests, seeFriendsRequestsPending);
+
+        VBox g = new VBox(10);
+        g.setAlignment(Pos.TOP_CENTER);
+
+        Label groups = new Label("GROUPS");
+        groups.setFont(new Font(20));
 
         seeGroups = new Button("My groups");
-        add(seeGroups, 0, 4);
+        seeGroups.setBackground(btBkg);
+        seeGroups.setPrefWidth(100);
+        seeGroups.setFont(btnFont);
 
         createGroup = new Button("Create new group");
-        add(createGroup, 1, 4);
+        createGroup.setBackground(btBkg);
+        createGroup.setPrefWidth(100);
+        createGroup.setWrapText(true);
+        createGroup.setFont(btnFont);
+        createGroup.setTextAlignment(TextAlignment.CENTER);
 
-        manageGroups = new Button("Manage my groups");
-        add(manageGroups, 3, 4);
+        manageGroups = new Button("Manage");
+        manageGroups.setBackground(btBkg);
+        manageGroups.setPrefWidth(100);
+        manageGroups.setFont(btnFont);
+        manageGroups.setWrapText(true);
 
-        pendingGroups = new Button("See pending requests");
-        add(pendingGroups, 4, 4);
-        availableGroups = new Button("Available groups");
-        add(availableGroups, 5, 4);
+        pendingGroups = new Button("Pending requests");
+        pendingGroups.setBackground(btBkg);
+        pendingGroups.setPrefWidth(100);
+        pendingGroups.setWrapText(true);
+        pendingGroups.setFont(btnFont);
+        pendingGroups.setTextAlignment(TextAlignment.CENTER);
+
+        availableGroups = new Button("Available");
+        availableGroups.setBackground(btBkg);
+        availableGroups.setFont(btnFont);
+        availableGroups.setPrefWidth(100);
+
+        g.getChildren().addAll(groups, seeGroups, createGroup, manageGroups, pendingGroups, availableGroups);
 
         searchUsers.setOnAction(e -> clientObservable.searchUsers());
+
+        listAllUsers.setOnAction(e -> clientObservable.getAllUsers());
 
         seeFriends.setOnAction(e -> clientObservable.seeFriends());
 
@@ -82,9 +151,18 @@ public class UserStatePane extends GridPane {
         pendingGroups.setOnAction(e -> clientObservable.seePendingGroups());
 
         manageGroups.setOnAction(e -> clientObservable.seeManageGroups());
+
+        btns.setAlignment(Pos.CENTER);
+
+        btns.getChildren().addAll(u,f,g);
+
+        setTop(wlc);
+        setCenter(btns);
+
+        setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
     }
 
     public void update() {
-        welcome.setText("Welcome, " + clientObservable.getUser().getName());
+        welcome.setText("Welcome, " /*+ clientObservable.getUser().getName()*/);
     }
 }

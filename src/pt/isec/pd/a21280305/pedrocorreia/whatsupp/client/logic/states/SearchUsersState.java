@@ -11,6 +11,16 @@ public class SearchUsersState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new SearchUsersState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+    @Override
     public IState searchUser(String username) {
         getModel().searchUser(username);
         return new SearchUsersState(getModel());

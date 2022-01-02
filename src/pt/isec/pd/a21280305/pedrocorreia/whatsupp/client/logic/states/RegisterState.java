@@ -9,6 +9,16 @@ public class RegisterState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new RegisterState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+    @Override
     public IState register(String username, String password, String confPassword, String fname, String lname) {
         if (getModel().register(username, password, confPassword, fname, lname)) {
             return new InitialState(getModel());

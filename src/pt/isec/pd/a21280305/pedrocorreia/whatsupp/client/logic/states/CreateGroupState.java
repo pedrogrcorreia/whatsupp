@@ -10,6 +10,16 @@ public class CreateGroupState extends StateAdapter {
     }
 
     @Override
+    public IState contactServerManager() {
+        if (getModel().contactServerManager()) {
+            getModel().retrieveInfo();
+            return new CreateGroupState(getModel());
+        }
+
+        return new ContactServerManagerState(getModel());
+    }
+
+    @Override
     public IState createNewGroup(String name) {
         getModel().createNewGroup(name);
         return new CreateGroupState(getModel());
