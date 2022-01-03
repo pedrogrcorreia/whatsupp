@@ -82,7 +82,6 @@ public class MessagesState extends StateAdapter {
     @Override
     public IState uploadFile(Message file) {
         getModel().uploadFileToServer(file);
-//        seeMessages(getModel().getFriend());
         return new MessagesState(getModel());
     }
 

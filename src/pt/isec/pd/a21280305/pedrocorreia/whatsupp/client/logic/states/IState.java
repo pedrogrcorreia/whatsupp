@@ -28,6 +28,8 @@ public interface IState {
 
     IState register(String username, String password, String confPassword, String fname, String lname);
 
+    IState updateUser(User u);
+
     /**
      * Search Users
      */
@@ -122,6 +124,8 @@ public interface IState {
      */
 
     IState back();
+
+    IState backToInitialState();
 
     /** Returns the atual state */
     Situation getAtualState();

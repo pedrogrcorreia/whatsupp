@@ -36,20 +36,15 @@ public class ContactServerManagerPane extends BorderPane {
     }
 
     private void createWindow() {
-//        welcomeText = new Label("Welcome to Whatsupp... bla bla bla");
         InputStream inputStream = getClass().getResourceAsStream("images/welcome.png");
         Image image = new Image(inputStream);
         ImageView img = new ImageView(image);
         start = new Button("Connect");
         text = new Label("Connecting to Server Manager...");
-//        tryAgain = new Button("Try again.");
-//        tryAgain.setVisible(false);
+
+
         text.setVisible(false);
-//        img.setViewport(new Rectangle2D(500, 320, 420, 300));
-//        Label welcome = new Label();
-//        welcome.setGraphic(img);
         start.setOnAction(e -> {
-            // setCursor(Cursor.WAIT);
             clientObservable.contactServerManager();
         });
 
@@ -62,8 +57,6 @@ public class ContactServerManagerPane extends BorderPane {
         layout.setAlignment(Pos.CENTER);
         layout.setSpacing(10);
         layout.getChildren().addAll(text, start);
-//        getChildren().add(img);
-//        setCenter(img);
         setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
         setCenter(layout);
     }

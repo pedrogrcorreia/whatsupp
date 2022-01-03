@@ -17,9 +17,9 @@ public class DownloadFile extends Thread{
 
     @Override
     public void run() {
-        System.out.println("Thread to receive download started...");
+        System.out.println("[DownloadFile] Thread to receive download started...");
         while(true) {
-            System.out.println("Waiting for requests...");
+            System.out.println("[DownloadFile] Waiting for requests...");
             File localDirectory;
             String requestedFileName, requestedCanonicalFilePath = null;
             FileOutputStream fout;
@@ -29,15 +29,15 @@ public class DownloadFile extends Thread{
                     byte[] fileChunk = new byte[4096];
                     localDirectory = new File(file.getPath().trim());
                     if(!localDirectory.exists()){
-                        System.out.println("A criar diretoria");
+                        System.out.println("[DownloadFile] Creating directory...");
                         localDirectory.mkdirs();
                     }
                     if(!localDirectory.canWrite()){
-                        System.out.println("No permissions to write to: " + localDirectory + ".");
+                        System.out.println("[DownloadFile] No permissions to write to: " + localDirectory + ".");
                         return;
                     }
 
-                    System.out.println("Local directory: " + localDirectory);
+                    System.out.println("[DownloadFile] Local directory: " + localDirectory);
                     ObjectOutputStream oout = new ObjectOutputStream(conSocket.getOutputStream());
                     ObjectInputStream oin = new ObjectInputStream(conSocket.getInputStream());
 
@@ -46,14 +46,14 @@ public class DownloadFile extends Thread{
                     fout = new FileOutputStream(requestedCanonicalFilePath);
 
                     if (!requestedCanonicalFilePath.startsWith(localDirectory.getCanonicalPath() + File.separator)) {
-                        System.out.println("Forbidden access to the file " + requestedCanonicalFilePath + ".");
-                        System.out.println("Root directory isn't the same as " + localDirectory.getCanonicalPath() + ".");
-                        continue;
+                        System.out.println("[DownloadFile] Forbidden access to the file " + requestedCanonicalFilePath + ".");
+                        System.out.println("[DownloadFile] Root directory isn't the same as " + localDirectory.getCanonicalPath() + ".");
+                        return;
                     }
 
-                    System.out.println("File " + requestedCanonicalFilePath + " open to write");
+                    System.out.println("[DownloadFile] File " + requestedCanonicalFilePath + " open to write");
                     do {
-                        System.out.println("Writing to file");
+                        System.out.println("[DownloadFile] Writing to file");
                         try {
                             fileChunk = (byte[]) oin.readObject();
                             fout.write(fileChunk, 0, 4096);
@@ -62,14 +62,16 @@ public class DownloadFile extends Thread{
                             break;
                         }
                     } while (true);
-                    System.out.println("Download finished");
+                    System.out.println("[DownloadFile] Download finished");
                     fout.close();
                     conSocket.close();
-//                    return;
+                    System.out.println("[DownloadFile] Closing thread...");
+                    break;
                 }
-//                return;
+                return;
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                System.out.println("[DownloadFile] Exception:\n\t" + e);
+                return;
             }
         }
     }

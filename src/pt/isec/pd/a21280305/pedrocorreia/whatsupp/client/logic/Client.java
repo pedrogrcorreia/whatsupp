@@ -8,8 +8,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.data.Data;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.ContactServerManagerState;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.IState;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.MessagesState;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.states.UserState;
 
 public class Client {
     private Data model;
@@ -17,8 +15,6 @@ public class Client {
 
     public Client(String serverManagerAddress, int serverManagerPort) {
         model = new Data(serverManagerAddress, serverManagerPort);
-//        state = new MessagesState(model);
-//        state = new UserState(model);
         state = new ContactServerManagerState(model);
     }
 
@@ -57,6 +53,10 @@ public class Client {
 
     public void register(String username, String password, String confPassword, String fname, String lname) {
         setState(state.register(username, password, confPassword, fname, lname));
+    }
+
+    public void updateUser(User u){
+        setState(state.updateUser(u));
     }
 
     /**
@@ -202,6 +202,8 @@ public class Client {
     public void back() {
         setState(state.back());
     }
+
+    public void backToInitialState(){setState(state.backToInitialState());}
 
     /** Get notifications */
 

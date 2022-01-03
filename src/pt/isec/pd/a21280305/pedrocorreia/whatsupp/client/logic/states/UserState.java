@@ -21,6 +21,12 @@ public class UserState extends StateAdapter {
     }
 
     @Override
+    public IState updateUser(User u) {
+        getModel().updateUser(u);
+        return new UserState(getModel());
+    }
+
+    @Override
     public IState searchUsers() {
         return new SearchUsersState(getModel());
     }

@@ -5,10 +5,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.UploadFile;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.GroupRequests;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
@@ -25,6 +22,7 @@ public class ConnectionClient extends Thread {
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
     private ServerSocket fileSocket;
+    private ServerSocket fileServer;
     User user = new User();
     List<GroupRequests> gr = new ArrayList<>();
 
@@ -45,18 +43,16 @@ public class ConnectionClient extends Thread {
         this.fileSocket = fileSocket;
     }
 
-    public void sendMsgToClient(SharedMessage msg) {
+    public ConnectionClient(Socket clientSocket, Server server, ObjectOutputStream oout, ObjectInputStream oin, ServerSocket fileSocket, ServerSocket fileServer){
+        this.clientSocket = clientSocket;
+        this.server = server;
+        this.oout = oout;
+        this.oin = oin;
+        this.fileSocket = fileSocket;
+        this.fileServer = fileServer;
+    }
 
-//        try {
-//            if(msg.getMsgType() == Strings.NEW_MESSAGE_GROUP || msg.getMsgType() == Strings.DELETE_MESSAGE_GROUP){
-//                oout.writeObject(msg);
-//                oout.flush();
-//            }else {
-//                if (msg.getID() == user.getID()) {
-//                    oout.writeObject(msg);
-//                    oout.flush();
-//                }
-//            }
+    public void sendMsgToClient(SharedMessage msg) {
             switch(msg.getMsgType()){
                 case NEW_MESSAGE_GROUP, DELETE_MESSAGE_GROUP ->  sendMsgToClientByGroup(msg);
                 case NEW_USER_LOGIN, NEW_USER_REGISTERED -> {
@@ -71,9 +67,6 @@ public class ConnectionClient extends Thread {
                 }
                 default -> sendMsgToClientByID(msg);
             }
-//        } catch (IOException e) {
-//            System.out.println("[sendMsgToClient] Error sending message:\r\n\t" + e);
-//        }
     }
 
     public void sendMsgToClientByID(SharedMessage msg){
@@ -106,20 +99,24 @@ public class ConnectionClient extends Thread {
     public void run() {
         DBManager dbManager = new DBManager(server);
         boolean firstRun = true;
+        boolean on = false;
 
         while (!clientSocket.isClosed()) {
             try {
                 if (firstRun) {
                     System.out
-                            .println("Client connecteced from: " + clientSocket.getInetAddress().getHostAddress() + ":"
+                            .println("[ConnectionClient] Client connected from: " + clientSocket.getInetAddress().getHostAddress() + ":"
                                     + clientSocket.getPort());
                     firstRun = false;
                 } else {
-                    System.out.println("Client still connected.");
+                    if(!on) {
+                        dbManager.setStatus(user, 1);
+                        System.out.println("[ConnectionClient] Client reconnected.");
+                    }
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
-                System.out.println(request.getMsgType().name());
+                System.out.println("[ConnectionClient] Request from client: " + request.getMsgType().name());
                 clientSocket.setSoTimeout(OFFLINE_TIMEOUT);
                 switch (request.getMsgType()) {
                     /** Login or register */
@@ -127,10 +124,11 @@ public class ConnectionClient extends Thread {
                         SharedMessage response = dbManager.loginUser(request);
                         if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
                             user = response.getClientRequest().getUser();
-                            System.out.println("The user on this server is " + user);
+                            System.out.println("User " + user.getUsername() + " is connected on this server.");
                             dbManager.setStatus(user, 1);
                             request = dbManager.getGroups(response);
                             gr = (List<GroupRequests>) request.getClientRequest().getList();
+                            on = true;
                         }
                         SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."), user.getID());
                         server.sendToServerManager(msgToSend);
@@ -139,6 +137,7 @@ public class ConnectionClient extends Thread {
                     case USER_REQUEST_REGISTER -> {
                         oout.writeObject(dbManager.registerUser(request));
                     }
+                    case USER_UPDATE_INFO -> oout.writeObject(dbManager.updateUser(request));
                     /** Search user */
                     case USER_REQUEST_USER -> {
                         oout.writeObject(dbManager.getUser(request));
@@ -181,7 +180,6 @@ public class ConnectionClient extends Thread {
                         oout.writeObject(dbManager.createNewGroup(request));
                     }
                     case USER_REQUEST_GROUPS -> {
-//                        oout.writeObject(dbManager.getGroups(request));
                         request = dbManager.getGroups(request);
                         gr = (List<GroupRequests>) request.getClientRequest().getList();
                         oout.writeObject(request);
@@ -215,41 +213,44 @@ public class ConnectionClient extends Thread {
                     }
                     /** Files */
                     case USER_SEND_FILE ->{
-                        oout.writeObject(dbManager.newFile(request));
-                        Thread f = new Thread(new DownloadFile(new File(Strings.SERVER_DOWNLOAD_PATH.toString()), fileSocket));
+                        Thread f = new Thread(new DownloadFile(new File("./server_" + server.getServerID() + "/downloads/"), fileSocket));
                         f.start();
+                        Thread u = new Thread(new UploadFileServer(new File(request.getClientRequest().getSelectedMessage().getFile().getPath()), fileServer));
+                        u.start();
+                        oout.writeObject(dbManager.newFile(request));
                     }
                     case DOWNLOAD_FILE -> {
                         String path = dbManager.downloadFile(request);
                         File f = new File(path);
-                        System.out.println(path);
-
-                        Thread u = new Thread(new UploadFile(f, clientSocket.getLocalAddress().getHostAddress(), request.getClientRequest().getPort()));
+                        Thread u = new Thread(new UploadFile(new File("./server_"+ server.getServerID() + "/downloads/"+
+                                f.getName()), clientSocket.getLocalAddress().getHostAddress(), request.getClientRequest().getPort()));
                         u.start();
                     }
                     case USER_DELETE_FILE -> oout.writeObject(dbManager.deleteFile(request));
                     default -> {
-                        System.out.println("\t\nDEFAULT\n\t");
                     }
                 }
                 oout.flush();
                 // closeSocket when client disconnects
             } catch (SocketException e) {
-                System.out.println("User disconnected...");
+                System.out.println("[ConnectionClient] User disconnected...");
                 try {
                     clientSocket.close();
+                    on = false;
                     dbManager.setStatus(user, 0);
                     oout.flush();
+                    return;
                 } catch (IOException e1) {
-                    System.out.println("Error closing client socket:\r\n\t" + e1);
+                    System.out.println("[ConnectionClient] Error closing client socket:\r\n\t" + e1);
                 }
             } catch (SocketTimeoutException e) {
-                System.out.println("Setting user offline (30 sec without actions)");
+                System.out.println("[ConnectionClient] Setting user offline (30 sec without actions)");
+                on = false;
                 dbManager.setStatus(user, 0);
             } catch (IOException e) {
-                System.out.println("Problem communicating with client: \r\n\t" + e);
+                System.out.println("[ConnectionClient] Problem communicating with client: \r\n\t" + e);
             } catch (ClassNotFoundException e) {
-                System.out.println("Problem receiving the message from the client:\r\n\t" + e);
+                System.out.println("[ConnectionClient] Problem receiving the message from the client:\r\n\t" + e);
             }
         }
     }

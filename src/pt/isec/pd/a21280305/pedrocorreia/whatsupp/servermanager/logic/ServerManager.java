@@ -4,14 +4,17 @@ import java.io.*;
 import java.net.*;
 import java.util.List;
 
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ActiveServers;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ConnectedServer;
 
+import javax.net.ssl.SSLHandshakeException;
+
 public class ServerManager implements Runnable{
 
-    static final int MAX_SIZE = 8192;
+    static final int MAX_SIZE = 100000;
 
     ActiveServers activeServers;
 
@@ -72,6 +75,7 @@ public class ServerManager implements Runnable{
         System.out.println("Ready to receive requests.");
         while (true) {
             request = receiveRequests();
+            System.out.println("Request: " + request.getMsgType().name());
             if (request.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
                 try {
                     if (!registerServers(myPacket)) {
@@ -86,7 +90,9 @@ public class ServerManager implements Runnable{
                 } catch (IOException | ClassNotFoundException e) {
                     System.out.println("Error registering the server.");
                 }
-            } else if (request.getMsgType().equals(Strings.SERVER_PING)) {
+                continue;
+            }
+            if (request.getMsgType().equals(Strings.SERVER_PING)) {
                 String ports = request.getMsg();
                 String[] split = ports.split(":");
                 int tcpPort = Integer.parseInt(split[0]);
@@ -94,14 +100,25 @@ public class ServerManager implements Runnable{
                 activeServers.pingedServer(myPacket, tcpPort, filesPort);
                 answer = new SharedMessage(Strings.SERVER_PING, "Ping registered.");
                 answerToRequest(answer, myPacket);
-            } else if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
+                continue;
+            }
+            if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
                 String serverCoord = activeServers.registerClient();
                 if(serverCoord != null) {
                     answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
                             serverCoord);
                     answerToRequest(answer, myPacket);
                 }
-            } else {
+                continue;
+            }
+            if(request.getMsgType().equals(Strings.NEW_FILE_SENT_USER)){
+                answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, myPacket.getAddress().getHostAddress(),
+                        activeServers.getPortForTcp(myPacket), request.getFilePath());
+                answerException(answer);
+                continue;
+            }
+            else {
+                System.out.println("\n\t here \n\t");
                 answerToAll(request);
             }
         }
@@ -138,13 +155,12 @@ public class ServerManager implements Runnable{
             oin = new ObjectInputStream(bin);
 
             newRequest = (SharedMessage) oin.readObject();
-            System.out.println("Request: " + newRequest.getMsgType().name() + " from " + myPacket.getPort());
 
             return newRequest;
         } catch (IOException e) {
-            System.out.println("Error receiving request: \r\n\t" + e);
+            System.out.println("[ServerManager] Error receiving request: \r\n\t" + e);
         } catch (ClassNotFoundException e) {
-            System.out.println("Object sent is invalid: \r\n\t" + e);
+            System.out.println("[ServerManager] Object sent is invalid: \r\n\t" + e);
         }
         return null;
     }
@@ -160,13 +176,15 @@ public class ServerManager implements Runnable{
         try {
             bout = new ByteArrayOutputStream();
             oout = new ObjectOutputStream(bout);
-            oout.writeUnshared(msgToSend);
+            oout.writeObject(msgToSend);
+
+            oout.flush();
 
             serverPacket.setData(bout.toByteArray());
             serverPacket.setLength(bout.size());
             mySocket.send(serverPacket);
         } catch (IOException e) {
-            System.out.println("Error writing object: \r\n\t" + e);
+            System.out.println("[ServerManager] Error writing object: \r\n\t" + e);
         }
     }
 
@@ -183,7 +201,29 @@ public class ServerManager implements Runnable{
                 serverPacket.setLength(bout.size());
                 mySocket.send(serverPacket);
             } catch (IOException e) {
-                System.out.println("Error writing object:\r\n\t" + e);
+                System.out.println("[ServerManager] Error writing object:\r\n\t" + e);
+            }
+        }
+    }
+
+    private void answerException(SharedMessage msgToSend){
+        List<ConnectedServer> cs = activeServers.getServers();
+
+        for (int i = 0; i < cs.size(); i++) {
+            try {
+                if(cs.get(i).getServerPacket().getPort() == myPacket.getPort()){
+                    continue;
+                }
+                bout = new ByteArrayOutputStream();
+                oout = new ObjectOutputStream(bout);
+                oout.writeUnshared(msgToSend);
+                DatagramPacket serverPacket;
+                serverPacket = cs.get(i).getServerPacket();
+                serverPacket.setData(bout.toByteArray());
+                serverPacket.setLength(bout.size());
+                mySocket.send(serverPacket);
+            } catch (IOException e) {
+                System.out.println("[ServerManager] Error writing object:\r\n\t" + e);
             }
         }
     }
@@ -202,7 +242,7 @@ public class ServerManager implements Runnable{
                 moin = new ObjectInputStream(mbin);
 
                 newRequest = (SharedMessage) moin.readObject();
-                System.out.println("Request: " + newRequest.getMsgType().name() + " from " + myPacket.getPort());
+                System.out.println("[ServerManager] Request: " + newRequest.getMsgType().name() + " from " + myPacket.getPort());
                 if (newRequest.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
                     try {
                         if (!registerServers(myPacket)) {
@@ -219,10 +259,12 @@ public class ServerManager implements Runnable{
                         myPacket.setData(mbout.toByteArray());
                         myPacket.setLength(mbout.size());
                         multiSocket.send(myPacket);
+                        continue;
                     } catch (IOException | ClassNotFoundException e) {
-                        System.out.println("Error registering the server.");
+                        System.out.println("[ServerManager] Error registering the server.");
                     }
-                } else if (newRequest.getMsgType().equals(Strings.SERVER_PING)) {
+                }
+                if (newRequest.getMsgType().equals(Strings.SERVER_PING)) {
                     String ports = newRequest.getMsg();
                     String[] split = ports.split(":");
                     int tcpPort = Integer.parseInt(split[0]);
@@ -236,21 +278,48 @@ public class ServerManager implements Runnable{
                     myPacket.setData(mbout.toByteArray());
                     myPacket.setLength(mbout.size());
                     multiSocket.send(myPacket);
-                } else{
-                    List<ConnectedServer> cs = activeServers.getServers();
-                    for (int i = 0; i < cs.size(); i++) {
-                        try {
-                            bout = new ByteArrayOutputStream();
-                            oout = new ObjectOutputStream(bout);
-                            oout.writeUnshared(newRequest);
-                            DatagramPacket serverPacket;
-                            serverPacket = cs.get(i).getServerPacket();
-                            serverPacket.setData(bout.toByteArray());
-                            serverPacket.setLength(bout.size());
-                            mySocket.send(serverPacket);
-                        } catch (IOException e) {
-                            System.out.println("Error writing object:\r\n\t" + e);
-                        }
+                    continue;
+                }
+                if (request.getMsgType().equals(Strings.CLIENT_REQUEST_SERVER)) {
+                    String serverCoord = activeServers.registerClient();
+                    if(serverCoord != null) {
+                        answer = new SharedMessage(Strings.CLIENT_REQUEST_SERVER,
+                                serverCoord);
+
+                        mbout = new ByteArrayOutputStream();
+                        moout = new ObjectOutputStream(mbout);
+                        moout.writeUnshared(answer);
+                        myPacket.setData(mbout.toByteArray());
+                        myPacket.setLength(mbout.size());
+                        multiSocket.send(myPacket);
+                        continue;
+                    }
+                    continue;
+                }
+                if(request.getMsgType().equals(Strings.NEW_FILE_SENT_USER)){
+                    answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, myPacket.getAddress().getHostAddress(),
+                            activeServers.getPortForTcp(myPacket), request.getFilePath());
+                    mbout = new ByteArrayOutputStream();
+                    moout = new ObjectOutputStream(mbout);
+                    moout.writeUnshared(answer);
+                    myPacket.setData(mbout.toByteArray());
+                    myPacket.setLength(mbout.size());
+                    multiSocket.send(myPacket);
+                    continue;
+                }
+                List<ConnectedServer> cs = activeServers.getServers();
+                for (int i = 0; i < cs.size(); i++) {
+                    try {
+                        bout = new ByteArrayOutputStream();
+                        oout = new ObjectOutputStream(bout);
+                        oout.writeUnshared(newRequest);
+                        DatagramPacket serverPacket;
+                        serverPacket = cs.get(i).getServerPacket();
+                        serverPacket.setData(bout.toByteArray());
+                        serverPacket.setLength(bout.size());
+                        mySocket.send(serverPacket);
+                    } catch (IOException e) {
+                        System.out.println("Error writing object:\r\n\t" + e);
                     }
                 }
             } catch (IOException e) {

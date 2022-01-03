@@ -20,7 +20,6 @@ public class ClientRequests implements Serializable {
     protected List<?> list;
     protected Message selectedMessage;
     protected Group group;
-    protected byte[] fileChunk = new byte[4096];
     int port;
 
     public ClientRequests(User user) {
@@ -96,12 +95,6 @@ public class ClientRequests implements Serializable {
         this.selectedUser = selectedUser;
     }
 
-    public ClientRequests(User user, Message message, byte[] fileChunk){
-        this.user = user;
-        this.selectedMessage = message;
-        this.fileChunk = fileChunk;
-    }
-
     public ClientRequests(User user, Message message, int port){
         this.user = user;
         this.selectedMessage = message;
@@ -133,13 +126,6 @@ public class ClientRequests implements Serializable {
         }
     }
 
-//    public boolean sendFileRequest(ObjectOutputStream oout, Strings requestMsg){
-//        try{
-//            SharedMessage msgToSend = new SharedMessage(requestMsg, this);
-//            oout.writeObject();
-//        }
-//    }
-
     public User getUser() {
         return user;
     }
@@ -156,10 +142,6 @@ public class ClientRequests implements Serializable {
 
     public Group getGroup(){
         return group;
-    }
-
-    public byte[] getFileChunk(){
-        return fileChunk;
     }
 
     public int getPort(){ return port; }

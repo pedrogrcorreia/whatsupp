@@ -2,23 +2,36 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.Situation;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.Group;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.User;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states.*;
 
 public class ClientUI extends BorderPane {
+
+    private static class Results{
+        String username;
+        String password;
+        String confPassword;
+        String name;
+
+        public Results(String username, String password, String confPassword, String name){
+            this.username = username;
+            this.password = password;
+            this.confPassword = confPassword;
+            this.name = name;
+        }
+    }
 
     private ClientObservable clientObservable;
 
@@ -73,7 +86,6 @@ public class ClientUI extends BorderPane {
 
         notificationPanelScroll.setContent(notificationPanel);
         contactServerManagerPane = new ContactServerManagerPane(clientObservable);
-//        setCenter(contactServerManagerPane);
         initialStatePane = new InitialStatePane(clientObservable);
         loginStatePane = new LoginStatePane(clientObservable);
         registerStatePane = new RegisterStatePane(clientObservable);
@@ -97,12 +109,10 @@ public class ClientUI extends BorderPane {
 
         exit = new MenuItem("Exit");
         back = new MenuItem("Start");
-        update = new MenuItem("Update");
-        // MenuItem exit = new MenuItem("Exit");
+        update = new MenuItem("Account Settings");
 
-        file.getItems().addAll(back, exit, update);
+        file.getItems().addAll(back, update, exit);
 
-        // menu.setOnAction(e -> clientObservable.close());
         exit.setOnAction((ActionEvent e) -> {
             Stage janela2 = (Stage) this.getScene().getWindow();
             fireEvent(new WindowEvent(janela2, WindowEvent.WINDOW_CLOSE_REQUEST));
@@ -112,10 +122,47 @@ public class ClientUI extends BorderPane {
             clientObservable.back();
         });
 
-        // DEBUG
         update.setOnAction((ActionEvent e) -> {
-            clientObservable.forceUpdate();
+            User me = clientObservable.getUser();
+            Dialog<Results> dialog = new Dialog<>();
+            dialog.setTitle("Change account settings");
+            dialog.setHeaderText("Enter the new values please");
+
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
+
+            Label lblUsername = new Label("New username: ");
+            TextField username = new TextField(me.getUsername());
+            HBox HUsername = new HBox(10, lblUsername, username);
+
+            Label lblPassword = new Label("Actual password: ");
+            PasswordField password = new PasswordField();
+            HBox HPassword = new HBox(10, lblPassword, password);
+
+            Label lblNewPassword = new Label("New password: ");
+            PasswordField confPassword = new PasswordField();
+            HBox HNewPassword = new HBox(10, lblNewPassword, confPassword);
+
+            Label lblName = new Label("New name: ");
+            TextField name = new TextField(me.getName());
+            HBox HName = new HBox(10, lblName, name);
+            dialogPane.setContent(new VBox(10, HUsername, HPassword, HNewPassword, HName));
+
+            dialog.setResultConverter((ButtonType button) -> {
+                if (button == ButtonType.APPLY) {
+                    return new Results(username.getText(), password.getText(), confPassword.getText(), name.getText());
+                }
+                return null;
+            });
+
+            Optional<Results> result = dialog.showAndWait();
+
+            result.ifPresent((Results r) -> {
+                User newUser = new User(r.username, r.password, r.confPassword, r.name, me.getID());
+                clientObservable.updateUser(newUser);
+            });
         });
+
         menuBar.getMenus().addAll(file);
     }
 
@@ -145,10 +192,10 @@ public class ClientUI extends BorderPane {
     }
 
     private void update() {
-        System.out.println(clientObservable.getAtualState());
         back.setDisable((clientObservable.getAtualState() == Situation.INITIAL_OPTION)
                 || (clientObservable.getAtualState() == Situation.LOGIN_USER)
                 || (clientObservable.getAtualState() == Situation.REGISTER_USER));
+        update.setDisable(clientObservable.getAtualState() != Situation.LOGGED_IN);
         switch (clientObservable.getAtualState()) {
             case CONTACT_SERVER_MANAGER -> setCenter(contactServerManagerPane);
             case INITIAL_OPTION -> setCenter(initialStatePane);

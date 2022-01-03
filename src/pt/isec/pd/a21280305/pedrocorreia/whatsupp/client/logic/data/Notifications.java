@@ -32,35 +32,11 @@ public class Notifications extends Data implements Runnable {
         }
     }
 
-//    private static void uploadFileToServer(SharedMessage request){
-//        System.out.println(request.getClientRequest().getSelectedMessage().getFile().getPath());
-//        try {
-//            FileInputStream fileInputStream = new FileInputStream(request.getClientRequest().getSelectedMessage().getFile().getPath());
-//            int nbytes = 0;
-//            byte[] fileChunk = new byte[8192];
-////            do{
-//                nbytes = fileInputStream.read(fileChunk, 0, 4096);
-//
-//                if(nbytes > 0){
-//                    SharedMessage file = new SharedMessage(Strings.UPLOAD_FILE, new String(""));
-//                    Data.oout.writeObject(file);
-//                    Data.oout.flush();
-//                }
-////                else{
-////                    break;
-////                }
-////            } while(nbytes > 0);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     @Override
     public void run() {
         while (true) {
             try {
                 SharedMessage response = (SharedMessage) oin.readObject();
-                System.out.println("Response type: " + response.getMsgType().name());
                 switch (response.getMsgType()) {
                     case USER_REQUEST_USER_INFO_SUCCESS -> {
                         Data.user = response.getClientRequest().getUser();
@@ -111,15 +87,12 @@ public class Notifications extends Data implements Runnable {
                     }
                 }
             } catch (ClassNotFoundException e) {
-                System.out.println("Couldn't load the message:\r\n\t" + e);
+                System.out.println("[Notifications] Couldn't load the message:\r\n\t" + e);
             }catch(SocketException e){
                 notifyList(new SharedMessage(Strings.LOST_CONNECTION, new String("Lost connection with server...")));
-//                contactServerManager();
-                return;
             } catch (IOException e) {
-                System.out.println("IOException:\r\n\t" + e);
+                System.out.println("[Notifications] IOException:\r\n\t" + e);
                 e.printStackTrace();
-                return;
             }
         }
     }

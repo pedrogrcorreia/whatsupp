@@ -6,7 +6,7 @@ import java.util.*;
 
 public class ActiveServers extends Thread {
 
-    private static final int pingTime = 3 * 1000;// 20 * 1000; // 20 seconds between pings
+    private static final int pingTime = 20 * 1000;// 20 * 1000; // 20 seconds between pings
 
     List<ConnectedServer> servers;
     int lastServer = 0;
@@ -23,7 +23,7 @@ public class ActiveServers extends Thread {
             if (server.getServerPacket().getAddress().equals(serverPacket.getAddress())
                     && server.getServerPacket().getPort() == serverPacket.getPort()) {
                 isRegistered = true;
-                System.out.println("Server already registered.");
+                System.out.println("[ActiveServers] Server already registered.");
                 break;
             }
         }
@@ -41,7 +41,6 @@ public class ActiveServers extends Thread {
                 server.setPingedTime(curTime);
                 server.setListeningTcpPort(tcpPort);
                 server.setFilesTcpPort(filesPort);
-                // System.out.println(server);
             }
         }
     }
@@ -62,26 +61,30 @@ public class ActiveServers extends Thread {
                         servers.get(i).getServerPacket().getAddress() + ":" + servers.get(i).getListeningTcpPort()) + ":" + servers.get(i).getFilesTcpSocketPort();
             }
         }
-
-//        return new String("0.0.0.0:0000:0000");
         return null;
+    }
+
+    public int getPortForTcp(DatagramPacket serverPacket){
+        for(int i = 0; i < servers.size(); i++){
+            if(servers.get(i).getServerPacket().getPort() == serverPacket.getPort()){
+                return servers.get(i).getFilesTcpSocketPort();
+            }
+        }
+        return -1;
     }
 
     @Override
     public void run() {
         while (true) {
-            // TODO Verify server TCP port
-            // contains(Strings.SERVER_PINGING) ...
             List<ConnectedServer> serversToRemove = new ArrayList<>();
             for (ConnectedServer server : servers) {
                 Calendar curTime = GregorianCalendar.getInstance();
                 long delay = (curTime.getTimeInMillis() - server.getPingedTime().getTimeInMillis()) / 1000;
-                System.out.println("Delay: " + delay);
                 if ((delay * 1000) > pingTime) {
                     server.setSuspended(true);
                     server.setTimeoutPenalty();
                     if (server.getTimeoutPenalties() >= 3) {
-                        System.out.println("A server is offline.");
+                        System.out.println("[ActiveServers] A server is offline.");
                         serversToRemove.add(server);
                     }
                 } else {
@@ -90,13 +93,13 @@ public class ActiveServers extends Thread {
                 }
             }
             if (serversToRemove.size() > 0) {
-                System.out.println("Removing " + serversToRemove.size() + " servers.");
+                System.out.println("[ActiveServers] Removing " + serversToRemove.size() + " servers.");
                 servers.removeAll(serversToRemove);
             }
             try {
                 Thread.sleep(pingTime);
             } catch (InterruptedException e) {
-                System.out.println("Error at thread: \r\n\t" + e);
+                System.out.println("[ActiveServers] Error at thread: \r\n\t" + e);
             }
         }
     }

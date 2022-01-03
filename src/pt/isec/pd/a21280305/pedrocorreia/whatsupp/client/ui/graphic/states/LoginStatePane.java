@@ -23,6 +23,7 @@ public class LoginStatePane extends GridPane {
     private TextField txtUsername;
     private TextField txtPassword;
     private Button submit;
+    private Button back;
 
     public LoginStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -57,9 +58,17 @@ public class LoginStatePane extends GridPane {
         submit.setFont(lblFont);
         add(submit, 1, 6);
 
+        back = new Button("Back");
+        back.setBackground(btBkg);
+        back.setFont(lblFont);
+        add(back, 1, 7);
+
+        back.setOnAction(e -> clientObservable.backToInitialState());
+
         submit.setOnAction(e -> {
             clientObservable.login(txtUsername.getText(), txtPassword.getText());
         });
+
 
     }
 

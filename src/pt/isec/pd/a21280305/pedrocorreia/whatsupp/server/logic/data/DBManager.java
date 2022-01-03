@@ -60,16 +60,16 @@ public class DBManager {
             stmt.executeUpdate(query);
             if (status == 1) {
                 SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_ONLINE,
-                        new String("Friend request accepted..."));
+                        new String("New user online."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.SET_USER_ONLINE,
-                        new String("Friend request accepted successfull."));
+                        new String("New user online."));
             } else {
                 SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_OFFLINE,
-                        new String("Friend request accepted..."));
+                        new String("New user offline."));
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.SET_USER_OFFLINE,
-                        new String("Friend request accepted successfull."));
+                        new String("New user offline."));
             }
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);
@@ -127,7 +127,6 @@ public class DBManager {
         }
     }
 
-    // login user
     public SharedMessage loginUser(SharedMessage request) {
         String username = request.getClientRequest().getUser().getUsername();
         String password = request.getClientRequest().getUser().getPassword();
@@ -146,8 +145,6 @@ public class DBManager {
                 if (rs.getString("username").equals(username) && rs.getString("password").equals(password)) {
                     User user = new User(rs.getString("username"), rs.getString("name"), rs.getInt("user_id"));
                     rs.close();
-//                    SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."), user.getID());
-//                    server.sendToServerManager(msgToSend);
                     return new SharedMessage(Strings.USER_SUCCESS_LOGIN, new String("Logged in successfully."),
                             new LoginRegister(user));
                 }
@@ -160,6 +157,43 @@ public class DBManager {
         } catch (SQLException e) {
             System.out.println("[login] Error querying the database:\r\n\t" + e);
             return new SharedMessage(Strings.USER_FAILED_LOGIN, new String("Error at database."));
+        } finally {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println("SQLException problem:\r\n\t" + e);
+            }
+        }
+    }
+
+    public SharedMessage updateUser(SharedMessage request){
+        User me = request.getClientRequest().getUser();
+        User newUser = request.getClientRequest().getSelectedUser();
+        System.out.println("USER ID: " + me.getID());
+        String selectQuery = new String("SELECT password FROM users WHERE user_id = " + me.getID());
+
+        String updateQuery = new String("UPDATE users\n" +
+                "SET username = '" + newUser.getUsername() + "',\n" +
+                "name = '" + newUser.getName() + "',\n" +
+                "password = '" + newUser.getConfPassword() + "'\n" +
+                "WHERE user_id = " + me.getID());
+        try{
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(selectQuery);
+            rs.next();
+            if(!newUser.getPassword().equals(rs.getString("password"))){
+                rs.close();
+                stmt.close();
+                return new SharedMessage(Strings.USER_UPDATE_INFO_FAIL, new String("Previous password incorrect."));
+            }
+            else{
+                stmt = con.createStatement();
+                stmt.executeUpdate(updateQuery);
+                return new SharedMessage(Strings.USER_UPDATE_INFO_SUCCESS, new String("New user info"));
+            }
+        } catch (SQLException e) {
+            System.out.println("[update] Error querying the database:\r\n\t" + e);
+            return new SharedMessage(Strings.USER_UPDATE_INFO_FAIL, new String("Error at database."));
         } finally {
             try {
                 stmt.close();
@@ -378,13 +412,16 @@ public class DBManager {
         String query = new String(
                 "INSERT INTO friends_requests (requester_user_id, friend_user_id, request_time, request_status) " +
                         "VALUES (" + user.getID() + ", " + userToAdd.getID() + " , current_timestamp(), " + 0 + ")");
+        if(user.getID() == userToAdd.getID()){
+            return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_FAIL, new String("You can't ask your self."));
+        }
         try {
             stmt = con.createStatement();
             if (stmt.executeUpdate(query) < 1) {
                 return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_FAIL,
                         new String("Problem inserting on table new friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND_REQUEST, new String("Friend request sent..."), userToAdd.getID());
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_FRIEND_REQUEST, new String("Friend request sent."), userToAdd.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_SEND_FRIEND_REQUEST_SUCCESS, new String("Friend request sent."));
             }
@@ -470,7 +507,11 @@ public class DBManager {
         String query = new String("DELETE FROM friends_requests WHERE (requester_user_id = " +
                 user.getID() + " AND friend_user_id = " + friend.getID() + ") " +
                 "OR (requester_user_id = " + friend.getID() + " AND friend_user_id = " + user.getID() + ")");
-        String nextQuery = new String("DELETE FROM messages WHERE (user_id_from = " +
+        String nextQuery = new String("DELETE files FROM files JOIN messages\n" +
+                "WHERE files.message_id = messages.message_id\n" +
+                "AND (messages.user_id_to = " + user.getID() + " AND messages.user_id_from = " + friend.getID() +")\n" +
+                "OR (messages.user_id_to = " + friend.getID() + " AND messages.user_id_from = " + user.getID() +")");
+        String finalQuery = new String("DELETE FROM messages WHERE (user_id_from = " +
                 user.getID() + " AND user_id_to = " + friend.getID() + ") " +
                 "OR (user_id_from = " + friend.getID() + " AND user_id_to = " + user.getID() + ")");
         try {
@@ -482,6 +523,9 @@ public class DBManager {
                 stmt.close();
                 stmt = con.createStatement();
                 stmt.executeUpdate(nextQuery);
+                stmt.close();
+                stmt = con.createStatement();
+                stmt.executeUpdate(finalQuery);
                 SharedMessage msgToSend = new SharedMessage(Strings.REMOVED_FRIEND,
                         new String("A friendship is cancelled..."), friend.getID());
                 server.sendToServerManager(msgToSend);
@@ -840,7 +884,7 @@ public class DBManager {
                 stmt.close();
                 stmt = con.createStatement();
                 stmt.executeUpdate(deleteUserMessages);
-                SharedMessage msgToSend = new SharedMessage(Strings.QUIT_GROUP, new String("User left group."));
+                SharedMessage msgToSend = new SharedMessage(Strings.QUIT_GROUP, new String("User left group."), group.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_QUIT_GROUP_SUCCESS, new String("User left group."));
             }
@@ -865,15 +909,19 @@ public class DBManager {
 
         String query = new String("DELETE FROM whatsupp_db.groups WHERE group_id = " + group.getID());
         String nextQuery = new String("DELETE FROM group_requests WHERE group_id = " + group.getID());
+        String midQuery = new String("DELETE files FROM files JOIN messages\n" +
+                "WHERE files.message_id = messages.message_id\n" +
+                "AND group_id = " + group.getID() + " AND user_id_from = " + user.getID());
         String finalQuery = new String("DELETE FROM messages WHERE group_id = " + group.getID());
         try {
             Statement stmt = con.createStatement();
             stmt.addBatch(finalQuery);
             stmt.addBatch(nextQuery);
+            stmt.addBatch(midQuery);
             stmt.addBatch(query);
             stmt.executeBatch();
             SharedMessage msgToSend = new SharedMessage(Strings.DELETED_GROUP,
-                    new String("A friendship is cancelled..."));
+                    new String("A friendship is cancelled..."), group.getID());
             server.sendToServerManager(msgToSend);
             return new SharedMessage(Strings.USER_DELETE_GROUP_SUCCESS, new String("Group deleted"));
         } catch (SQLException e) {
@@ -941,7 +989,7 @@ public class DBManager {
             if(stmt.executeUpdate(query) < 1){
                 return new SharedMessage(Strings.USER_CHANGE_GROUP_FAIL, new String("Couldn't change the group's name."));
             }else{
-                SharedMessage msgToSend = new SharedMessage(Strings.CHANGE_NAME, new String("A group name was changed."));
+                SharedMessage msgToSend = new SharedMessage(Strings.CHANGE_NAME, new String("A group name was changed."), group.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_CHANGE_GROUP_SUCCESS, new String("Group changed name."));
             }
@@ -967,7 +1015,7 @@ public class DBManager {
                 return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_FAIL,
                         new String("Problem inserting on table new friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.NEW_GROUP_REQUEST, new String("New request to join a group."));
+                SharedMessage msgToSend = new SharedMessage(Strings.NEW_GROUP_REQUEST, new String("New request to join a group."), group.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Request to join a group sent."));
             }
@@ -1000,7 +1048,7 @@ public class DBManager {
                 return new SharedMessage(Strings.ADMIN_ACCEPT_GROUP_REQUEST_FAIL,
                         new String("Couldn't accept the friend request."));
             } else {
-                SharedMessage msgToSend = new SharedMessage(Strings.ACCEPTED_GROUP_REQUEST, new String("Group request accepted."));
+                SharedMessage msgToSend = new SharedMessage(Strings.ACCEPTED_GROUP_REQUEST, new String("Group request accepted."), group.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.USER_SEND_GROUP_REQUEST_SUCCESS, new String("Group request accepted"));
             }
@@ -1048,10 +1096,10 @@ public class DBManager {
                     "VALUES (" + message_id + ", '" + filesPath+fileName + "')");
             stmt = con.createStatement();
             stmt.executeUpdate(insertFile);
-            SharedMessage msgToServer = (group == null) ? new SharedMessage(Strings.NEW_FILE_SENT_USER, new String("A new file was sent"), receiver.getID()) :
-                    new SharedMessage(Strings.NEW_FILE_SENT_GROUP, new String("A new file was sent to a group"), group.getID());
+            SharedMessage msgToServer = (group == null) ? new SharedMessage(Strings.NEW_FILE_SENT_USER, new String("A new file was sent."), receiver.getID(), fileName) :
+                    new SharedMessage(Strings.NEW_FILE_SENT_GROUP, new String("A new file was sent to a group."), group.getID(), fileName);
             server.sendToServerManager(msgToServer);
-            return new SharedMessage(Strings.USER_SEND_FILE_SUCCESS, new String("File sent success"), request.getClientRequest());
+            return new SharedMessage(Strings.USER_SEND_FILE_SUCCESS, new String("File sent success."), request.getClientRequest());
         } catch (SQLException e) {
             System.out.println("Error registering filename:\n\r\t " + e);
             return new SharedMessage(Strings.USER_SEND_FILE_FAIL, new String("Failed to register the file name"));
@@ -1129,40 +1177,5 @@ public class DBManager {
                 System.out.println("SQLException problem:\r\n\t" + e);
             }
         }
-    }
-
-    public static void main(String[] args){
-        Server server = null;
-        try {
-            server = new Server("192.168.1.73:3306/whatsupp_db");
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-
-        DBManager db = new DBManager(server);
-        User admin = new User("pedro", "pedro correia", 1);
-//        Group newGroup = new Group(admin, "queijinho", 10);
-        User toUser = new User("zetolo", "ze tolo", 2);
-        Message m = null;
-        try {
-            m = new Message(admin, toUser, new File(new java.io.File("./text.log").getCanonicalPath()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        ClientRequests gRequest = new ClientRequests(admin, newGroup);
-        ClientRequests mRequest = new ClientRequests(admin, toUser, m);
-        List<GroupRequests> groupRequests = new ArrayList<>();
-//        Groups gRequests2 = new Groups(admin, groupRequests);
-        SharedMessage request = new SharedMessage(Strings.USER_REQUEST_GROUPS, mRequest);
-//        request = db.getGroups(request);
-//        System.out.println("\t My groups: \t");
-//        for(GroupRequests g :(List<GroupRequests>) request.getClientRequest().getList()){
-//            System.out.println(g.getGroup().getName());
-//        }
-        request = db.newFile(request);
-//        System.out.println(request.getMsgType());
-
     }
 }

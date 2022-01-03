@@ -11,7 +11,7 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
 public class PingServerManager extends Thread {
     private Server server = null;
-    private static final int pingTime = 3 * 1000;// 20 * 1000; // 20 seconds between pings
+    private static final int pingTime = 20 * 1000; // 20 SECONDS
 
     public PingServerManager(Server server) {
         this.server = server;

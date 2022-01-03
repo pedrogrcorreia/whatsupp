@@ -18,7 +18,9 @@ public class UploadFile extends Thread{
     @Override
     public void run() {
         try {
-            Socket uSocket = new Socket(serverAddress,tcpPort);
+            System.out.println("[UploadFile] Thread to upload files launched..");
+
+            Socket uSocket = new Socket(serverAddress, tcpPort);
             ObjectInputStream uoin = new ObjectInputStream(uSocket.getInputStream());
             ObjectOutputStream uoout = new ObjectOutputStream(uSocket.getOutputStream());
             FileInputStream requestedFile = new FileInputStream(file.getCanonicalPath());
@@ -29,7 +31,7 @@ public class UploadFile extends Thread{
             int nbytes = 0;
             byte[] fileChunk = new byte[4096];
             do{
-                System.out.println("Writing a file");
+                System.out.println("[UploadFile] Uploading file");
                 nbytes = requestedFile.read(fileChunk, 0, 4096);
                 if(nbytes > 0){
                     uoout.writeObject(fileChunk);
@@ -42,11 +44,14 @@ public class UploadFile extends Thread{
             }while(nbytes > 0);
             requestedFile.close();
             uSocket.close();
-            System.out.println("Thread closing...");
+            System.out.println("[UploadFile] Thread closing...");
+            return;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return;
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }finally{
         }
     }

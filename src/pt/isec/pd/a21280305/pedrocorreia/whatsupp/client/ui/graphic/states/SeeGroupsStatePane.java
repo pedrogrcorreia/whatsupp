@@ -64,9 +64,52 @@ public class SeeGroupsStatePane extends BorderPane {
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_GROUPS_SUCCESS.name(), e -> updateListMyGroups());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_PENDING_GROUPS_SUCCESS.name(), e -> updateListPendingGroups());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_AVAILABLE_GROUPS_SUCCESS.name(), e -> updateListAvailableGroups());
-        clientObservable.addPropertyChangeListener(Strings.DELETED_GROUP.name(), e -> clientObservable.seeManageGroups());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MANAGE_GROUPS_SUCCESS.name(), e -> updateListAdminGroups());
         clientObservable.addPropertyChangeListener(Strings.USER_MANAGE_GROUP_SUCCESS.name(), e -> updateMembers());
+        clientObservable.addPropertyChangeListener(Strings.QUIT_GROUP.name(), e -> {
+            if(clientObservable.getState() == State.MANAGE){
+                clientObservable.seeManageGroups();
+            }else{
+                clientObservable.seeGroups();
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.DELETED_GROUP.name(), e -> {
+            if(clientObservable.getState() == State.GROUP){
+                clientObservable.seeGroups();
+            }
+            if(clientObservable.getState() == State.AVAILABLE){
+                clientObservable.seeAvailableGroups();
+            }
+            if(clientObservable.getState() == State.PENDING){
+                clientObservable.seePendingGroups();
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.NEW_GROUP_REQUEST.name(), e -> {
+            if(clientObservable.getState() == State.MANAGE){
+                clientObservable.manageMembers(clientObservable.getGroup());
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.ACCEPTED_GROUP_REQUEST.name(), e -> {
+            if(clientObservable.getState() == State.GROUP){
+                clientObservable.seeGroups();
+            }
+            if(clientObservable.getState() == State.PENDING){
+                clientObservable.seePendingGroups();
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.ADMIN_ACCEPT_GROUP_REQUEST.name(), e -> clientObservable.manageMembers(clientObservable.getGroup()));
+
+        clientObservable.addPropertyChangeListener(Strings.USER_CHANGE_GROUP.name(), e -> clientObservable.seeManageGroups());
+
+        clientObservable.addPropertyChangeListener(Strings.USER_QUIT_GROUP_SUCCESS.name(), e -> {
+            if(clientObservable.getState() == State.PENDING){
+                clientObservable.seePendingGroups();
+            }
+            if(clientObservable.getState() == State.GROUP){
+                clientObservable.seeGroups();
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.USER_DELETE_GROUP_SUCCESS.name(), e -> clientObservable.seeManageGroups());
     }
 
     private void update() {

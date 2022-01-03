@@ -75,6 +75,10 @@ public class ClientObservable implements Runnable {
         forceUpdate();
     }
 
+    public void updateUser(User u){
+        client.updateUser(u);
+    }
+
     /**
      * Search users
      */
@@ -249,7 +253,12 @@ public class ClientObservable implements Runnable {
 
     public void back() {
         client.back();
-        propertyChangeSupport.firePropertyChange("updateView", null, null);
+        forceUpdate();
+    }
+
+    public void backToInitialState(){
+        client.backToInitialState();
+        forceUpdate();
     }
 
     /**
@@ -326,83 +335,183 @@ public class ClientObservable implements Runnable {
         while (true) {
             notification = client.getNotification();
             switch (notification.getMsgType()) {
-                case MESSAGE_DELETE_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_REQUEST_FRIENDS_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_FAIL));
-                case USER_REQUEST_FRIENDS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_REQUEST_FRIENDS_REQUESTS_FAIL -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case NEW_FRIEND_REQUEST, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_CANCEL -> {
-                    if (getAtualState() == Situation.SEE_FRIENDS) {
+
+                /** Messages PANE */
+                case MESSAGE_DELETE_SUCCESS, MESSAGE_SENT_SUCCESS,
+                        USER_REQUEST_MESSAGES_SUCCESS, USER_DELETE_FILE_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case NEW_MESSAGE_GROUP, NEW_FILE_SENT_GROUP, DELETE_MESSAGE_GROUP,
+                        FILE_REMOVED_GROUP -> {
+                    if(state == State.GROUP){
                         Platform.runLater(() -> updateStates(notification.getMsgType()));
-                    } else {
+                    }
+                    else{
                         notificationMessage = notification.getMsg();
                         Platform.runLater(() -> updateNotification());
                     }
                 }
-                case REMOVED_FRIEND -> {
-                    if (getAtualState() == Situation.MESSAGE || getAtualState() == Situation.SEE_FRIENDS) {
-                        Platform.runLater(() -> updateStates(Strings.REMOVED_FRIEND));
+                case NEW_MESSAGE_USER, NEW_FILE_SENT_USER, DELETE_MESSAGE_USER,
+                        FILE_REMOVED_USER -> {
+                    if(state == State.USER){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
                     }
-                    notificationMessage = notification.getMsg();
-                    Platform.runLater(() -> updateNotification());
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
                 }
-//                case MESSAGE_SENT_SUCCESS -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_SUCCESS));
-                case MESSAGE_SENT_FAIL -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_FAIL));
-                case DELETE_MESSAGE_USER -> Platform.runLater(() -> updateStates(notification.getMsgType()));
-                case USER_REQUEST_MESSAGES_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_SUCCESS));
-                case USER_REQUEST_MESSAGES_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_FAIL));
-                case USER_REQUEST_USER_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_SUCCESS));
-                case USER_REQUEST_USER_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_FAIL));
-//                case NEW_MESSAGE_USER -> {
-//                    if (getAtualState() == Situation.MESSAGE) {
-//                        Platform.runLater(() -> propertyChangeSupport
-//                                .firePropertyChange(Strings.NEW_MESSAGE_USER.name(), null, null));
-//                    } else {
-//                        notificationMessage = notification.getMsg();
-//                        Platform.runLater(() -> updateNotification());
-//                    }
-//                }
-//                case NEW_MESSAGE_GROUP -> {
-//                    if (getAtualState() == Situation.MESSAGE) {
-//                        Platform.runLater(() -> propertyChangeSupport
-//                                .firePropertyChange(Strings.NEW_MESSAGE_GROUP.name(), null, null));
-//                    } else {
-//                        System.out.println("Enviar notificatção");
-//                        notificationMessage = notification.getMsg();
-//                        Platform.runLater(() -> updateNotification());
-//                    }
-//                }
-                case REQUEST_NEW_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.REQUEST_NEW_GROUP_SUCCESS));
-                case REQUEST_NEW_GROUP_FAIL -> Platform.runLater(() -> updateStates(Strings.REQUEST_NEW_GROUP_FAIL));
-//                case NEW_GROUP -> {
-//                    if (getAtualState() != Situation.CREATE_GROUP) {
-//                        notificationMessage = notification.getMsg();
-//                        Platform.runLater(() -> updateNotification());
-//                    }
-//                    if (getAtualState() == Situation.SEE_GROUPS) {
-//
-//                    }
-//                }
-                case USER_REQUEST_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_GROUPS_SUCCESS));
-                case USER_REQUEST_PENDING_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_PENDING_GROUPS_SUCCESS));
-                case USER_REQUEST_AVAILABLE_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_AVAILABLE_GROUPS_SUCCESS));
-                case USER_REQUEST_MANAGE_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MANAGE_GROUPS_SUCCESS));
-                case NEW_GROUP_REQUEST -> Platform.runLater(() -> updateStates(Strings.NEW_GROUP_REQUEST));
-                case DELETED_GROUP -> Platform.runLater(() -> updateStates(Strings.DELETED_GROUP));
-                case USER_MANAGE_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_MANAGE_GROUP_SUCCESS));
                 case USER_SEND_FILE_SUCCESS -> uploadFile(notification.getClientRequest().getSelectedMessage());
-                case LOST_CONNECTION -> Platform.runLater(() -> contactServerManager());
+
+                /** Friends PANE */
+                case USER_REQUEST_FRIENDS_SUCCESS,
+                        USER_REQUEST_FRIENDS_REQUESTS_SUCCESS,
+                        USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case NEW_FRIEND_REQUEST, USER_ACCEPT_FRIEND_REQUEST_SUCCESS,
+                        USER_CANCEL_FRIEND_REQUEST_SUCCESS->{
+                    if(state == State.REQUESTS || state == State.PENDING){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+                    }
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_CANCEL -> {
+                    if(state == State.FRIENDS || state == State.PENDING || state == State.REQUESTS){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+                    }
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case REMOVED_FRIEND, USER_CANCEL_FRIENDSHIP_SUCCESS -> {
+                    if(state == State.FRIENDS || state == State.USER){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+                    }
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case USER_REQUEST_ALL_USERS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+
+                /** Groups PANE */
+                case USER_REQUEST_GROUPS_SUCCESS, USER_REQUEST_AVAILABLE_GROUPS_SUCCESS,
+                        USER_REQUEST_PENDING_GROUPS_SUCCESS,
+                        USER_REQUEST_MANAGE_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case QUIT_GROUP -> {
+                    if(state == State.MANAGE || state == State.GROUP){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+                    }
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case DELETED_GROUP -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case NEW_GROUP_REQUEST -> {
+                    if(state == State.MANAGE){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+                    }
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case ACCEPTED_GROUP_REQUEST -> {
+                    if(state == State.GROUP || state == State.PENDING){
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+                    }
+                    else{
+                        notificationMessage = notification.getMsg();
+                        Platform.runLater(() -> updateNotification());
+                    }
+                }
+                case USER_QUIT_GROUP_SUCCESS, USER_DELETE_GROUP_SUCCESS, USER_CHANGE_GROUP_SUCCESS,
+                        USER_MANAGE_GROUP_SUCCESS, ADMIN_ACCEPT_GROUP_REQUEST_SUCCESS ->
+                        Platform.runLater(() -> updateStates(notification.getMsgType()));
                 default -> {
-                    System.out.println("State: " + getAtualState());
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());
                 }
+
+
+//                case MESSAGE_DELETE_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_REQUEST_FRIENDS_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_FRIENDS_FAIL));
+//                case USER_REQUEST_FRIENDS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_REQUEST_FRIENDS_REQUESTS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_REQUEST_FRIENDS_REQUESTS_FAIL -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_REQUEST_FRIENDS_REQUESTS_PENDING_FAIL -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_ACCEPT_FRIEND_REQUEST_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case NEW_FRIEND_REQUEST, FRIEND_REQUEST_ACCEPT, FRIEND_REQUEST_CANCEL -> {
+//                    if (getAtualState() == Situation.SEE_FRIENDS) {
+//                        Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                    } else {
+//                        notificationMessage = notification.getMsg();
+//                        Platform.runLater(() -> updateNotification());
+//                    }
+//                }
+//                case REMOVED_FRIEND -> {
+//                    if (getAtualState() == Situation.MESSAGE || getAtualState() == Situation.SEE_FRIENDS) {
+//                        Platform.runLater(() -> updateStates(Strings.REMOVED_FRIEND));
+//                    }
+//                    notificationMessage = notification.getMsg();
+//                    Platform.runLater(() -> updateNotification());
+//                }
+////                case MESSAGE_SENT_SUCCESS -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_SUCCESS));
+//                case MESSAGE_SENT_FAIL -> Platform.runLater(() -> updateStates(Strings.MESSAGE_SENT_FAIL));
+//                case DELETE_MESSAGE_USER -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+//                case USER_REQUEST_MESSAGES_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_SUCCESS));
+//                case USER_REQUEST_MESSAGES_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MESSAGES_FAIL));
+//                case USER_REQUEST_USER_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_SUCCESS));
+//                case USER_REQUEST_USER_FAIL -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_USER_FAIL));
+//                case USER_REQUEST_ALL_USERS_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
+////                case NEW_MESSAGE_USER -> {
+////                    if (getAtualState() == Situation.MESSAGE) {
+////                        Platform.runLater(() -> propertyChangeSupport
+////                                .firePropertyChange(Strings.NEW_MESSAGE_USER.name(), null, null));
+////                    } else {
+////                        notificationMessage = notification.getMsg();
+////                        Platform.runLater(() -> updateNotification());
+////                    }
+////                }
+////                case NEW_MESSAGE_GROUP -> {
+////                    if (getAtualState() == Situation.MESSAGE) {
+////                        Platform.runLater(() -> propertyChangeSupport
+////                                .firePropertyChange(Strings.NEW_MESSAGE_GROUP.name(), null, null));
+////                    } else {
+////                        System.out.println("Enviar notificatção");
+////                        notificationMessage = notification.getMsg();
+////                        Platform.runLater(() -> updateNotification());
+////                    }
+////                }
+//                case REQUEST_NEW_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.REQUEST_NEW_GROUP_SUCCESS));
+//                case REQUEST_NEW_GROUP_FAIL -> Platform.runLater(() -> updateStates(Strings.REQUEST_NEW_GROUP_FAIL));
+////                case NEW_GROUP -> {
+////                    if (getAtualState() != Situation.CREATE_GROUP) {
+////                        notificationMessage = notification.getMsg();
+////                        Platform.runLater(() -> updateNotification());
+////                    }
+////                    if (getAtualState() == Situation.SEE_GROUPS) {
+////
+////                    }
+////                }
+//                case USER_REQUEST_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_GROUPS_SUCCESS));
+//                case USER_REQUEST_PENDING_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_PENDING_GROUPS_SUCCESS));
+//                case USER_REQUEST_AVAILABLE_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_AVAILABLE_GROUPS_SUCCESS));
+//                case USER_REQUEST_MANAGE_GROUPS_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_REQUEST_MANAGE_GROUPS_SUCCESS));
+//                case NEW_GROUP_REQUEST -> Platform.runLater(() -> updateStates(Strings.NEW_GROUP_REQUEST));
+//                case DELETED_GROUP -> Platform.runLater(() -> updateStates(Strings.DELETED_GROUP));
+//                case USER_MANAGE_GROUP_SUCCESS -> Platform.runLater(() -> updateStates(Strings.USER_MANAGE_GROUP_SUCCESS));
+//                case USER_SEND_FILE_SUCCESS -> uploadFile(notification.getClientRequest().getSelectedMessage());
+//                case LOST_CONNECTION -> Platform.runLater(() -> contactServerManager());
+//                default -> {
+//                    System.out.println("State: " + getAtualState());
+//                    notificationMessage = notification.getMsg();
+//                    Platform.runLater(() -> updateNotification());
+//                }
             }
         }
     }
-
-
 }

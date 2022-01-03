@@ -50,6 +50,11 @@ public abstract class StateAdapter implements IState {
         return this;
     }
 
+    @Override
+    public IState updateUser(User u) {
+        return this;
+    }
+
     /**
      * Search users
      */
@@ -248,4 +253,8 @@ public abstract class StateAdapter implements IState {
         return new UserState(getModel());
     }
 
+    @Override
+    public IState backToInitialState() {
+        return new InitialState(getModel());
+    }
 }

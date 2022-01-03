@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Encapsulates an instance of a Server.
@@ -21,8 +22,8 @@ public class Server {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    static final int MAX_SIZE = 8192;
-    static final int TIMEOUT = 10 * 1000; // 10 seconds timeout
+    static final int MAX_SIZE = 100000;
+    static final int TIMEOUT = 5 * 1000; // 5 seconds timeout
     static int i = 0;
 
     // Server variables
@@ -31,6 +32,7 @@ public class Server {
     String serverAddress;
 
     String dbAddress;
+    int serverID;
     // int serverPort;
 
     /** UDP communication */
@@ -60,6 +62,7 @@ public class Server {
     ServerSocket tcpSocket;
     Socket nextClient;
     ServerSocket filesSocket;
+    ServerSocket serverFiles;
 
     /** Thread to communicate with each new client */
     ConnectionClient newClient;
@@ -130,7 +133,7 @@ public class Server {
         i++;
         try {
             mySocket = new DatagramSocket();
-            mySocket.setSoTimeout(3000);
+            mySocket.setSoTimeout(TIMEOUT);
 
             SharedMessage msgToSend = new SharedMessage(Strings.SERVER_REGISTER_REQUEST, new String(""));
             bout = new ByteArrayOutputStream();
@@ -169,7 +172,7 @@ public class Server {
             serverManagerAddress = InetAddress.getByName("230.30.30.30");
             serverManagerPort = 3030;
             mySocket = new DatagramSocket();
-            mySocket.setSoTimeout(3000);
+            mySocket.setSoTimeout(TIMEOUT);
 
             SharedMessage msgToSend = new SharedMessage(Strings.SERVER_REGISTER_REQUEST, new String(""));
             bout = new ByteArrayOutputStream();
@@ -210,10 +213,13 @@ public class Server {
 
     private void runServer() {
         try {
+            Random rand = new Random();
+            serverID = rand.nextInt(10000);
             mySocket.setSoTimeout(0);
             tcpSocket = new ServerSocket(0);
-            System.out.println("TCP Server initialized at port " + tcpSocket.getLocalPort());
+            System.out.println("[Server] Server initialized at port " + tcpSocket.getLocalPort() + " (TCP).");
             filesSocket = new ServerSocket(0);
+            serverFiles = new ServerSocket(filesSocket.getLocalPort()+1);
             pingServerManager = new Thread(new PingServerManager(this), "Thread to ping Server Manager");
             connectionServerManager = new Thread(new ConnectionServerManager(this),
                     "Thread to receive communication from ServerManager");
@@ -226,13 +232,13 @@ public class Server {
                 clients.add(nextClient);
                 oout = new ObjectOutputStream(nextClient.getOutputStream());
                 oin = new ObjectInputStream(nextClient.getInputStream());
-                newClient = new ConnectionClient(nextClient, this, oout, oin, filesSocket);
+                newClient = new ConnectionClient(nextClient, this, oout, oin, filesSocket, serverFiles);
                 clientsConnected.add(newClient);
                 newClient.start();
             }
 
         } catch (IOException e) {
-            System.out.println("Error creating TCP Socket: \r\n\t" + e);
+            System.out.println("[Server] Error creating TCP Socket: \r\n\t" + e);
         }
     }
 
@@ -263,7 +269,7 @@ public class Server {
             myPacket = new DatagramPacket(bout.toByteArray(), bout.size(), serverManagerAddress, serverManagerPort);
             mySocket.send(myPacket);
         } catch (IOException e) {
-            System.out.println("Socket or IO exception: \r\n\t" + e);
+            System.out.println("[Server] Socket or IO exception: \r\n\t" + e);
         }
     }
 
@@ -278,19 +284,21 @@ public class Server {
         try {
             dFile = new File(new File(fPath).getCanonicalPath());
             if(dFile.delete()){
-                System.out.println("File deleted successfully");
+                System.out.println("[Server] File deleted successfully");
             }
             else{
-                System.out.println("Couldn't delete the requested file");
+                System.out.println("[Server] Couldn't delete the requested file");
             }
         } catch (IOException e) {
-            System.out.println("Couldn't delete the file:\r\n\t " + e);
+            System.out.println("[Server] Couldn't delete the file:\r\n\t " + e);
         }
 
     }
 
     public SharedMessage receiveFromServerManager() {
         try {
+            SharedMessage responseFromServerManager = null;
+
             // Clear packet
             myPacket = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
             mySocket.receive(myPacket);
@@ -303,9 +311,9 @@ public class Server {
             return responseFromServerManager;
 
         } catch (IOException e) {
-            System.out.println("Socket or IO exception: \r\n\t" + e);
+            System.out.println("[Server] Socket or IO exception: \r\n\t" + e);
         } catch (ClassNotFoundException e) {
-            System.out.println("Invalid object sent: \r\n\t" + e);
+            System.out.println("[Server] Invalid object sent: \r\n\t" + e);
         }
         return null;
     }
@@ -318,6 +326,8 @@ public class Server {
         return myPacket;
     }
 
+    public int getServerID(){ return serverID; }
+
     public int getTcpPort() {
         return tcpSocket.getLocalPort();
     }
@@ -327,6 +337,8 @@ public class Server {
     public ServerSocket getTcpSocket() {
         return tcpSocket;
     }
+
+    public InetAddress getServerManagerAddress() { return serverManagerAddress; }
 
     public String getServerAddress() {
         return serverAddress;

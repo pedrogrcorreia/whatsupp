@@ -93,7 +93,6 @@ public class Message implements Serializable {
         this.file = file;
     }
 
-    /** DEBUG!!!!!!!!!!!!!! */
     public Message(int id){
         this.id = id;
     }

@@ -44,6 +44,7 @@ public class SeeFriendsStatePane extends BorderPane {
     private Button delete;
     private Button cancel;
     private Button accept;
+    private Button addFriend;
     private int method = 0;
 
     public SeeFriendsStatePane(ClientObservable clientObservable) {
@@ -111,29 +112,30 @@ public class SeeFriendsStatePane extends BorderPane {
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_SUCCESS.name(), e -> updateFriends());
-        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_FAIL.name(), e -> updateFail());
-        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS.name(),
-                e -> updateFriendsRequests());
-        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS.name(),
-                e -> updateFriendsRequestsPending());
-        clientObservable.addPropertyChangeListener(Strings.NEW_FRIEND_REQUEST.name(), e -> updateNewFriend());
-        clientObservable.addPropertyChangeListener(Strings.FRIEND_REQUEST_ACCEPT.name(), e -> updateNewFriend());
-        clientObservable.addPropertyChangeListener(Strings.FRIEND_REQUEST_CANCEL.name(), e -> updateNewFriend());
-        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> {
-//            if(state == PaneState.FRIENDS){
-//                clientObservable.seeFriends();
-//            }
-//            if(state == PaneState.REQUESTS){
-//                clientObservable.seeFriendsRequests();
-//            }
-//            if(state == PaneState.PENDING){
-//                clientObservable.seeFriendsRequestsPending();
-//            }
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_SUCCESS.name(), e -> updateFriendsRequests());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_FRIENDS_REQUESTS_PENDING_SUCCESS.name(), e -> updateFriendsRequestsPending());
+        clientObservable.addPropertyChangeListener(Strings.NEW_FRIEND_REQUEST.name(), e -> {
+            if(clientObservable.getState() == State.PENDING){
+                clientObservable.seeFriendsRequestsPending();
+            }
         });
-//        clientObservable.addPropertyChangeListener(Strings.);
-//        clientObservable.addPropertyChangeListener(State.FRIENDS.name(), e -> updateFriends());
-//        clientObservable.addPropertyChangeListener(State.REQUESTS.name(), e -> updateFriendsRequests());
-//        clientObservable.addPropertyChangeListener(State.PENDING.name(), e -> updateFriendsRequestsPending());
+        clientObservable.addPropertyChangeListener(Strings.USER_ACCEPT_FRIEND_REQUEST_SUCCESS.name(), e -> clientObservable.seeFriendsRequestsPending());
+        clientObservable.addPropertyChangeListener(Strings.USER_CANCEL_FRIEND_REQUEST_SUCCESS.name(), e -> clientObservable.seeFriendsRequests());
+        clientObservable.addPropertyChangeListener(Strings.FRIEND_REQUEST_ACCEPT.name(), e -> {
+            if(clientObservable.getState() == State.FRIENDS){
+                clientObservable.seeFriends();
+            } else if (clientObservable.getState() == State.PENDING){
+                clientObservable.seeFriendsRequestsPending();
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.FRIEND_REQUEST_CANCEL.name(), e -> {
+            if(clientObservable.getState() == State.PENDING){
+                clientObservable.seeFriendsRequestsPending();
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> clientObservable.seeFriends());
+        clientObservable.addPropertyChangeListener(Strings.USER_CANCEL_FRIENDSHIP_SUCCESS.name(), e -> clientObservable.seeFriends());
+        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_ALL_USERS_SUCCESS.name(), e -> updateAllUsers());
     }
 
     private void update() {
@@ -141,15 +143,15 @@ public class SeeFriendsStatePane extends BorderPane {
     }
 
     private void updateFriends() {
+
         getChildren().clear();
         gridPane.getChildren().clear();
         gridPane.setAlignment(Pos.TOP_LEFT);
         gridPane.setHgap(15);
         gridPane.setVgap(15);
 
-        method = 0;
-//        state = PaneState.FRIENDS;
         lFriends = clientObservable.getFriendsRequests();
+//        System.out.println(lFriends.get(0).getReceiver().getName());
         User me = clientObservable.getUser();
         if (lFriends.size() == 0) {
             noFriends = new Label("No friends to list.");
@@ -210,7 +212,9 @@ public class SeeFriendsStatePane extends BorderPane {
     private void updateFriendsRequests() {
         getChildren().clear();
         gridPane.getChildren().clear();
-        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
 
 //        state = PaneState.REQUESTS;
         lFriends = clientObservable.getFriendsRequestsSent();
@@ -230,26 +234,32 @@ public class SeeFriendsStatePane extends BorderPane {
             }
             friend = new Label(f.getName());
             friend.setFont(lblFont);
-            gridPane.add(friend, 1, i + 1);
+            gridPane.add(friend, 0, i + 1);
             friend.setContextMenu(createContextMenu(friend, lFriends.get(i)));
             cancel = new Button("Cancel");
             cancel.setFont(btnFont);
             cancel.setBackground(btBkg);
-            gridPane.add(cancel, 2, i + 1);
+            gridPane.add(cancel, 1, i + 1);
 
             cancel.setOnAction(e -> {
                 method = 1;
                 clientObservable.cancelRequest(f);
             });
         }
+
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setContent(gridPane);
+        setTop(title);
+        setCenter(scrollPane);
     }
 
     private void updateFriendsRequestsPending() {
         getChildren().clear();
         gridPane.getChildren().clear();
-        gridPane.setAlignment(Pos.CENTER);
-
-//        state = PaneState.PENDING;
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
         lFriends = clientObservable.getFriendsRequestsPending();
         User me = clientObservable.getUser();
         method = 2;
@@ -267,22 +277,61 @@ public class SeeFriendsStatePane extends BorderPane {
             }
             friend = new Label(f.getName());
             friend.setFont(lblFont);
-            gridPane.add(friend, 1, i + 1);
+            gridPane.add(friend, 0, i + 1);
             friend.setContextMenu(createContextMenu(friend, lFriends.get(i)));
             accept = new Button("Accept");
             accept.setFont(btnFont);
             accept.setBackground(btBkg);
-            gridPane.add(accept, 2, i + 1);
+            gridPane.add(accept, 1, i + 1);
 
             accept.setOnAction(e -> {
                 method = 2;
                 clientObservable.acceptRequest(f);
             });
         }
+
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setContent(gridPane);
+        setTop(title);
+        setCenter(scrollPane);
+    }
+
+    private void updateAllUsers(){
+
+        getChildren().clear();
+        gridPane.getChildren().clear();
+        gridPane.setAlignment(Pos.TOP_LEFT);
+        gridPane.setHgap(15);
+        gridPane.setVgap(15);
+
+        List<User> users = (List<User>) clientObservable.getNotificationSM().getClientRequest().getList();
+        User me = clientObservable.getUser();
+        for (int i = 0; i < users.size(); i++) {
+            User f;
+            f = users.get(i);
+            friend = new Label(f.getName());
+            friend.setFont(lblFont);
+            gridPane.add(friend, 0, i + 1);
+            addFriend = new Button("Add friend");
+            addFriend.setFont(btnFont);
+            addFriend.setBackground(btBkg);
+            gridPane.add(addFriend, 1, i + 1);
+
+            addFriend.setOnAction(e -> {
+                method = 2;
+                clientObservable.addFriend(f);
+            });
+        }
+
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setContent(gridPane);
+        setTop(title);
+        setCenter(scrollPane);
     }
 
     private void updateNewFriend() {
-//        System.out.println(state);
         switch(clientObservable.getState()){
             case FRIENDS -> clientObservable.seeFriends();
             case REQUESTS -> clientObservable.seeFriendsRequests();

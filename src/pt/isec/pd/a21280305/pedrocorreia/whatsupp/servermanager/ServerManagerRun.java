@@ -15,7 +15,5 @@ public class ServerManagerRun {
 
         ServerManager serverManager = new ServerManager(Integer.parseInt(args[0]));
         serverManager.startServerManager();
-        // serverManager.runServerManager();
-        // UIConsole uiConsole = new UIConsole(serverManager);
     }
 }

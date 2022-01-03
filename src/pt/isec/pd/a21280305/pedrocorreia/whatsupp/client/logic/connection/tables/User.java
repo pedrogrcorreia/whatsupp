@@ -16,7 +16,7 @@ public class User implements Serializable {
     private int status;
 
     public User() {
-    };
+    }
 
     public User(int id) {
         this.id = id;
@@ -57,6 +57,13 @@ public class User implements Serializable {
         this.confPassword = confPassword;
         this.fName = fName;
         this.lName = lName;
+    }
+
+    public User(String username, String password, String confPassword, String name, int user_id){
+        this.username = username;
+        this.password = password;
+        this.confPassword = confPassword;
+        this.name = name;
     }
 
     public String getUsername() {

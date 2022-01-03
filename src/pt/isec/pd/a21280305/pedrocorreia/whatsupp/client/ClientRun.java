@@ -35,11 +35,6 @@ public class ClientRun extends Application {
             ClientUI clientUI = new ClientUI(clientObservable);
             InputStream url = getClass().getResourceAsStream("resources/images/icon.png");
             Image icon = new Image(url);
-//            String[] fileNames = file.list();
-//            for (String s : fileNames) {
-//                System.out.println(s);
-//            }
-//            Image icon = new Image(getClass().getClassLoader().getResourceAsStream("resources/icon.png/"));
 
 
             Scene scene = new Scene(clientUI, 800, 800);
@@ -49,96 +44,11 @@ public class ClientRun extends Application {
             stage.setOnCloseRequest(windowEvent -> Platform.exit());
             stage.getIcons().add(icon);
             stage.show();
-            // System.out.println(clientObservable.getAtualState());
         }
-
-        // VBox root = new VBox();
-        // Button b1 = new Button("teste");
-        // root.getChildren().addAll(b1);
-        // Scene scene = new Scene(root, 400, 400);
-        // stage.setScene(scene);
-        // stage.show();
 
     }
 
     public static void main(String[] args) {
-        // Client client = new Client(args[0], Integer.parseInt(args[1]));
-        // ConsoleUI console = new ConsoleUI(client);
-        // console.prints();
-
-        // ClientServerConnection csc = new ClientRequestLogin("pedro", "correia");
-        // System.out.println(csc.getClass().getSimpleName());
-
         launch(args);
-
-//        Data d = new Data("192.168.1.73", 3000);
-//        d.contactServerManager();
-//        d.login("pedro", "1234");
-//        d.retrieveInfo();
-//        d.uploadFileToServer(new Message(new User(1), new User(2), new File("C:/users/pedro/Desktop/teste2.txt")));
-//        d.downloadFile(new Message(353));
-//        System.out.println("ACABOU");
-//        return;
-
-        // Connect to GRDS
-        // ByteArrayOutputStream bout;
-        // ObjectOutputStream oout;
-        // ByteArrayInputStream bin;
-        // ObjectInputStream oin;
-        // DatagramSocket mySocket;
-        // DatagramPacket myPacket;
-        // Socket tcpSocket;
-        // // Get the server from GRDS
-        // // Send message to server
-        // InetAddress serverManagerAddress = null;
-        // try {
-        // serverManagerAddress = InetAddress.getByName("localhost");
-        // } catch (UnknownHostException e1) {
-        // // TODO Auto-generated catch block
-        // e1.printStackTrace();
-        // }
-
-        // try {
-        // mySocket = new DatagramSocket();
-
-        // bout = new ByteArrayOutputStream();
-        // oout = new ObjectOutputStream(bout);
-
-        // oout.writeUnshared(
-        // new SharedMessage(Strings.CLIENT_REQUEST_SERVER, "Client wants a connection
-        // to a server."));
-
-        // myPacket = new DatagramPacket(bout.toByteArray(), bout.size(),
-        // serverManagerAddress, 3000);
-        // mySocket.send(myPacket);
-
-        // myPacket = new DatagramPacket(new byte[4096], 4096);
-        // mySocket.receive(myPacket);
-
-        // bin = new ByteArrayInputStream(myPacket.getData());
-        // oin = new ObjectInputStream(bin);
-
-        // SharedMessage responseFromServerManager = (SharedMessage) oin.readObject();
-
-        // System.out.println(responseFromServerManager.getMsg());
-
-        // tcpSocket = new Socket(serverManagerAddress,
-        // Integer.parseInt(responseFromServerManager.getMsg()));
-
-        // oin = new ObjectInputStream(tcpSocket.getInputStream());
-        // oout = new ObjectOutputStream(tcpSocket.getOutputStream());
-
-        // oout.writeObject(new SharedMessage(Strings.CLIENT_SENT_MESSAGE, "Mensagem que
-        // o user enviou."));
-        // oout.flush();
-
-        // SharedMessage response = (SharedMessage) oin.readObject();
-
-        // System.out.println(response);
-        // } catch (IOException e) {
-        // } catch (ClassNotFoundException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
     }
 }

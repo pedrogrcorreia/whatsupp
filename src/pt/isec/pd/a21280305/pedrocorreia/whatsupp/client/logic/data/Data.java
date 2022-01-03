@@ -105,28 +105,25 @@ public class Data {
 
             packet = new DatagramPacket(bout.toByteArray(), bout.size(), serverManager,
                     serverManagerPort);
-            System.out.println("Packet: " + packet.getAddress().getHostAddress() + ":" +
-                    packet.getPort());
-            // return true;
         } catch (IOException e) {
-            System.out.println("Error creating socket and packet:\r\n\t" + e);
+            System.out.println("[Data] Error creating socket and packet:\r\n\t" + e);
             return false;
         }
 
         try {
             serverManager = InetAddress.getByName(serverManagerAddress);
         } catch (UnknownHostException e) {
-            System.out.println("Error recognizing the host:\r\n\t" + e);
+            System.out.println("[Data] Error recognizing the host:\r\n\t" + e);
         }
         try {
             System.out.println(packet.getAddress().getHostAddress());
             socket.send(packet);
         } catch (SocketTimeoutException e) {
-            System.out.println("Timeout on sending message to Server Manager:\r\n\t" +
+            System.out.println("[Data] Timeout on sending message to Server Manager:\r\n\t" +
                     e);
             return false;
         } catch (IOException e) {
-            System.out.println("Error at sending the message to Server Manager:\r\n\t" +
+            System.out.println("[Data] Error at sending the message to Server Manager:\r\n\t" +
                     e);
             return false;
         }
@@ -135,13 +132,13 @@ public class Data {
             packet = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
             socket.receive(packet);
         } catch (SocketTimeoutException e) {
-            System.out.println("Timeout on receiving message from Server Manager:\r\n\t"
+            System.out.println("[Data] Timeout on receiving message from Server Manager:\r\n\t"
                     + e);
             return false;
         } catch (IOException e) {
             packet = new DatagramPacket(bout.toByteArray(), bout.size(), serverManager,
                     serverManagerPort);
-            System.out.println("Error at receiving the message to Server Manager:\r\n\t"
+            System.out.println("[Data] Error at receiving the message to Server Manager:\r\n\t"
                     + e);
             return false;
         }
@@ -157,15 +154,9 @@ public class Data {
             serverAddress = serverAddressReceived.replace("/", "");
             serverPort = Integer.parseInt(sc.next());
             filesPort = Integer.parseInt(sc.next());
-            System.out.println("SMA " + serverAddress);
-            System.out.println("SP " + serverPort);
-            System.out.println("FP " + filesPort);
             socketToServer = new Socket(serverAddress, serverPort);
             oin = new ObjectInputStream(socketToServer.getInputStream());
             oout = new ObjectOutputStream(socketToServer.getOutputStream());
-
-            // notIn = new ObjectInputStream(socketToServer.getInputStream());
-            // notOut = new ObjectOutputStream(socketToServer.getOutputStream());
             not = new Notifications(serverManagerAddress, serverManagerPort, oin, oout, notLog);
 
             synchronized (notLog) {
@@ -176,17 +167,17 @@ public class Data {
 
             return true;
         } catch (ClassNotFoundException e) {
-            System.out.println("Message error:\r\n\t" + e);
+            System.out.println("[Data] Message error:\r\n\t" + e);
             return false;
         } catch (UnknownHostException e) {
-            System.out.println("Couldn't connect to that host:\r\n\t" + e);
+            System.out.println("[Data] Couldn't connect to that host:\r\n\t" + e);
             return false;
         } catch (BindException e) {
-            System.out.println("No servers available:\r\n\t" + e);
+            System.out.println("[Data] No servers available:\r\n\t" + e);
             contactServerManager();
             return false;
         } catch (IOException e) {
-            System.out.println("Error on socket:\r\n\t" + e);
+            System.out.println("[Data] Error on socket:\r\n\t" + e);
             contactServerManager();
             return false;
         }
@@ -206,6 +197,11 @@ public class Data {
         return loginRegister.register(oin, oout, notLog);
     }
 
+    public void updateUser(User u){
+        ClientRequests cr = new ClientRequests(user, u);
+        cr.sendRequest(oout, Strings.USER_UPDATE_INFO);
+    }
+
     /**
      * Start notification thread
      */
@@ -214,7 +210,7 @@ public class Data {
         t = new Thread(not);
         t.start();
 
-        System.out.println(user = loginRegister.getUser());
+        user = loginRegister.getUser();
         return true;
     }
 
@@ -320,6 +316,7 @@ public class Data {
     }
 
     public void manageMembers(Group g) {
+        selectedGroup = g;
         ClientRequests cr = new ClientRequests(user, g);
         cr.sendRequest(oout, Strings.USER_MANAGE_GROUP);
     }
@@ -396,7 +393,6 @@ public class Data {
 
     public void uploadFileToServer(Message file){
         File f = new File(file.getFile().getPath());
-        System.out.println(file.getFile().getPath());
         Thread u = new Thread(new UploadFile(f, serverAddress, filesPort));
         u.start();
     }
@@ -404,6 +400,7 @@ public class Data {
     public void downloadFile(Message file, File path){
         try {
             ServerSocket s = new ServerSocket(0);
+
             Thread d = new Thread(new DownloadFile(path, s), "Download thread");
             d.start();
             ClientRequests cr = new ClientRequests(user, file, s.getLocalPort());
@@ -471,7 +468,7 @@ public class Data {
                 try {
                     notLog.wait();
                 } catch (InterruptedException e) {
-                    System.out.println("Couldn't wait on this method:\r\n\t" + e);
+                    System.out.println("[Data] Couldn't wait on this method:\r\n\t" + e);
                 }
             }
             return notLog.remove(0);

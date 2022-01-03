@@ -1,6 +1,5 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp;
 
-import java.io.File;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -51,10 +50,6 @@ public class SharedMessage implements Serializable {
 
     public String getMsg() {
         return msg;
-    }
-
-    public void setMsgType(Strings type) {
-        msgType = type;
     }
 
     public ClientRequests getClientRequest() {

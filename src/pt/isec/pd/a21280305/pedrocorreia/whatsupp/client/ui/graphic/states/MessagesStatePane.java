@@ -54,7 +54,6 @@ public class MessagesStatePane extends BorderPane {
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(10);
         gridPane.setVgap(10);
-//        gridPane.setPadding(new Insets(25, 25, 25, 25));
         scrollPane = new ScrollPane(gridPane);
 
         bottom = new HBox(10);
@@ -129,8 +128,6 @@ public class MessagesStatePane extends BorderPane {
                 fileChooser.setInitialDirectory(new File("./"));
                 File d = new File(label.getText());
                 String name = d.getName();
-                int lastIndexOf = name.lastIndexOf(".");
-                fileChooser.setInitialFileName(name.substring(lastIndexOf));
                 File selectedFile = fileChooser.showSaveDialog(null);
                 if(selectedFile != null){
                     clientObservable.downloadFile(m, selectedFile);
@@ -155,21 +152,27 @@ public class MessagesStatePane extends BorderPane {
 
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
-//        /** DEBUG */
-//        clientObservable.addPropertyChangeListener("updateView", e -> updateSuccess());
-//        /** END DEBUG */
         clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_SUCCESS.name(), e -> updateSuccess());
-        clientObservable.addPropertyChangeListener(Strings.USER_REQUEST_MESSAGES_FAIL.name(), e -> updateFail());
-        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_USER.name(), e -> updateNewMessageUser());
-        clientObservable.addPropertyChangeListener(Strings.NEW_FILE_SENT_USER.name(), e -> updateNewMessageUser());
-        clientObservable.addPropertyChangeListener(Strings.FILE_REMOVED_USER.name(), e -> updateNewMessageUser());
-        clientObservable.addPropertyChangeListener(Strings.NEW_FILE_SENT_GROUP.name(), e -> updateNewMessageGroup());
-        clientObservable.addPropertyChangeListener(Strings.FILE_REMOVED_GROUP.toString(), e -> updateNewMessageGroup());
-        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_GROUP.name(), e -> updateNewMessageGroup());
+        clientObservable.addPropertyChangeListener(Strings.USER_SEND_FILE_SUCCESS.name(), e -> updateSuccess());
+        clientObservable.addPropertyChangeListener(Strings.USER_DELETE_FILE_SUCCESS.name(), e -> {
+            if(clientObservable.getState() == State.USER){
+                clientObservable.seeMessages(clientObservable.getFriend());
+            }
+            else{
+                clientObservable.seeMessages(clientObservable.getGroup());
+            }
+        });
+        clientObservable.addPropertyChangeListener(Strings.MESSAGE_SENT_SUCCESS.name(), e -> updateSuccess());
+        clientObservable.addPropertyChangeListener(Strings.MESSAGE_DELETE_SUCCESS.name(), e -> updateSuccess());
+        clientObservable.addPropertyChangeListener(Strings.NEW_FILE_SENT_USER.name(), e -> clientObservable.seeMessages(clientObservable.getFriend()));
+        clientObservable.addPropertyChangeListener(Strings.NEW_FILE_SENT_GROUP.name(), e -> clientObservable.seeMessages(clientObservable.getGroup()));
+        clientObservable.addPropertyChangeListener(Strings.FILE_REMOVED_USER.name(), e -> clientObservable.seeMessages(clientObservable.getFriend()));
+        clientObservable.addPropertyChangeListener(Strings.FILE_REMOVED_GROUP.name(), e -> clientObservable.seeMessages(clientObservable.getGroup()));
+        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_USER.name(), e -> clientObservable.seeMessages(clientObservable.getFriend()));
+        clientObservable.addPropertyChangeListener(Strings.NEW_MESSAGE_GROUP.name(), e -> clientObservable.seeMessages(clientObservable.getGroup()));
+        clientObservable.addPropertyChangeListener(Strings.DELETE_MESSAGE_USER.name(), e -> clientObservable.seeMessages(clientObservable.getFriend()));
+        clientObservable.addPropertyChangeListener(Strings.DELETE_MESSAGE_GROUP.name(), e -> clientObservable.seeMessages(clientObservable.getGroup()));
         clientObservable.addPropertyChangeListener(Strings.REMOVED_FRIEND.name(), e -> updateRemovedFriend());
-        clientObservable.addPropertyChangeListener(Strings.DELETE_MESSAGE_USER.name(), e -> updateNewMessageUser());
-        clientObservable.addPropertyChangeListener(Strings.DELETE_MESSAGE_GROUP.name(), e -> updateNewMessageGroup());
-        clientObservable.addPropertyChangeListener(Strings.MESSAGE_DELETE_SUCCESS.name(), e -> updateNewMessageUser());
     }
 
     private void registerListener(){
@@ -266,30 +269,17 @@ public class MessagesStatePane extends BorderPane {
         setTop(top);
     }
 
-    private void updateNewMessageUser() {
-        clientObservable.seeMessages(clientObservable.getFriend());
-    }
-
-    private void updateNewMessageGroup(){
-        clientObservable.seeMessages(clientObservable.getGroup());
-    }
-
     private void updateRemovedFriend() {
         getChildren().clear();
         gridPane.getChildren().clear();
         gridPane.setAlignment(Pos.TOP_LEFT);
-            Label userBlocked = new Label("This friendship is over...");
-            gridPane.add(userBlocked, 0, 1);
-            send.setDisable(true);
-            msgToSend.setDisable(true);
-            scrollPane.setContent(gridPane);
-            setCenter(scrollPane);
-            setBottom(bottom);
-    }
-
-    private void updateFail() {
-        getChildren().clear();
-        Label failed = new Label("No messages availabe");
-        gridPane.add(failed, 0, 1);
+        Label userBlocked = new Label("This user blocked you.");
+        userBlocked.setFont(new Font(15));
+        gridPane.add(userBlocked, 0, 1);
+        send.setDisable(true);
+        msgToSend.setDisable(true);
+        scrollPane.setContent(gridPane);
+        setCenter(scrollPane);
+        setBottom(bottom);
     }
 }

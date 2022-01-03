@@ -21,6 +21,7 @@ public class RegisterStatePane extends GridPane {
     private Label lblUsername, lblPassword, lblConfPassword, lblFName, lblLName;
     private TextField txtUsername, txtPassword, txtConfPassword, txtFName, txtLName;
     private Button submit;
+    private Button back;
 
     public RegisterStatePane(ClientObservable clientObservable) {
         this.clientObservable = clientObservable;
@@ -73,6 +74,13 @@ public class RegisterStatePane extends GridPane {
 
         submit.setBackground(btBkg);
         submit.setFont(lblFont);
+
+        back = new Button("Back");
+        back.setBackground(btBkg);
+        back.setFont(lblFont);
+        add(back, 1, 7);
+
+        back.setOnAction(e -> clientObservable.backToInitialState());
 
         submit.setOnAction(e -> {
             clientObservable.register(txtUsername.getText(), txtPassword.getText(), txtConfPassword.getText(),

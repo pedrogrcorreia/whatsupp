@@ -6,8 +6,7 @@ import java.io.ObjectOutputStream;
 
 public enum Strings {
     JDBC_DRIVE("com.mysql.cj.jdbc.Driver"),
-    SERVER_DOWNLOAD_PATH("./server/download"),
-    SERVER_MANAGER_DOWNLOAD_PATH("./server manager/download"),
+    SERVER_DOWNLOAD_PATH("./server/download/"),
 
     /** Server <-> Server Manager */
 
@@ -15,6 +14,7 @@ public enum Strings {
     SERVER_REGISTER_SUCCESS("Registered the server successfully"),
     SERVER_REGISTER_FAIL("Failed to register the server"),
     SERVER_PING("Server pinging"),
+    SM_REQUEST_DOWNLOAD(""),
 
     /** Notifications to all users */
 
@@ -87,6 +87,9 @@ public enum Strings {
     USER_REQUEST_USER_INFO("Get user info"),
     USER_REQUEST_USER_INFO_SUCCESS("Retrieved an User object"),
     USER_REQUEST_USER_INFO_FAIL("Couldn't retrive the User"),
+    USER_UPDATE_INFO("Update user"),
+    USER_UPDATE_INFO_SUCCESS("Success"),
+    USER_UPDATE_INFO_FAIL("Fail"),
 
     /** Other users info */
 
