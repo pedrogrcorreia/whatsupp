@@ -5,12 +5,6 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.requests.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.connection.tables.*;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,17 +21,11 @@ public class DBManager {
     public DBManager(Server server) {
         String dbAddress = server.getDB();
         this.server = server;
-        // DEBUG
-        // String db = "jdbc:mysql://localhost:3306/whatsupp_db";
 
         String db = "jdbc:mysql://" + dbAddress + "?allowMultiQueries=true";
-        // DEBUG
-        // final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 
         try {
             Class.forName(Strings.JDBC_DRIVE.toString());
-            // DEBUG
-            // Class.forName(DB_DRIVER);
         } catch (ClassNotFoundException e) {
             System.out.println("Couldn't find JDBC Driver: \r\n\t " + e);
             return;
