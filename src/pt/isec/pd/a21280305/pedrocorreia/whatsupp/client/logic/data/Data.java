@@ -208,6 +208,7 @@ public class Data {
 
     public boolean retrieveInfo() {
         t = new Thread(not);
+        t.setDaemon(true);
         t.start();
 
         user = loginRegister.getUser();

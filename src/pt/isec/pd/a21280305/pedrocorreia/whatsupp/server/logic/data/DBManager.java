@@ -60,16 +60,16 @@ public class DBManager {
             stmt.executeUpdate(query);
             if (status == 1) {
                 SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_ONLINE,
-                        new String("New user online."));
+                        new String("New user online."), user.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.SET_USER_ONLINE,
                         new String("New user online."));
             } else {
                 SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_OFFLINE,
-                        new String("New user offline."));
+                        new String("New user offline."), user.getID());
                 server.sendToServerManager(msgToSend);
                 return new SharedMessage(Strings.SET_USER_OFFLINE,
-                        new String("New user offline."));
+                        new String("New user offline."), user.getID());
             }
         } catch (SQLException e) {
             System.out.println("SQLException problem:\r\n\t" + e);

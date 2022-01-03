@@ -41,11 +41,13 @@ public class ClientRun extends Application {
             stage.setScene(scene);
             stage.setResizable(false);
             stage.setTitle("Whatsupp Messenger");
-            stage.setOnCloseRequest(windowEvent -> Platform.exit());
+            stage.setOnCloseRequest(windowEvent -> {
+                Platform.exit();
+                System.exit(0);
+            });
             stage.getIcons().add(icon);
             stage.show();
         }
-
     }
 
     public static void main(String[] args) {

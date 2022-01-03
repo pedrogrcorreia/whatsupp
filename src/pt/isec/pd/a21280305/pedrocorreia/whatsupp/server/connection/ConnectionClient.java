@@ -55,7 +55,7 @@ public class ConnectionClient extends Thread {
     public void sendMsgToClient(SharedMessage msg) {
             switch(msg.getMsgType()){
                 case NEW_MESSAGE_GROUP, DELETE_MESSAGE_GROUP ->  sendMsgToClientByGroup(msg);
-                case NEW_USER_LOGIN, NEW_USER_REGISTERED -> {
+                case NEW_USER_LOGIN, NEW_USER_REGISTERED, NEW_USER_ONLINE, NEW_USER_OFFLINE -> {
                     if (msg.getID() != user.getID()){
                         try {
                             oout.writeObject(msg);
@@ -107,31 +107,24 @@ public class ConnectionClient extends Thread {
                     System.out
                             .println("[ConnectionClient] Client connected from: " + clientSocket.getInetAddress().getHostAddress() + ":"
                                     + clientSocket.getPort());
-                    firstRun = false;
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
                 System.out.println("[ConnectionClient] Request from client: " + request.getMsgType().name());
                 clientSocket.setSoTimeout(OFFLINE_TIMEOUT);
-                if(!on) {
-                    dbManager.setStatus(user, 1);
-                    System.out.println("[ConnectionClient] Client reconnected.");
-                }
                 switch (request.getMsgType()) {
                     /** Login or register */
                     case USER_REQUEST_LOGIN -> {
                         SharedMessage response = dbManager.loginUser(request);
+                        oout.writeObject(response);
                         if (response.getMsgType() == Strings.USER_SUCCESS_LOGIN) {
                             user = response.getClientRequest().getUser();
                             System.out.println("User " + user.getUsername() + " is connected on this server.");
-                            dbManager.setStatus(user, 1);
                             request = dbManager.getGroups(response);
                             gr = (List<GroupRequests>) request.getClientRequest().getList();
                             on = true;
+                            dbManager.setStatus(user, 1);
                         }
-                        SharedMessage msgToSend = new SharedMessage(Strings.NEW_USER_LOGIN, new String("A user has logged in."), user.getID());
-                        server.sendToServerManager(msgToSend);
-                        oout.writeObject(response);
                     }
                     case USER_REQUEST_REGISTER -> {
                         oout.writeObject(dbManager.registerUser(request));
@@ -230,6 +223,13 @@ public class ConnectionClient extends Thread {
                     }
                 }
                 oout.flush();
+                if(!on) {
+                    dbManager.setStatus(user, 1);
+                    oout.flush();
+                    System.out.println("[ConnectionClient] Client reconnected.");
+                    firstRun = false;
+                    on = true;
+                }
                 // closeSocket when client disconnects
             } catch (SocketException e) {
                 System.out.println("[ConnectionClient] User disconnected...");
