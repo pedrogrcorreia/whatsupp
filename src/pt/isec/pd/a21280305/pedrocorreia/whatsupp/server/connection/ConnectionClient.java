@@ -108,16 +108,15 @@ public class ConnectionClient extends Thread {
                             .println("[ConnectionClient] Client connected from: " + clientSocket.getInetAddress().getHostAddress() + ":"
                                     + clientSocket.getPort());
                     firstRun = false;
-                } else {
-                    if(!on) {
-                        dbManager.setStatus(user, 1);
-                        System.out.println("[ConnectionClient] Client reconnected.");
-                    }
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
                 System.out.println("[ConnectionClient] Request from client: " + request.getMsgType().name());
                 clientSocket.setSoTimeout(OFFLINE_TIMEOUT);
+                if(!on) {
+                    dbManager.setStatus(user, 1);
+                    System.out.println("[ConnectionClient] Client reconnected.");
+                }
                 switch (request.getMsgType()) {
                     /** Login or register */
                     case USER_REQUEST_LOGIN -> {
