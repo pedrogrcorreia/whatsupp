@@ -115,16 +115,19 @@ public class ServerManager implements Runnable{
                 answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, myPacket.getAddress().getHostAddress(),
                         activeServers.getPortForTcp(myPacket), request.getFilePath());
                 answerException(answer);
+                answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, new String(""));
+                answerToRequest(answer, myPacket);
                 continue;
             }
             if(request.getMsgType().equals(Strings.NEW_FILE_SENT_GROUP)){
                 answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, myPacket.getAddress().getHostAddress(),
                         activeServers.getPortForTcp(myPacket), request.getFilePath());
                 answerException(answer);
+                answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, new String(""));
+                answerToRequest(answer, myPacket);
                 continue;
             }
             else {
-                System.out.println("\n\t here \n\t");
                 answerToAll(request);
             }
         }
@@ -303,8 +306,27 @@ public class ServerManager implements Runnable{
                     continue;
                 }
                 if(request.getMsgType().equals(Strings.NEW_FILE_SENT_USER)){
-                    answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, myPacket.getAddress().getHostAddress(),
-                            activeServers.getPortForTcp(myPacket), request.getFilePath());
+                    List<ConnectedServer> cs = activeServers.getServers();
+                    for (int i = 0; i < cs.size(); i++) {
+                        try {
+                            if (cs.get(i).getServerPacket().getPort() == myPacket.getPort()) {
+                                continue;
+                            }
+                            answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, myPacket.getAddress().getHostAddress(),
+                                    activeServers.getPortForTcp(myPacket), request.getFilePath());
+                            mbout = new ByteArrayOutputStream();
+                            moout = new ObjectOutputStream(mbout);
+                            moout.writeUnshared(answer);
+                            DatagramPacket serverPacket;
+                            serverPacket = cs.get(i).getServerPacket();
+                            serverPacket.setData(bout.toByteArray());
+                            serverPacket.setLength(bout.size());
+                            multiSocket.send(serverPacket);
+                        } catch (IOException e) {
+                            System.out.println("[ServerManager] Error writing object:\r\n\t" + e);
+                        }
+                    }
+                    answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, "");
                     mbout = new ByteArrayOutputStream();
                     moout = new ObjectOutputStream(mbout);
                     moout.writeUnshared(answer);
@@ -314,8 +336,27 @@ public class ServerManager implements Runnable{
                     continue;
                 }
                 if(request.getMsgType().equals(Strings.NEW_FILE_SENT_GROUP)){
-                    answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, myPacket.getAddress().getHostAddress(),
-                            activeServers.getPortForTcp(myPacket), request.getFilePath());
+                    List<ConnectedServer> cs = activeServers.getServers();
+                    for (int i = 0; i < cs.size(); i++) {
+                        try {
+                            if (cs.get(i).getServerPacket().getPort() == myPacket.getPort()) {
+                                continue;
+                            }
+                            answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, myPacket.getAddress().getHostAddress(),
+                                    activeServers.getPortForTcp(myPacket), request.getFilePath());
+                            mbout = new ByteArrayOutputStream();
+                            moout = new ObjectOutputStream(mbout);
+                            moout.writeUnshared(answer);
+                            DatagramPacket serverPacket;
+                            serverPacket = cs.get(i).getServerPacket();
+                            serverPacket.setData(bout.toByteArray());
+                            serverPacket.setLength(bout.size());
+                            multiSocket.send(serverPacket);
+                        } catch (IOException e) {
+                            System.out.println("[ServerManager] Error writing object:\r\n\t" + e);
+                        }
+                    }
+                    answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, "");
                     mbout = new ByteArrayOutputStream();
                     moout = new ObjectOutputStream(mbout);
                     moout.writeUnshared(answer);

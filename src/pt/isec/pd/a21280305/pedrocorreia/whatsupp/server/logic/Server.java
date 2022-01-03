@@ -283,8 +283,10 @@ public class Server {
         File dFile = null;
         try {
             dFile = new File(new File(fPath).getCanonicalPath());
+            dFile = new File(new File(fPath).getName());
+            dFile = new File("./server_" + serverID + "/downloads/" + dFile);
             if(dFile.delete()){
-                System.out.println("[Server] File deleted successfully");
+                System.out.println("[Server] File " + dFile + " deleted successfully.");
             }
             else{
                 System.out.println("[Server] Couldn't delete the requested file");

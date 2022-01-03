@@ -6,6 +6,8 @@ import pt.isec.pd.a21280305.pedrocorreia.whatsupp.UploadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /** Class to receive requests from the Server Manager */
 public class ConnectionServerManager extends Thread {
@@ -30,8 +32,13 @@ public class ConnectionServerManager extends Thread {
                     server.deleteFile(receivedRequest.getFilePath());
                 }
                 case NEW_FILE_SENT_USER, NEW_FILE_SENT_GROUP -> {
-                    Thread d = new Thread(new DownloadFileClient(new File("./server_"+server.getServerID()+"/downloads/"+receivedRequest.getFilePath()), receivedRequest.getMsg(), receivedRequest.getID()+1));
-                    d.start();
+                    try{
+                        InetAddress serverAddress = InetAddress.getByAddress(receivedRequest.getMsg(), null);
+                        Thread d = new Thread(new DownloadFileClient(new File("./server_" + server.getServerID() + "/downloads/" + receivedRequest.getFilePath()), receivedRequest.getMsg(), receivedRequest.getID() + 1));
+                        d.start();
+                    } catch (UnknownHostException e){
+
+                    }
                 }
                 default -> {
                     server.alertClients(receivedRequest);
