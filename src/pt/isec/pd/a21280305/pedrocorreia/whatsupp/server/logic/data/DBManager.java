@@ -189,7 +189,8 @@ public class DBManager {
             else{
                 stmt = con.createStatement();
                 stmt.executeUpdate(updateQuery);
-                return new SharedMessage(Strings.USER_UPDATE_INFO_SUCCESS, new String("New user info"));
+                User userToSend = new User(newUser.getUsername(), newUser.getName(), me.getID());
+                return new SharedMessage(Strings.USER_UPDATE_INFO_SUCCESS, new String("New user info"), new LoginRegister(userToSend));
             }
         } catch (SQLException e) {
             System.out.println("[update] Error querying the database:\r\n\t" + e);

@@ -1,6 +1,7 @@
 package pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.ui.graphic.states;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +97,7 @@ public class SeeFriendsStatePane extends BorderPane {
         StringBuilder sb = new StringBuilder(msg);
         if (f.getStatus() == 1) {
             sb.append("\nAccepted on " + f.getAnswerTime() + ".");
-            long days = Duration.between(f.getRequestTime().toLocalDateTime(), f.getAnswerTime().toLocalDateTime())
+            long days = Duration.between(f.getRequestTime().toLocalDateTime(), LocalDateTime.now())
                     .toDays();
             sb.append("\nYou're friends for: " + days + "days!");
         }

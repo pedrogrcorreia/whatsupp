@@ -246,6 +246,7 @@ public class MessagesStatePane extends BorderPane {
             if (msg.getSender().getID() == clientObservable.getUser().getID()){
                 msgLbl.setBackground(new Background(new BackgroundFill(Color.rgb(38, 118, 43), new CornerRadii(15), Insets.EMPTY)));
                 msgLbl.setPadding(new Insets(15, 15, 15, 15));
+                msgLbl.setAlignment(Pos.BOTTOM_RIGHT);
                 gridPane.add(msgLbl, 1, i+1);
             }
             else{

@@ -430,6 +430,7 @@ public class ClientObservable implements Runnable {
                 case USER_QUIT_GROUP_SUCCESS, USER_DELETE_GROUP_SUCCESS, USER_CHANGE_GROUP_SUCCESS,
                         USER_MANAGE_GROUP_SUCCESS, ADMIN_ACCEPT_GROUP_REQUEST_SUCCESS ->
                         Platform.runLater(() -> updateStates(notification.getMsgType()));
+                case USER_UPDATE_INFO_SUCCESS -> Platform.runLater(() -> updateStates(notification.getMsgType()));
                 default -> {
                     notificationMessage = notification.getMsg();
                     Platform.runLater(() -> updateNotification());

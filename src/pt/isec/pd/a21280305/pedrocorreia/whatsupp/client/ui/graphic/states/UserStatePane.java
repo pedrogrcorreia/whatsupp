@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.client.logic.ClientObservable;
 
 public class UserStatePane extends BorderPane {
@@ -33,6 +34,7 @@ public class UserStatePane extends BorderPane {
 
     private void registerObserver() {
         clientObservable.addPropertyChangeListener("updateView", e -> update());
+        clientObservable.addPropertyChangeListener(Strings.USER_UPDATE_INFO_SUCCESS.name(), e -> update());
     }
 
     public void createView() {
@@ -163,6 +165,6 @@ public class UserStatePane extends BorderPane {
     }
 
     public void update() {
-        welcome.setText("Welcome, " /*+ clientObservable.getUser().getName()*/);
+        welcome.setText("Welcome, " + clientObservable.getUser().getName());
     }
 }

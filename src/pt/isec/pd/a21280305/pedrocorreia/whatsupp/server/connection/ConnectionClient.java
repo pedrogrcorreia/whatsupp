@@ -100,6 +100,7 @@ public class ConnectionClient extends Thread {
         DBManager dbManager = new DBManager(server);
         boolean firstRun = true;
         boolean on = false;
+        boolean logged = false;
 
         while (!clientSocket.isClosed()) {
             try {
@@ -107,6 +108,7 @@ public class ConnectionClient extends Thread {
                     System.out
                             .println("[ConnectionClient] Client connected from: " + clientSocket.getInetAddress().getHostAddress() + ":"
                                     + clientSocket.getPort());
+                    firstRun = false;
                 }
 
                 SharedMessage request = (SharedMessage) oin.readObject();
@@ -123,6 +125,7 @@ public class ConnectionClient extends Thread {
                             request = dbManager.getGroups(response);
                             gr = (List<GroupRequests>) request.getClientRequest().getList();
                             on = true;
+                            logged = true;
                             dbManager.setStatus(user, 1);
                         }
                     }
@@ -223,7 +226,7 @@ public class ConnectionClient extends Thread {
                     }
                 }
                 oout.flush();
-                if(!on) {
+                if(!on && logged) {
                     dbManager.setStatus(user, 1);
                     oout.flush();
                     System.out.println("[ConnectionClient] Client reconnected.");

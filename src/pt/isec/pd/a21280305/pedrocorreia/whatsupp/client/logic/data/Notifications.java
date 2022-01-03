@@ -82,6 +82,10 @@ public class Notifications extends Data implements Runnable {
                         Data.groupMembers = (List<GroupRequests>) response.getClientRequest().getList();
                         notifyList(response);
                     }
+                    case USER_UPDATE_INFO_SUCCESS ->{
+                        Data.user = response.getClientRequest().getUser();
+                        notifyList(response);
+                    }
                     default -> {
                         notifyList(response);
                     }
