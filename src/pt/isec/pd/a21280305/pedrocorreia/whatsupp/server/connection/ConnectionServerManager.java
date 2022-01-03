@@ -29,7 +29,7 @@ public class ConnectionServerManager extends Thread {
                     server.alertClients(receivedRequest);
                     server.deleteFile(receivedRequest.getFilePath());
                 }
-                case NEW_FILE_SENT_USER -> {
+                case NEW_FILE_SENT_USER, NEW_FILE_SENT_GROUP -> {
                     Thread d = new Thread(new DownloadFileClient(new File("./server_"+server.getServerID()+"/downloads/"+receivedRequest.getFilePath()), receivedRequest.getMsg(), receivedRequest.getID()+1));
                     d.start();
                 }

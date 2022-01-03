@@ -117,6 +117,12 @@ public class ServerManager implements Runnable{
                 answerException(answer);
                 continue;
             }
+            if(request.getMsgType().equals(Strings.NEW_FILE_SENT_GROUP)){
+                answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, myPacket.getAddress().getHostAddress(),
+                        activeServers.getPortForTcp(myPacket), request.getFilePath());
+                answerException(answer);
+                continue;
+            }
             else {
                 System.out.println("\n\t here \n\t");
                 answerToAll(request);
@@ -298,6 +304,17 @@ public class ServerManager implements Runnable{
                 }
                 if(request.getMsgType().equals(Strings.NEW_FILE_SENT_USER)){
                     answer = new SharedMessage(Strings.NEW_FILE_SENT_USER, myPacket.getAddress().getHostAddress(),
+                            activeServers.getPortForTcp(myPacket), request.getFilePath());
+                    mbout = new ByteArrayOutputStream();
+                    moout = new ObjectOutputStream(mbout);
+                    moout.writeUnshared(answer);
+                    myPacket.setData(mbout.toByteArray());
+                    myPacket.setLength(mbout.size());
+                    multiSocket.send(myPacket);
+                    continue;
+                }
+                if(request.getMsgType().equals(Strings.NEW_FILE_SENT_GROUP)){
+                    answer = new SharedMessage(Strings.NEW_FILE_SENT_GROUP, myPacket.getAddress().getHostAddress(),
                             activeServers.getPortForTcp(myPacket), request.getFilePath());
                     mbout = new ByteArrayOutputStream();
                     moout = new ObjectOutputStream(mbout);
