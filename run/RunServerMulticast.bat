@@ -1,0 +1,1 @@
+java -jar ..\out\artifacts\Server_jar\Server.jar 192.168.1.73:3306/whatsupp_db

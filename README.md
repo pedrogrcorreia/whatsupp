@@ -1,49 +1,40 @@
 # WhatsUpp
 ## Pratical Assignment of Distribuited Programming, ISEC 2021/2022
 
-### Java/MySQL
+### Project Goal
     - Distributed programming
-    - DB management
+    - Database management
+    - Multithread programming in Java
     - Concurrency in Java
+    - Client application using JavaFX framework
 
-### TO-DO
-#### Server Manager
-- [ ] Multicast
-- [X] Sends notifications to all active servers
+### Summary
+This project is distributed between three apps:
+    - A Client that communicates to a server. The goal of this client is to send messages between users
+    or between groups created by users.
+        - Client <-UDP-> Server Manager
+        - Client <-TCP-> Server
+    - A Server responsible to communicate the changes to a MySQL database.
+        - Server <-UDP-> Server Manager
+        - Server <-TCP-> Client
+        
+    - A Server Manager to register active servers and redirect clients to them.
+        - Server Manager <-UDP-> Servers, Clients
+        - Server Manager can receives through UDP directly or by Multicast.
 
-#### Server
-- [X] Register on Server Manager
-- [X] Ping Server Manager
-- [X] Create connection with clients (1 thread for each client)
-- [X] Connect to db (on client connecting)
-- [X] Login user
-- [X] Register user 
-- [X] Return friends list
-- [X] Return message list
-- [] Return groups list
-- [X] Sends notifications on message sent and deleted to Server Manager
-- [] Send notifications on register
+### Run
+Inside the run folder there's a script to create a MySQL database.
+There's also the compiled `.jar`'s to run.
 
-#### Client
-- [X] Connect to Server
-- [X] Reconnect to Server
-- [X] Login
-- [X] Register
-- [X] Notification until login
-- [X] How to get a notification after login
-    - [ ] A thread that receives the responses from server?
-    - [X] A class derived from Data that implements a runnable?
-- [X] Get friends
-- [] Get friends requests
-- [X] Get messages
-- [] Get groups
-- [] Get files
-- [X] Send messages
-- [X] Notifications for messages sent and deleted
-- [] Notifications for friends requests and new users
-- [] Beautify panes
+Run Server Manager
+`java -jar ServerManager.jar <UdpListeningPort>`
 
-#### Shared
-- [X] Server Manager <-> Server Communication
-- [X] Server Manager <-> Client Communication
-- [X] Client <-> Server Communication
+Run Server
+`java -jar Server.jar <dbAddress> <ServerManagerAddress> <ServerManagerPort>`
+
+Run Server (Multicast)
+`java -jar Server.jar <dbAddress>`
+
+Run Client
+`java --module-path "path/to/javafx" --add-modules javafx.controls,javafx.fxml -jar whatsupp.jar <ServerManagerAddress> <ServerManagerPort>`
+

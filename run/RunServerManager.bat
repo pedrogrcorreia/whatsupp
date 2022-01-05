@@ -1,0 +1,1 @@
+java -jar ..\out\artifacts\ServerManager_jar\ServerManager.jar 3000
