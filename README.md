@@ -1,6 +1,4 @@
 # Whatsupp
-## Pratical Assignment of Distribuited Programming, ISEC 2021/2022
-
 ### Project Goal
     - Distributed programming
     - Database management
