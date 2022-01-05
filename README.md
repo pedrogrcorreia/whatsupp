@@ -20,8 +20,8 @@ or between groups created by users.
     - Server Manager can receives through UDP directly or by Multicast.
 
 ### Run
-Inside the run folder there's a script to create a MySQL database.
-There's also the compiled `.jar`'s to run.
+Download the latest release. There will be the `.jar` files compiled to run.
+JavaFX is required.
 
 Run Server Manager
 ```
