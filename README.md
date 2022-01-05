@@ -22,6 +22,7 @@ or between groups created by users.
 ### Run
 Download the latest release. There will be the `.jar` files compiled to run.
 JavaFX is required.
+The script to create the MySQL database is on the root directory of this repo.
 
 Run Server Manager
 ```
