@@ -2,10 +2,14 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data;
 
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.server.logic.Server;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.util.Calendar;
 
-public class ConnectedServer extends Server {
+public class ConnectedServer extends Server implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     // private DatagramPacket serverPacket;
     private int listeningUdpPort;
@@ -15,7 +19,7 @@ public class ConnectedServer extends Server {
     private Calendar pingedTime;
     private boolean isSuspended = false;
     private int timeoutPenalties = 0;
-    private DatagramPacket serverPacket;
+    private transient DatagramPacket serverPacket;
 
     public ConnectedServer(DatagramPacket serverPacket) {
         super(serverPacket);

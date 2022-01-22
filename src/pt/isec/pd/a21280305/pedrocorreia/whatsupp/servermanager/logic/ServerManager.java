@@ -2,17 +2,15 @@ package pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic;
 
 import java.io.*;
 import java.net.*;
+import java.rmi.RemoteException;
 import java.util.List;
 
-import pt.isec.pd.a21280305.pedrocorreia.whatsupp.DownloadFile;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.SharedMessage;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.Strings;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ActiveServers;
 import pt.isec.pd.a21280305.pedrocorreia.whatsupp.servermanager.logic.data.ConnectedServer;
 
-import javax.net.ssl.SSLHandshakeException;
-
-public class ServerManager implements Runnable{
+public class ServerManager implements Runnable {
 
     static final int MAX_SIZE = 100000;
 
@@ -40,7 +38,7 @@ public class ServerManager implements Runnable{
 
     // Thread activeServers;
 
-    public ServerManager(int listeningPort) {
+    public ServerManager(int listeningPort) throws RemoteException {
         this.listeningPort = listeningPort;
         activeServers = new ActiveServers();
     }
@@ -73,8 +71,17 @@ public class ServerManager implements Runnable{
 
     private void runServerManager() {
         System.out.println("Ready to receive requests.");
+        // RMI
+        ServerManagerService sms = null;
+        try {
+            sms = new ServerManagerService(this);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        sms.startService(this);
         while (true) {
             request = receiveRequests();
+            sms.notifyObservers(request);
             System.out.println("Request: " + request.getMsgType().name());
             if (request.getMsgType().equals(Strings.SERVER_REGISTER_REQUEST)) {
                 try {
@@ -131,6 +138,10 @@ public class ServerManager implements Runnable{
                 answerToAll(request);
             }
         }
+    }
+
+    public ActiveServers getActiveServers(){
+        return activeServers;
     }
 
     /**

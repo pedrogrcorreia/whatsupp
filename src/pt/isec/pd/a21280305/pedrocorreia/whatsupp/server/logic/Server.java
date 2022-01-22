@@ -17,7 +17,7 @@ import java.util.Random;
  * 
  * @author Pedro Correia
  */
-public class Server {
+public class Server implements Serializable{
 
     @Serial
     private static final long serialVersionUID = 1L;
