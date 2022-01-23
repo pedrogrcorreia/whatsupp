@@ -9,14 +9,15 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Scanner;
 
 public class ServerManagerObserver extends UnicastRemoteObject implements ServerManagerObserverInterface {
     public ServerManagerObserver() throws RemoteException{}
 
 
     @Override
-    public void newNotification(String message) throws RemoteException {
-        System.out.println(message);
+    public void newNotification(SharedMessage message) throws RemoteException {
+        System.out.println("\n" + message.getMsgType().name());
     }
 
     public static void main(String[] args){
@@ -29,8 +30,26 @@ public class ServerManagerObserver extends UnicastRemoteObject implements Server
 
             serverManagerServiceInterface.addObserver(observer);
 
-            System.out.println("<Enter> para terminar");
-            System.in.read();
+
+            boolean exit = false;
+            Scanner scanner = new Scanner(System.in);
+
+            System.out.println("\n\tYou will see here the notifications from the Server Manager\n\t");
+
+            System.out.println("\nMenu: ");
+            System.out.println("1. List Active Servers");
+            System.out.println("2. Exit");
+
+            while(!exit) {
+                System.out.print("\nOption: ");
+                String input = scanner.nextLine();
+                if (input.equals("1")) {
+                    String servers = serverManagerServiceInterface.getServers();
+                    System.out.println(servers);
+                } else if(input.equals("2")) {
+                    exit = true;
+                }
+            }
 
             serverManagerServiceInterface.removeObserver(observer);
             UnicastRemoteObject.unexportObject(observer, true);

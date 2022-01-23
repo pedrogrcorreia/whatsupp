@@ -62,6 +62,6 @@ public class SharedMessage implements Serializable {
 
     @Override
     public String toString() {
-        return msgType.name() + ": " + msg;
+        return msgType.name() + " : " + msg;
     }
 }

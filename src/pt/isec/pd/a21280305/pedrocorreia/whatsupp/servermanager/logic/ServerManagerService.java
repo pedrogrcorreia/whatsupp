@@ -26,13 +26,11 @@ public class ServerManagerService extends UnicastRemoteObject implements ServerM
     private ServerManager serverManager;
 
     public ServerManagerService(List<ServerManagerObserverInterface> observers, ServerManager serverManager) throws RemoteException{
-//        observers = new ArrayList<>();
         this.serverManager = serverManager;
         this.observers = observers;
     }
 
-    public ServerManagerService(ServerManager serverManager) throws RemoteException{
-//        this.serverManager = serverManager;
+    public ServerManagerService() throws RemoteException{
     }
 
     @Override
@@ -44,38 +42,34 @@ public class ServerManagerService extends UnicastRemoteObject implements ServerM
             long delay = (curTime.getTimeInMillis() - server.getPingedTime().getTimeInMillis()) / 1000;
             sb.append("\nServer Tcp Port: " + server.getListeningTcpPort());
             sb.append("\nServer Tcp Port for files: " + server.getFilesTcpSocketPort());
-            sb.append("\nServer address: " + server.getServerPacket().getAddress().getHostAddress() + "\n\t");
-            sb.append("Last ping time: " + delay + " seconds ago.");
+            sb.append("\nServer address: " + server.getServerPacket().getAddress().getHostAddress());
+            sb.append("\nLast ping time: " + delay + " seconds ago.");
         }
 
         return sb.toString();
     }
-
-    // RMI
-
 
     @Override
     public synchronized void addObserver(ServerManagerObserverInterface observer) throws RemoteException {
         if(!observers.contains(observer)){
             observers.add(observer);
             System.out.println(observers.size());
-            System.out.println("Registado um novo observador.");
+            System.out.println("Registered a RMI Observer.");
         }
     }
 
     @Override
     public synchronized void removeObserver(ServerManagerObserverInterface observer) throws RemoteException {
         if(observers.remove(observer)){
-            System.out.println("Removido um observador.");
+            System.out.println("Removed a RMI Observer.");
         }
     }
 
     protected synchronized void notifyObservers(SharedMessage msg){
 
         for (ServerManagerObserverInterface observer : observers) {
-            System.out.println("a notificar observer");
             try {
-                observer.newNotification(msg.getMsg());
+                observer.newNotification(msg);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -83,16 +77,13 @@ public class ServerManagerService extends UnicastRemoteObject implements ServerM
     }
 
     public void startService(ServerManager serverManager){
-        // RMI
         observers = new ArrayList<>();
         try{
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-            System.out.println("Registry lancado!");
 
             ServerManagerService serverService = new ServerManagerService(observers, serverManager);
             Naming.bind("rmi://localhost/" + SERVICE_NAME, serverService);
-            System.out.println("Servico GetRemoteFile criado e em execucao ("+serverService.getRef().remoteToString()+"...");
-            System.out.println("Servico " + SERVICE_NAME + " registado no registry");
+            System.out.println("Service " + SERVICE_NAME + " registered on registry.");
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {

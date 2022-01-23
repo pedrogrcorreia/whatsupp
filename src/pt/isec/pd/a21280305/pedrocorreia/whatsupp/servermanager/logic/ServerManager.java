@@ -74,7 +74,7 @@ public class ServerManager implements Runnable {
         // RMI
         ServerManagerService sms = null;
         try {
-            sms = new ServerManagerService(this);
+            sms = new ServerManagerService();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
