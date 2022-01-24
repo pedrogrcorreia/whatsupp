@@ -17,19 +17,33 @@ public class ServerManagerObserver extends UnicastRemoteObject implements Server
 
     @Override
     public void newNotification(SharedMessage message) throws RemoteException {
+        System.out.println("\t\n New Notification!");
         System.out.println("\n" + message.getMsgType().name());
+        System.out.println("\nMenu: ");
+        System.out.println("1. List Active Servers");
+        System.out.println("2. Exit");
+        System.out.print("\nOption: ");
     }
 
     public static void main(String[] args){
+
+        String serviceAddress;
+
+        if(args.length == 1){
+            serviceAddress = args[0];
+        }else{
+            System.out.println("Syntax: java ServerManagerObserver <ServerManagerAddress>");
+            return;
+        }
+
         try {
             ServerManagerObserver observer = new ServerManagerObserver();
 
-            String objectUrl = "rmi://localhost/GRDS_Service";
+            String objectUrl = "rmi://" + serviceAddress + "/GRDS_Service";
 
             ServerManagerServiceInterface serverManagerServiceInterface = (ServerManagerServiceInterface) Naming.lookup(objectUrl);
 
             serverManagerServiceInterface.addObserver(observer);
-
 
             boolean exit = false;
             Scanner scanner = new Scanner(System.in);
@@ -61,6 +75,8 @@ public class ServerManagerObserver extends UnicastRemoteObject implements Server
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally{
+            return;
         }
     }
 }

@@ -37,6 +37,9 @@ public class ServerManagerService extends UnicastRemoteObject implements ServerM
     public String getServers() throws RemoteException, IOException {
         var servers = serverManager.getActiveServers().getServers();
         StringBuilder sb = new StringBuilder();
+        if(servers.isEmpty()){
+            return "No active servers!";
+        }
         for(var server : servers){
             Calendar curTime = GregorianCalendar.getInstance();
             long delay = (curTime.getTimeInMillis() - server.getPingedTime().getTimeInMillis()) / 1000;
@@ -53,7 +56,6 @@ public class ServerManagerService extends UnicastRemoteObject implements ServerM
     public synchronized void addObserver(ServerManagerObserverInterface observer) throws RemoteException {
         if(!observers.contains(observer)){
             observers.add(observer);
-            System.out.println(observers.size());
             System.out.println("Registered a RMI Observer.");
         }
     }
