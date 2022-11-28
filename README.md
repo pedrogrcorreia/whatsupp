@@ -11,17 +11,17 @@
 
 ### Summary
 This project is distributed between four apps:
-    - A Client that communicates to a server. The goal of this client is to send messages between users
+- A Client that communicates to a server. The goal of this client is to send messages between users
     or between groups created by users.
-        - Client <-UDP-> Server Manager
-        - Client <-TCP-> Server
-    - A Server responsible to communicate the changes to a MySQL database.
-        - Server <-UDP-> Server Manager
-        - Server <-TCP-> Client
-    - A Server Manager to register active servers and redirect clients to them.
-        - Server Manager <-UDP-> Servers, Clients
-        - Server Manager can receives through UDP directly or by Multicast.
-    - A Server Manager Observer to listen RMI callbacks from Server Manager of notifications
+    - Client <-UDP-> Server Manager
+    - Client <-TCP-> Server
+- A Server responsible to communicate the changes to a MySQL database.
+    - Server <-UDP-> Server Manager
+    - Server <-TCP-> Client
+- A Server Manager to register active servers and redirect clients to them.
+    - Server Manager <-UDP-> Servers, Clients
+    - Server Manager can receives through UDP directly or by Multicast.
+- A Server Manager Observer to listen RMI callbacks from Server Manager of notifications
 
 ### Run
 Inside the run folder there's a script to create a MySQL database.
